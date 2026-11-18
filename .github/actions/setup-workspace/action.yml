@@ -97,13 +97,16 @@ runs:
         key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}-${{ inputs.browsers }}
 
     # Vitest runs Chromium headless: the headless shell is enough (--only-shell).
-    - name: Install the Playwright browsers and their system packages
+    - name: Install the Playwright browsers
       if: inputs.browsers != 'none' && steps.playwright-cache.outputs.cache-hit != 'true'
       shell: bash
-      run: npx playwright install --with-deps --only-shell ${{ steps.playwright.outputs.list }}
+      run: npx playwright install --only-shell ${{ steps.playwright.outputs.list }}
 
-    # The cache keeps the browsers, not the system packages of the runner.
-    - name: Install the system packages of the cached browsers
-      if: inputs.browsers != 'none' && steps.playwright-cache.outputs.cache-hit == 'true'
+    # The cache keeps the browsers, not the system packages, and apt is slow (about
+    # 4 minutes). The runner image already has the libraries of Chrome, so a
+    # Chromium-only job skips it; if one were missing, Playwright fails at launch
+    # listing it. Firefox and WebKit need their packages.
+    - name: Install the system packages of the browsers
+      if: inputs.browsers != 'none' && inputs.browsers != 'chromium'
       shell: bash
       run: npx playwright install-deps ${{ steps.playwright.outputs.list }}
