@@ -62,27 +62,20 @@ jobs:
             echo "main is $SHA; last successful full run on main: ${last:-none}. Running." >> "$GITHUB_STEP_SUMMARY"
           fi
 
-  unit:
-    name: Unit · Angular ${{ matrix.angular }} · Node ${{ matrix.node }}
+  # Node projects only (jsdom and plain TypeScript with time zones), on Node 22.
+  # The build and the tarball checks run here too: Node 22 is the lowest Node of the
+  # matrix (the fast level already does it on Node 24).
+  unit-node:
+    name: Unit · Angular ${{ matrix.angular }} · Node 22
     needs: gate
     if: ${{ !cancelled() && needs.gate.outputs.run != 'false' && !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         # Angular 22 unit tests: nights and before each rc only, not in pull requests.
         angular: ${{ fromJSON(github.event_name == 'pull_request' && '["21"]' || '["21", "22"]') }}
-        node: ["22", "24"]
-        include:
-          # Code that runs in the browser does not depend on the Node of the runner:
-          # the browsers run once, on Node 24. Node 22 runs the Node projects.
-          - node: "22"
-            node-minimum: 22.22.3
-            browsers: none
-          - node: "24"
-            node-minimum: 24.15.0
-            browsers: chromium,firefox,webkit
     steps:
       - name: Check out
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -92,42 +85,75 @@ jobs:
       - name: Set up the workspace
         uses: ./.github/actions/setup-workspace
         with:
-          node-version: ${{ matrix.node }}
-          node-minimum: ${{ matrix.node-minimum }}
+          node-version: "22"
+          node-minimum: 22.22.3
           angular: ${{ matrix.angular }}
-          browsers: ${{ matrix.browsers }}
+          browsers: none
+
+      - name: Unit tests (zone.js and zoneless; Node only)
+        run: npm test
+
+      - name: Build (utils → core → ui)
+        if: matrix.angular == '21'
+        run: npm run build
+
+      - name: Check the packages
+        if: matrix.angular == '21'
+        run: npm run check:packages
+
+  # The three browsers, on Node 24 (code that runs in the browser does not depend on
+  # the Node of the runner). The job runs in the official Playwright image: it already
+  # has the browsers and their system packages, which apt takes over 10 minutes to
+  # install on a plain runner. Its tag must match the Playwright version of the
+  # lockfiles (1.65.1); if it does not, Playwright fails at launch saying so.
+  unit-browsers:
+    name: Unit · Angular ${{ matrix.angular }} · Node 24 · browsers
+    needs: gate
+    if: ${{ !cancelled() && needs.gate.outputs.run != 'false' && !github.event.pull_request.draft }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      # Firefox refuses to run as root in this image: use the runner's user.
+      options: --user 1001
+    strategy:
+      fail-fast: false
+      matrix:
+        angular: ${{ fromJSON(github.event_name == 'pull_request' && '["21"]' || '["21", "22"]') }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up the workspace
+        uses: ./.github/actions/setup-workspace
+        with:
+          node-version: "24"
+          node-minimum: 24.15.0
+          angular: ${{ matrix.angular }}
+          browsers: chromium,firefox,webkit
+          browsers-preinstalled: "true"
 
       - name: Warm up Vite
-        if: matrix.browsers != 'none'
         run: npm run test:warmup
 
-      - name: Unit tests (zone.js and zoneless; browsers ${{ matrix.browsers }})
+      - name: Unit tests (zone.js and zoneless; Chromium, Firefox and WebKit)
         run: npm test
 
       - name: Keep the failure screenshots
-        if: failure() && matrix.browsers != 'none'
+        if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: failure-screenshots-angular-${{ matrix.angular }}-node-${{ matrix.node }}
+          name: failure-screenshots-angular-${{ matrix.angular }}
           path: .vitest/attachments
           include-hidden-files: true
           if-no-files-found: ignore
           retention-days: 7
 
-      # The libraries are built with Angular 21. Node 22 is the lowest Node of the
-      # matrix: the build and the tarball checks run there too (the fast level
-      # already does it on Node 24).
-      - name: Build (utils → core → ui)
-        if: matrix.angular == '21' && matrix.node == '22'
-        run: npm run build
-
-      - name: Check the packages
-        if: matrix.angular == '21' && matrix.node == '22'
-        run: npm run check:packages
-
       # Development vulnerabilities are a report, never a failure.
       - name: Audit development dependencies (report only)
-        if: matrix.angular == '21' && matrix.node == '24'
+        if: matrix.angular == '21'
         continue-on-error: true
         run: |
           npm audit --json > "$RUNNER_TEMP/npm-audit.json" || true
@@ -180,7 +206,7 @@ jobs:
   # new jobs join it without touching the branch rule.
   result:
     name: Full level
-    needs: [gate, unit, smoke-node-26]
+    needs: [gate, unit-node, unit-browsers, smoke-node-26]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 5

@@ -19,6 +19,10 @@ inputs:
     description: "Comma-separated Playwright browsers (chromium,firefox,webkit), or none. Also sets FOUNDRY_TEST_BROWSERS."
     required: false
     default: none
+  browsers-preinstalled:
+    description: "'true' when the job runs in the Playwright image, which already has the browsers and their system packages."
+    required: false
+    default: "false"
 
 runs:
   using: composite
@@ -80,7 +84,7 @@ runs:
 
     - name: Read the Playwright version
       id: playwright
-      if: inputs.browsers != 'none'
+      if: inputs.browsers-preinstalled != 'true' && inputs.browsers != 'none'
       shell: bash
       env:
         BROWSERS: ${{ inputs.browsers }}
@@ -91,7 +95,7 @@ runs:
 
     - name: Cache the Playwright browsers
       id: playwright-cache
-      if: inputs.browsers != 'none'
+      if: inputs.browsers-preinstalled != 'true' && inputs.browsers != 'none'
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.cache/ms-playwright
@@ -99,7 +103,7 @@ runs:
 
     # Vitest runs Chromium headless: the headless shell is enough (--only-shell).
     - name: Install the Playwright browsers
-      if: inputs.browsers != 'none' && steps.playwright-cache.outputs.cache-hit != 'true'
+      if: inputs.browsers-preinstalled != 'true' && inputs.browsers != 'none' && inputs.browsers != 'chromium'
       shell: bash
       run: npx playwright install --only-shell ${{ steps.playwright.outputs.list }}
 

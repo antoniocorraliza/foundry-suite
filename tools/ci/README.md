@@ -13,13 +13,13 @@ Angular 21, Node 24, one job: `npm ci` → production audit → lint → warm-up
 
 ## Full level: matrix
 
-| Job                                                          | Angular |      Node      | Browsers                  | Pull request | Night / rc |
-| :----------------------------------------------------------- | :-----: | :------------: | :------------------------ | :----------: | :--------: |
-| `Unit · Angular 21 · Node 22` (+ build and `check:packages`) |   21    | 22 (≥ 22.22.3) | none                      |     yes      |    yes     |
-| `Unit · Angular 21 · Node 24` (+ development audit report)   |   21    |  24 (≥ 24.15)  | Chromium, Firefox, WebKit |     yes      |    yes     |
-| `Unit · Angular 22 · Node 22`                                |   22    |       22       | none                      |      —       |    yes     |
-| `Unit · Angular 22 · Node 24`                                |   22    |       24       | Chromium, Firefox, WebKit |      —       |    yes     |
-| `Smoke · Node 26` (smoke, build, `check:packages`)           |   21    |       26       | none                      |      —       |    yes     |
+| Job                                                                   | Angular |      Node      | Browsers                                            | Pull request | Night / rc |
+| :-------------------------------------------------------------------- | :-----: | :------------: | :-------------------------------------------------- | :----------: | :--------: |
+| `Unit · Angular 21 · Node 22` (+ build and `check:packages`)          |   21    | 22 (≥ 22.22.3) | none                                                |     yes      |    yes     |
+| `Unit · Angular 21 · Node 24 · browsers` (+ development audit report) |   21    |  24 (≥ 24.15)  | Chromium, Firefox, WebKit (in the Playwright image) |     yes      |    yes     |
+| `Unit · Angular 22 · Node 22`                                         |   22    |       22       | none                                                |      —       |    yes     |
+| `Unit · Angular 22 · Node 24 · browsers`                              |   22    |       24       | Chromium, Firefox, WebKit (in the Playwright image) |      —       |    yes     |
+| `Smoke · Node 26` (smoke, build, `check:packages`)                    |   21    |       26       | none                                                |      —       |    yes     |
 
 Every unit job runs the zone.js and the zoneless projects: they are Vitest projects, not jobs.
 
@@ -66,7 +66,7 @@ An unknown browser name fails the run instead of silently running fewer tests.
 
 - **npm cache** (`~/.npm`) through `setup-node`, keyed on the lockfile of the job (Angular 21 or 22).
 - **Playwright browsers** (`~/.cache/ms-playwright`), keyed on OS, architecture, Playwright version and browser list. Chromium is the headless shell (`--only-shell`).
-- **System packages** are not cached: `playwright install-deps` runs with apt in every job that uses Firefox or WebKit (about 4 minutes). Chromium-only jobs skip it, because the runner image already has the libraries of Chrome; if one were missing, Playwright fails at launch listing it.
+- **System packages:** jobs with Firefox and WebKit run in the official Playwright image (`mcr.microsoft.com/playwright:v1.65.1-noble`), which already has the browsers and their libraries; installing them with apt took over 10 minutes. Its tag must match the Playwright version of the lockfiles. The fast level (Chromium only) runs on the plain runner and skips apt, because the runner image already has the libraries of Chrome.
 - **Vite warm-up:** `npm run test:warmup` runs the Angular browser smoke project before the real run, so Vite has optimized the dependencies. `optimizeDeps.include` in the factories does the rest.
 
 ## Install scripts: `allowScripts`
