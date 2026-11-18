@@ -21,7 +21,7 @@
   },
   "scripts": {
     "ng": "ng",
-    "build:all": "ng build @antoniocorraliza/foundry-utils && ng build @antoniocorraliza/foundry-core && ng build @antoniocorraliza/foundry-ui",
+    "build": "npm run build:utils && npm run build:core && npm run build:ui",
     "build:utils": "ng build @antoniocorraliza/foundry-utils",
     "build:core": "ng build @antoniocorraliza/foundry-core",
     "build:ui": "ng build @antoniocorraliza/foundry-ui",
