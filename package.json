@@ -1,0 +1,75 @@
+{
+  "name": "@antoniocorraliza/foundry",
+  "version": "1.26.66",
+  "description": "High-performance Angular suite for rapid, scalable enterprise development. Showcasing a strictly decoupled modular architecture and professional automation tools.",
+  "author": "Antonio Corraliza León",
+  "license": "MIT",
+  "homepage": "https://github.com/antoniocorraliza/foundry#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antoniocorraliza/foundry.git"
+  },
+  "keywords": [
+    "angular",
+    "monorepo",
+    "architecture",
+    "schematics",
+    "enterprise",
+    "automation",
+    "typescript"
+  ],
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^24.15.0"
+  },
+  "scripts": {
+    "ng": "ng",
+    "build:all": "ng build @antoniocorraliza/foundry-utils && ng build @antoniocorraliza/foundry-core && ng build @antoniocorraliza/foundry-ui",
+    "build:utils": "ng build @antoniocorraliza/foundry-utils",
+    "build:core": "ng build @antoniocorraliza/foundry-core",
+    "build:ui": "ng build @antoniocorraliza/foundry-ui",
+    "lint": "eslint . && npm run typecheck",
+    "typecheck": "tsc -p tsconfig.spec.json --noEmit && tsc -p tsconfig.tools.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "FOUNDRY_TEST_COVERAGE=true vitest run --coverage",
+    "generate:changes:history": "git diff --staged > changes_history.diff"
+  },
+  "dependencies": {
+    "@angular/common": "21.2.26",
+    "@angular/compiler": "21.2.26",
+    "@angular/core": "21.2.26",
+    "@angular/forms": "21.2.26",
+    "@angular/platform-browser": "21.2.26",
+    "@angular/router": "21.2.26",
+    "rxjs": "7.8.2",
+    "zone.js": "0.16.3"
+  },
+  "devDependencies": {
+    "@analogjs/vite-plugin-angular": "2.9.7",
+    "@analogjs/vitest-angular": "2.9.7",
+    "@angular/build": "21.2.30",
+    "@angular/cli": "21.2.30",
+    "@angular/compiler-cli": "21.2.26",
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.2",
+    "@vitest/browser-playwright": "5.1.1",
+    "@vitest/coverage-v8": "5.1.1",
+    "angular-eslint": "21.4.0",
+    "eslint": "10.15.0",
+    "jsdom": "31.0.1",
+    "ng-packagr": "21.2.7",
+    "playwright": "1.65.1",
+    "tslib": "2.8.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.73.0",
+    "vite": "8.3.8",
+    "vitest": "5.1.1"
+  },
+  "overrides": {
+    "@angular/build": {
+      "vitest": "$vitest"
+    }
+  }
+}

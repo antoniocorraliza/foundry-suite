@@ -1,0 +1,15 @@
+/* Tests and test setup. The Angular plugin of Vitest compiles with it, so it must be able to emit (no noEmit here). */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/spec",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vitest/globals"]
+  },
+  "include": [
+    "projects/**/*.spec.ts",
+    "tools/vitest/setup/*.ts",
+    "tools/vitest/smoke/*.spec.ts",
+    "tools/vitest/provided-context.d.ts"
+  ]
+}

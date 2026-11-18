@@ -1,0 +1,45 @@
+{
+  "name": "@antoniocorraliza/foundry-ui",
+  "version": "1.26.66",
+  "description": "A strictly standalone, zero-dependency Angular UI suite built for maximum performance. Featuring OnPush change detection, native CSS tokens, and a 100% Material-free architecture for scalable enterprise applications.",
+  "author": "Antonio Corraliza León",
+  "license": "Proprietary",
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "esm": "./fesm2022/antoniocorraliza-foundry-ui.mjs",
+      "default": "./fesm2022/antoniocorraliza-foundry-ui.mjs"
+    },
+    "./styles": "./src/lib/styles/foundry-ui.scss"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "peerDependencies": {
+    "@angular/common": "^19.2.0",
+    "@angular/core": "^19.2.0",
+    "@angular/animations": "^19.2.0",
+    "@angular/forms": "^19.2.0"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "angular",
+    "angular-19",
+    "angular-components",
+    "ui-library",
+    "ui-kit",
+    "design-system",
+    "material-free",
+    "zero-dependency",
+    "standalone",
+    "onpush",
+    "enterprise",
+    "frontend",
+    "customizable",
+    "responsive",
+    "foundry"
+  ]
+}

@@ -1,0 +1,11 @@
+/* Tool configuration that runs on Node (Vitest config and project factories). Only type-checked, never emitted. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "lib": ["ES2022"],
+    "types": ["node"]
+  },
+  "include": ["vitest.config.ts", "tools/vitest/projects.ts", "tools/vitest/smoke/smoke.projects.ts"]
+}

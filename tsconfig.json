@@ -1,0 +1,29 @@
+/* Base TypeScript configuration of the monorepo. Library, spec and tool configs extend it. */
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "paths": {
+      "@antoniocorraliza/foundry-core": ["./dist/antoniocorraliza/foundry-core"],
+      "@antoniocorraliza/foundry-ui": ["./dist/antoniocorraliza/foundry-ui"],
+      "@antoniocorraliza/foundry-utils": ["./dist/antoniocorraliza/foundry-utils"]
+    },
+    "outDir": "./dist/out-tsc",
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "importHelpers": false,
+    "target": "ES2022",
+    "module": "preserve"
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  }
+}

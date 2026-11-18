@@ -1,0 +1,34 @@
+{
+  "name": "@antoniocorraliza/foundry-core",
+  "version": "1.26.66",
+  "description": "The foundational infrastructure and core architecture for Angular enterprise applications. Features advanced state management, secure networking, HTTP interceptors, and dynamic UI orchestration.",
+  "author": "Antonio Corraliza León",
+  "license": "Proprietary",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@angular/common": "^19.2.0",
+    "@angular/core": "^19.2.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "angular",
+    "angular-19",
+    "core",
+    "infrastructure",
+    "architecture",
+    "services",
+    "state-management",
+    "networking",
+    "http-interceptors",
+    "security",
+    "error-handling",
+    "ui-orchestration",
+    "enterprise",
+    "foundry"
+  ]
+}

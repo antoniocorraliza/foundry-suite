@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out-tsc/
+*.tgz
+
+# Angular CLI cache
+.angular/
+
+# Tests
+coverage/
+.vitest-attachments/
+__screenshots__/
+
+# Logs and local files
+npm-debug.log*
+changes_history.diff
+.env
+.env.*
+
+# Editors and OS
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db

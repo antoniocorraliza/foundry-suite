@@ -1,0 +1,80 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "@antoniocorraliza/foundry-utils": {
+      "projectType": "library",
+      "root": "projects/antoniocorraliza/foundry-utils",
+      "sourceRoot": "projects/antoniocorraliza/foundry-utils/src",
+      "prefix": "foundry",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "projects/antoniocorraliza/foundry-utils/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/antoniocorraliza/foundry-utils/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/antoniocorraliza/foundry-utils/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        }
+      }
+    },
+    "@antoniocorraliza/foundry-core": {
+      "projectType": "library",
+      "root": "projects/antoniocorraliza/foundry-core",
+      "sourceRoot": "projects/antoniocorraliza/foundry-core/src",
+      "prefix": "foundry",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "projects/antoniocorraliza/foundry-core/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/antoniocorraliza/foundry-core/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/antoniocorraliza/foundry-core/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        }
+      }
+    },
+    "@antoniocorraliza/foundry-ui": {
+      "projectType": "library",
+      "root": "projects/antoniocorraliza/foundry-ui",
+      "sourceRoot": "projects/antoniocorraliza/foundry-ui/src",
+      "prefix": "foundry",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "projects/antoniocorraliza/foundry-ui/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/antoniocorraliza/foundry-ui/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/antoniocorraliza/foundry-ui/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        }
+      }
+    }
+  },
+  "cli": {
+    "analytics": false,
+    "packageManager": "npm"
+  }
+}

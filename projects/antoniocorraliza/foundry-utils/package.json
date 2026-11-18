@@ -1,0 +1,31 @@
+{
+  "name": "@antoniocorraliza/foundry-utils",
+  "version": "1.26.66",
+  "description": "A high-performance, framework-agnostic TypeScript utility belt for enterprise applications. Features zero-dependency modules for deep object manipulation, secure cryptography, data validation, and advanced timing functions.",
+  "author": "Antonio Corraliza León",
+  "license": "Proprietary",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "peerDependencies": {},
+  "sideEffects": false,
+  "keywords": [
+    "typescript",
+    "javascript",
+    "utils",
+    "utilities",
+    "helpers",
+    "toolkit",
+    "framework-agnostic",
+    "zero-dependency",
+    "data-manipulation",
+    "validation",
+    "cryptography",
+    "logic",
+    "enterprise",
+    "foundry"
+  ]
+}
