@@ -1,0 +1,197 @@
+# Full CI level.
+# - Pull request to main (not drafts): Angular 21 × Node 22 and 24 × Chromium, Firefox and WebKit.
+# - Every night (only if main changed since the last good night) and by hand before
+#   each rc (Actions → CI full → Run workflow): the same, plus the unit tests with
+#   Angular 22 and the Node 26 smoke job.
+# zone.js and zoneless are Vitest projects: every unit job runs both.
+# Documentation, matrix and what was cut: tools/ci/README.md.
+name: CI full
+
+on:
+  pull_request:
+    branches: [main]
+    # A draft pull request only gets the fast level: the full one starts when it is
+    # marked "Ready for review" and on every push after that.
+    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    # 02:17 UTC: 03:17 in Madrid in winter, 04:17 in summer. Not on the hour, when
+    # GitHub delays scheduled runs the most.
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Why it runs (for example, "before 2.0.0-rc.1")
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-full-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # Night runs are skipped when main has not changed since the last successful night
+  # or manual run: they would only repeat the same result.
+  gate:
+    name: Night gate
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - name: Compare main with the last successful full run
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          last=$(gh api "repos/$REPOSITORY/actions/workflows/ci-full.yml/runs?branch=main&status=success&per_page=30" \
+            --jq '[.workflow_runs[] | select(.event == "schedule" or .event == "workflow_dispatch")][0].head_sha // ""' || echo "")
+          if [ -n "$last" ] && [ "$last" = "$SHA" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "main ($SHA) already passed the full level: night run skipped." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "main is $SHA; last successful full run on main: ${last:-none}. Running." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  unit:
+    name: Unit · Angular ${{ matrix.angular }} · Node ${{ matrix.node }}
+    needs: gate
+    if: ${{ !cancelled() && needs.gate.outputs.run != 'false' && !github.event.pull_request.draft }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # Angular 22 unit tests: nights and before each rc only, not in pull requests.
+        angular: ${{ fromJSON(github.event_name == 'pull_request' && '["21"]' || '["21", "22"]') }}
+        node: ["22", "24"]
+        include:
+          # Code that runs in the browser does not depend on the Node of the runner:
+          # the browsers run once, on Node 24. Node 22 runs the Node projects.
+          - node: "22"
+            node-minimum: 22.22.3
+            browsers: none
+          - node: "24"
+            node-minimum: 24.15.0
+            browsers: chromium,firefox,webkit
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up the workspace
+        uses: ./.github/actions/setup-workspace
+        with:
+          node-version: ${{ matrix.node }}
+          node-minimum: ${{ matrix.node-minimum }}
+          angular: ${{ matrix.angular }}
+          browsers: ${{ matrix.browsers }}
+
+      - name: Warm up Vite
+        if: matrix.browsers != 'none'
+        run: npm run test:warmup
+
+      - name: Unit tests (zone.js and zoneless; browsers ${{ matrix.browsers }})
+        run: npm test
+
+      - name: Keep the failure screenshots
+        if: failure() && matrix.browsers != 'none'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: failure-screenshots-angular-${{ matrix.angular }}-node-${{ matrix.node }}
+          path: .vitest/attachments
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # The libraries are built with Angular 21. Node 22 is the lowest Node of the
+      # matrix: the build and the tarball checks run there too (the fast level
+      # already does it on Node 24).
+      - name: Build (utils → core → ui)
+        if: matrix.angular == '21' && matrix.node == '22'
+        run: npm run build
+
+      - name: Check the packages
+        if: matrix.angular == '21' && matrix.node == '22'
+        run: npm run check:packages
+
+      # Development vulnerabilities are a report, never a failure.
+      - name: Audit development dependencies (report only)
+        if: matrix.angular == '21' && matrix.node == '24'
+        continue-on-error: true
+        run: |
+          npm audit --json > "$RUNNER_TEMP/npm-audit.json" || true
+          node tools/ci/audit-report.ts "$RUNNER_TEMP/npm-audit.json"
+
+  # Node 26 only here. Smoke tests, build and tarball checks with Angular 21;
+  # the libraries' own test suites are not run on Node 26.
+  smoke-node-26:
+    name: Smoke · Node 26
+    needs: gate
+    if: ${{ !cancelled() && needs.gate.outputs.run != 'false' && github.event_name != 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up the workspace
+        uses: ./.github/actions/setup-workspace
+        with:
+          node-version: "26"
+          node-minimum: 26.0.0
+          angular: "21"
+          browsers: none
+
+      - name: Smoke tests
+        run: npx vitest run --project "smoke:*"
+
+      - name: Build (utils → core → ui)
+        run: npm run build
+
+      - name: Check the packages
+        run: npm run check:packages
+
+  # ── Slots for the next jobs (add the job here and its id to `result.needs`) ──
+  #
+  # contract-tests: one job per Angular version (matrix angular: ['21', '22']), in
+  #   pull requests too. It installs contract-tests/angular-<n>/ with its own lockfile,
+  #   packs the built libraries and compiles the 4 combinations. Needs the build:
+  #   build in the same job or pass dist/ as an artifact.
+  # SSR: job `ssr`, matrix angular: ['21', '22'], in pull requests too.
+  # integration: job `integration`, one job per Angular version running zone.js and
+  #   zoneless, in pull requests too.
+  # real Safari: its own workflow on macOS (ci-safari.yml), not here: it only runs for
+  #   /dialog, /select, /menu and /calendar and before each rc.
+
+  # Required check of main: "Full level". One stable name for the whole level, so
+  # new jobs join it without touching the branch rule.
+  result:
+    name: Full level
+    needs: [gate, unit, smoke-node-26]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check every job of the level
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          DRAFT: ${{ github.event.pull_request.draft == true }}
+        run: |
+          if [ "$DRAFT" = "true" ]; then
+            echo "Draft pull request: the full level did not run. Mark it ready for review to run it." | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "$NEEDS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"' | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "$NEEDS" | jq -e '[.[] | select(.result == "failure" or .result == "cancelled")] | length == 0' > /dev/null
