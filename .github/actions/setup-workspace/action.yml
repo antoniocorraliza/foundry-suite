@@ -87,6 +87,7 @@ runs:
       run: |
         echo "version=$(node -p 'JSON.parse(require("fs").readFileSync("node_modules/playwright/package.json", "utf8")).version')" >> "$GITHUB_OUTPUT"
         echo "list=${BROWSERS//,/ }" >> "$GITHUB_OUTPUT"
+        echo "key=${BROWSERS//,/-}" >> "$GITHUB_OUTPUT"
 
     - name: Cache the Playwright browsers
       id: playwright-cache
@@ -94,7 +95,7 @@ runs:
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.cache/ms-playwright
-        key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}-${{ inputs.browsers }}
+        key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}-${{ steps.playwright.outputs.key }}
 
     # Vitest runs Chromium headless: the headless shell is enough (--only-shell).
     - name: Install the Playwright browsers
