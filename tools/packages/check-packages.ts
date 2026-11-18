@@ -1,3 +1,18 @@
+/*
+ * Checks what goes inside each package tarball. Run it after `npm run build`.
+ *
+ * For each package it runs `npm pack` on dist/, unpacks the tarball and checks:
+ *   exports       every entry point has an export with `types` (first) and `default`, and the files exist
+ *   license       LICENSE inside, identical to the root one, and "license": "MIT"
+ *   tslib         no file imports tslib and no manifest field declares it
+ *   any           no `any` in the published .d.ts files (read with the TypeScript parser, not a regex)
+ *   dependencies  `dependencies` is empty
+ *   peers         the expected peer ranges, and Foundry peers as `^<version>`
+ *   manifest      engines, sideEffects, type and repository
+ *   notices       third-party notices present when the material they cover is present
+ *
+ * Exit code 1 if any rule fails. The expected values live in packages.ts.
+ */
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -38,7 +53,9 @@ interface Manifest {
 
 interface Tarball {
   readonly foundryPackage: FoundryPackage;
+  /** Folder with the unpacked `package/` contents. */
   readonly root: string;
+  /** Paths relative to `root`, with `/`. */
   readonly files: readonly string[];
   readonly manifest: Manifest;
 }
@@ -76,6 +93,7 @@ function readTarballFile(tarball: Tarball, path: string): string {
   return readFileSync(join(tarball.root, path), 'utf8');
 }
 
+/** './date' for `projects/antoniocorraliza/foundry-utils/date/ng-package.json`; '.' for the primary entry. */
 function sourceEntrySubpaths(folder: FoundryPackageFolder): string[] {
   const packageDirectory = join(PACKAGES_SOURCE_DIRECTORY, folder);
   return listFiles(packageDirectory)

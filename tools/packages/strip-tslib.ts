@@ -1,3 +1,13 @@
+/*
+ * Removes the `tslib` dependency that ng-packagr adds to the built package.json.
+ *
+ * ng-packagr 21 adds `"tslib"` to `dependencies` whenever the source manifest does not declare
+ * it, even if no file imports it. The packages are published with `dependencies: {}` and compiled
+ * with `importHelpers: false`, so the emitted code never imports tslib.
+ * This script only fixes the manifest; check-packages.ts proves that no file imports tslib.
+ *
+ * Usage: node tools/packages/strip-tslib.ts <package folder>   (for example, foundry-utils)
+ */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { FOUNDRY_PACKAGES, PACKAGES_DIST_DIRECTORY, PACKAGES_SOURCE_DIRECTORY } from './packages.ts';
