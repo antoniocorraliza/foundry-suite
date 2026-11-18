@@ -3,7 +3,7 @@
  * The time zones here only prove the mechanism; each library sets its own list.
  */
 import type { TestProjectInlineConfiguration } from 'vitest/config';
-import { angularNodeProject, browserProject, typescriptNodeProjects } from '../projects.ts';
+import { angularNodeProject, browserProjects, typescriptNodeProjects } from '../projects.ts';
 
 const SMOKE = 'tools/vitest/smoke';
 
@@ -23,12 +23,12 @@ export const smokeProjects: TestProjectInlineConfiguration[] = [
     timeZones: ['UTC', 'America/Santiago'],
     include: [`${SMOKE}/timezone-node.smoke.spec.ts`],
   }),
-  browserProject({
+  ...browserProjects({
     name: 'smoke:ng-browser',
     angular: true,
     include: [`${SMOKE}/angular-browser.smoke.spec.ts`],
   }),
-  browserProject({
+  ...browserProjects({
     name: 'smoke:ts-browser',
     angular: false,
     timeZones: ['Europe/Madrid', 'America/Santiago'],

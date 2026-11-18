@@ -26,3 +26,7 @@ changes_history.diff
 !.vscode/extensions.json
 .DS_Store
 Thumbs.db
+
+# Custom
+/tools/ci/angular-22/node_modules/
+.vitest/

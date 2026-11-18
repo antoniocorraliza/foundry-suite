@@ -7,5 +7,7 @@ declare module 'vitest' {
     changeDetection: 'zone' | 'zoneless';
     /** Time zone projects: the zone the test must run in. */
     expectedTimeZone: string;
+    /** Angular projects: the Angular major the test must run with (FOUNDRY_EXPECTED_ANGULAR_MAJOR). */
+    expectedAngularMajor: number;
   }
 }

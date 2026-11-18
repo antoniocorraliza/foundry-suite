@@ -1,5 +1,5 @@
 /*
- * Checks what goes inside each package tarball. Run it after `npm run build`.
+ * Checks what goes inside each package tarball (block B2). Run it after `npm run build`.
  *
  * For each package it runs `npm pack` on dist/, unpacks the tarball and checks:
  *   exports       every entry point has an export with `types` (first) and `default`, and the files exist
@@ -7,7 +7,7 @@
  *   tslib         no file imports tslib and no manifest field declares it
  *   any           no `any` in the published .d.ts files (read with the TypeScript parser, not a regex)
  *   dependencies  `dependencies` is empty
- *   peers         the expected peer ranges, and Foundry peers as `^<version>`
+ *   peers         the peers of decision 26, and Foundry peers as `^<version>` (decision 27)
  *   manifest      engines, sideEffects, type and repository
  *   notices       third-party notices present when the material they cover is present
  *
