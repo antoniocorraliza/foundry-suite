@@ -1,31 +1,25 @@
 {
   "name": "@antoniocorraliza/foundry-utils",
-  "version": "1.26.66",
-  "description": "A high-performance, framework-agnostic TypeScript utility belt for enterprise applications. Features zero-dependency modules for deep object manipulation, secure cryptography, data validation, and advanced timing functions.",
+  "version": "2.0.0-rc.0",
+  "description": "Framework-agnostic TypeScript utilities of Foundry Suite. Version 2.0 is in development.",
   "author": "Antonio Corraliza León",
-  "license": "Proprietary",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antoniocorraliza/foundry-suite.git",
+    "directory": "projects/antoniocorraliza/foundry-utils"
+  },
+  "keywords": [
+    "typescript",
+    "utilities",
+    "foundry"
+  ],
   "publishConfig": {
     "access": "public"
   },
-  "dependencies": {
-    "tslib": "^2.3.0"
+  "engines": {
+    "node": ">=22.12.0"
   },
-  "peerDependencies": {},
-  "sideEffects": false,
-  "keywords": [
-    "typescript",
-    "javascript",
-    "utils",
-    "utilities",
-    "helpers",
-    "toolkit",
-    "framework-agnostic",
-    "zero-dependency",
-    "data-manipulation",
-    "validation",
-    "cryptography",
-    "logic",
-    "enterprise",
-    "foundry"
-  ]
+  "dependencies": {},
+  "sideEffects": false
 }

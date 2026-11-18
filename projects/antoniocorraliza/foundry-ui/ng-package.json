@@ -3,5 +3,17 @@
   "dest": "../../../dist/antoniocorraliza/foundry-ui",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "assets": [
+    {
+      "input": "styles",
+      "glob": "**/*.{css,woff2}",
+      "output": "styles"
+    },
+    {
+      "input": "styles/fonts",
+      "glob": "OFL.txt",
+      "output": "styles/fonts"
+    }
+  ]
 }

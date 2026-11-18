@@ -1,22 +1,18 @@
 {
-  "name": "@antoniocorraliza/foundry",
-  "version": "1.26.66",
-  "description": "High-performance Angular suite for rapid, scalable enterprise development. Showcasing a strictly decoupled modular architecture and professional automation tools.",
+  "name": "@antoniocorraliza/foundry-suite",
+  "version": "2.0.0-rc.0",
+  "description": "Monorepo of Foundry Suite 2.0 (Core, UI and Utils). In development.",
   "author": "Antonio Corraliza León",
   "license": "MIT",
-  "homepage": "https://github.com/antoniocorraliza/foundry#readme",
+  "homepage": "https://github.com/antoniocorraliza/foundry-suite#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/antoniocorraliza/foundry.git"
+    "url": "git+https://github.com/antoniocorraliza/foundry-suite.git"
   },
   "keywords": [
     "angular",
-    "monorepo",
-    "architecture",
-    "schematics",
-    "enterprise",
-    "automation",
-    "typescript"
+    "typescript",
+    "monorepo"
   ],
   "private": true,
   "type": "module",

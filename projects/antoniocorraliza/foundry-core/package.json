@@ -1,34 +1,35 @@
 {
   "name": "@antoniocorraliza/foundry-core",
-  "version": "1.26.66",
-  "description": "The foundational infrastructure and core architecture for Angular enterprise applications. Features advanced state management, secure networking, HTTP interceptors, and dynamic UI orchestration.",
+  "version": "2.0.0-rc.0",
+  "description": "Infrastructure layer of Foundry Suite for Angular. Version 2.0 is in development.",
   "author": "Antonio Corraliza León",
-  "license": "Proprietary",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antoniocorraliza/foundry-suite.git",
+    "directory": "projects/antoniocorraliza/foundry-core"
+  },
+  "keywords": [
+    "angular",
+    "foundry"
+  ],
   "publishConfig": {
     "access": "public"
   },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "peerDependencies": {
-    "@angular/common": "^19.2.0",
-    "@angular/core": "^19.2.0"
+    "@angular/common": ">=21.0.0 <23.0.0",
+    "@angular/core": ">=21.0.0 <23.0.0",
+    "@angular/router": ">=21.0.0 <23.0.0",
+    "rxjs": "^7.8.0"
   },
-  "dependencies": {
-    "tslib": "^2.3.0"
+  "peerDependenciesMeta": {
+    "@angular/router": {
+      "optional": true
+    }
   },
-  "sideEffects": false,
-  "keywords": [
-    "angular",
-    "angular-19",
-    "core",
-    "infrastructure",
-    "architecture",
-    "services",
-    "state-management",
-    "networking",
-    "http-interceptors",
-    "security",
-    "error-handling",
-    "ui-orchestration",
-    "enterprise",
-    "foundry"
-  ]
+  "dependencies": {},
+  "sideEffects": false
 }
