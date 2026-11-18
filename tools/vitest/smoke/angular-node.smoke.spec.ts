@@ -3,7 +3,7 @@
  * It only proves that the project starts; it does not test any library.
  * `describe`/`it`/`expect` are globals on purpose (see setup/angular-zone.ts).
  */
-import { ChangeDetectionStrategy, Component, NgZone, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, NgZone, VERSION, input } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { inject } from 'vitest';
 
@@ -17,6 +17,9 @@ class SmokeGreetingComponent {
 }
 
 describe('B1 smoke · Angular on Node (jsdom)', () => {
+  it('runs with the expected Angular major', () => {
+    expect(Number(VERSION.major)).toBe(inject('expectedAngularMajor'));
+  });
   it('renders an OnPush component with a required signal input', async () => {
     const fixture = TestBed.createComponent(SmokeGreetingComponent);
     fixture.componentRef.setInput('name', 'Foundry');

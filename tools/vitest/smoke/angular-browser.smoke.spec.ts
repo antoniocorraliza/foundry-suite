@@ -2,7 +2,8 @@
  * B1 smoke test: Angular in a real browser (Playwright), zoneless.
  * It only proves that the project starts and that real events reach a component.
  */
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, VERSION, signal } from '@angular/core';
+import { inject } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { server, userEvent } from 'vitest/browser';
 
@@ -16,6 +17,9 @@ class SmokeCounterComponent {
 }
 
 describe('B1 smoke · Angular in a real browser', () => {
+  it('runs with the expected Angular major', () => {
+    expect(Number(VERSION.major)).toBe(inject('expectedAngularMajor'));
+  });
   it('runs in one of the suite browsers', () => {
     expect(['chromium', 'firefox', 'webkit']).toContain(server.browser);
     expect(navigator.userAgent).not.toContain('jsdom');
