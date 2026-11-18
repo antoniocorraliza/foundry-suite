@@ -1,0 +1,74 @@
+# Fast CI level: every push to any branch.
+# Angular 21, Node 24, tests on Node and Chromium. It runs the most, so it stays short.
+# A pull request is covered too: its commits are pushed, and the check of the head
+# commit is the one GitHub requires. Documentation: tools/ci/README.md.
+name: CI fast
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-fast-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fast:
+    # Required check of main: "Fast level". Do not rename it without changing the rule.
+    name: Fast level
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up the workspace
+        uses: ./.github/actions/setup-workspace
+        with:
+          node-version: "24"
+          node-minimum: 24.15.0
+          angular: "21"
+          browsers: chromium
+
+      # Any production vulnerability fails (today the root dependencies are the
+      # Angular packages, rxjs and zone.js, the peers of the libraries).
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=low
+
+      - name: Lint and type-check
+        run: npm run lint
+
+      # Contract types: `npm run contracts:check` (the generated copy in UI matches Core).
+
+      # A first small run lets Vite optimize the dependencies before the real one.
+      # It is a real test: if it fails, the job fails.
+      - name: Warm up Vite
+        run: npm run test:warmup
+
+      - name: Unit tests (Node and Chromium)
+        run: npm test
+
+      # Vitest saves a screenshot of every failed browser test in .vitest/attachments.
+      - name: Keep the failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: failure-screenshots-fast
+          path: .vitest/attachments
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Build (utils → core → ui)
+        run: npm run build
+
+      - name: Check the packages
+        run: npm run check:packages
+
+      # Size per entry: `npm run size` after the build.

@@ -1,0 +1,109 @@
+# Shared setup of every CI job: Node, npm with the allowScripts policy,
+# dependencies for Angular 21 (development lockfile) or 22 (own lockfile), and the
+# Playwright browsers. Documentation: tools/ci/README.md.
+name: Set up the Foundry workspace
+description: Node, npm, dependencies (Angular 21 or 22) and Playwright browsers for a CI job.
+
+inputs:
+  node-version:
+    description: Node line to install (22, 24 or 26). setup-node takes the latest release of the line.
+    required: true
+  node-minimum:
+    description: Lowest accepted Node version for this job, for example 22.22.3.
+    required: true
+  angular:
+    description: "21: the development workspace and its lockfile. 22: tools/ci/angular-22 and its own lockfile."
+    required: false
+    default: "21"
+  browsers:
+    description: "Comma-separated Playwright browsers (chromium,firefox,webkit), or none. Also sets FOUNDRY_TEST_BROWSERS."
+    required: false
+    default: none
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node ${{ inputs.node-version }}
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: npm
+        cache-dependency-path: ${{ inputs.angular == '22' && 'tools/ci/angular-22/package-lock.json' || 'package-lock.json' }}
+
+    - name: Check the Node minimum (${{ inputs.node-minimum }})
+      shell: bash
+      env:
+        NODE_MINIMUM: ${{ inputs.node-minimum }}
+      run: |
+        node -e '
+          const toParts = (version) => version.replace(/^v/, "").split(".").map(Number);
+          const current = toParts(process.version);
+          const minimum = toParts(process.env.NODE_MINIMUM);
+          const index = current.findIndex((part, i) => part !== minimum[i]);
+          const ok = index === -1 || current[index] > minimum[index];
+          console.log(`Node ${process.version}, minimum ${process.env.NODE_MINIMUM}: ${ok ? "OK" : "TOO OLD"}`);
+          process.exit(ok ? 0 : 1);
+        '
+
+    # npm reads the allowScripts field of package.json from 11.16 on. Node 22 ships
+    # npm 10, which ignores it and would run every install script: pin npm in every job.
+    - name: Pin npm 11.21.3 (allowScripts policy)
+      shell: bash
+      run: |
+        npm install --global npm@11.21.3 --no-fund --no-audit --loglevel=error
+        echo "npm $(npm --version)"
+
+    - name: Install dependencies (Angular 21, development lockfile)
+      if: inputs.angular == '21'
+      shell: bash
+      run: npm ci --strict-allow-scripts --no-fund --no-audit
+
+    # Angular 22 has its own manifest and lockfile (tools/ci/angular-22). Its node_modules
+    # is linked at the root, so the workspace files resolve Angular 22 and TypeScript 6.0
+    # without touching the development lockfile.
+    - name: Install dependencies (Angular 22, own lockfile)
+      if: inputs.angular == '22'
+      shell: bash
+      run: |
+        npm ci --strict-allow-scripts --no-fund --no-audit --prefix tools/ci/angular-22
+        ln -s tools/ci/angular-22/node_modules node_modules
+
+    - name: Export the test environment
+      shell: bash
+      env:
+        BROWSERS: ${{ inputs.browsers }}
+        ANGULAR: ${{ inputs.angular }}
+      run: |
+        echo "FOUNDRY_TEST_BROWSERS=$BROWSERS" >> "$GITHUB_ENV"
+        echo "FOUNDRY_EXPECTED_ANGULAR_MAJOR=$ANGULAR" >> "$GITHUB_ENV"
+        echo "Angular $(node -p 'JSON.parse(require("fs").readFileSync("node_modules/@angular/core/package.json", "utf8")).version'), TypeScript $(node -p 'JSON.parse(require("fs").readFileSync("node_modules/typescript/package.json", "utf8")).version'), browsers: $BROWSERS"
+
+    - name: Read the Playwright version
+      id: playwright
+      if: inputs.browsers != 'none'
+      shell: bash
+      env:
+        BROWSERS: ${{ inputs.browsers }}
+      run: |
+        echo "version=$(node -p 'JSON.parse(require("fs").readFileSync("node_modules/playwright/package.json", "utf8")).version')" >> "$GITHUB_OUTPUT"
+        echo "list=${BROWSERS//,/ }" >> "$GITHUB_OUTPUT"
+
+    - name: Cache the Playwright browsers
+      id: playwright-cache
+      if: inputs.browsers != 'none'
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}-${{ inputs.browsers }}
+
+    # Vitest runs Chromium headless: the headless shell is enough (--only-shell).
+    - name: Install the Playwright browsers and their system packages
+      if: inputs.browsers != 'none' && steps.playwright-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: npx playwright install --with-deps --only-shell ${{ steps.playwright.outputs.list }}
+
+    # The cache keeps the browsers, not the system packages of the runner.
+    - name: Install the system packages of the cached browsers
+      if: inputs.browsers != 'none' && steps.playwright-cache.outputs.cache-hit == 'true'
+      shell: bash
+      run: npx playwright install-deps ${{ steps.playwright.outputs.list }}
