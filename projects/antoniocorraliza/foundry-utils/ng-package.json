@@ -3,5 +3,12 @@
   "dest": "../../../dist/antoniocorraliza/foundry-utils",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "assets": [
+    {
+      "input": ".",
+      "glob": "UNICODE-LICENSE.txt",
+      "output": "."
+    }
+  ]
 }

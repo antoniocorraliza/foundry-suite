@@ -22,9 +22,10 @@
   "scripts": {
     "ng": "ng",
     "build": "npm run build:utils && npm run build:core && npm run build:ui",
-    "build:utils": "ng build @antoniocorraliza/foundry-utils",
-    "build:core": "ng build @antoniocorraliza/foundry-core",
-    "build:ui": "ng build @antoniocorraliza/foundry-ui",
+    "build:utils": "ng build @antoniocorraliza/foundry-utils && node tools/packages/strip-tslib.ts foundry-utils",
+    "build:core": "ng build @antoniocorraliza/foundry-core && node tools/packages/strip-tslib.ts foundry-core",
+    "build:ui": "ng build @antoniocorraliza/foundry-ui && node tools/packages/strip-tslib.ts foundry-ui",
+    "check:packages": "node tools/packages/check-packages.ts",
     "lint": "eslint . && npm run typecheck",
     "typecheck": "tsc -p tsconfig.spec.json --noEmit && tsc -p tsconfig.tools.json",
     "test": "vitest run",
