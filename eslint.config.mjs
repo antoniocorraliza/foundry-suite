@@ -108,7 +108,33 @@ const LIBRARY_NULL_SELECTORS = NULL_RULES.flatMap(({ selector, subject }) =>
   internalOnly(selector, subject).map((internalSelector) => ({ selector: internalSelector, message: NULL_MESSAGE })),
 );
 const GENERAL_SELECTORS = [...COMMON_SELECTORS, ...NAMING_SELECTORS, ...NULL_SELECTORS];
-const LIBRARY_GENERAL_SELECTORS = [...COMMON_SELECTORS, ...LIBRARY_NAMING_SELECTORS, ...LIBRARY_NULL_SELECTORS];
+const ANGULAR_SELECTORS = [
+  ...forbid(
+    ['Decorator[expression.callee.name=/^(?:Input|Output)$/]'],
+    'Inputs and outputs are declared with input(), model() and output(), not with decorators.',
+  ),
+  ...forbid(
+    ["CallExpression[callee.name='takeUntilDestroyed'][arguments.length=0]"],
+    'Pass the DestroyRef: takeUntilDestroyed(this.destroyRef).',
+  ),
+  ...forbid(["CallExpression[callee.name='takeUntil']"], 'Subscriptions end with takeUntilDestroyed(this.destroyRef).'),
+  ...forbid(
+    [
+      "CallExpression[callee.property.name='subscribe'][arguments.length>1]",
+      "CallExpression[callee.property.name='subscribe'] > ObjectExpression > Property[key.name='error']",
+    ],
+    'The errors of an Observable are handled with catchError inside pipe().',
+  ),
+];
+const SERVICE_SELECTORS = forbid(
+  ["CallExpression[callee.property.name='subscribe']", "CallExpression[callee.name='toSignal']"],
+  'Services return the Observable and do not subscribe: the component does.',
+);
+const VIEW_SELECTORS = forbid(
+  ["CallExpression[callee.name='toSignal']"],
+  'Components and directives subscribe in a method and keep the result in a signal.',
+);
+const LIBRARY_GENERAL_SELECTORS = [...COMMON_SELECTORS, ...LIBRARY_NAMING_SELECTORS, ...LIBRARY_NULL_SELECTORS, ...ANGULAR_SELECTORS];
 // Tests compare with undefined when the code under test returns it.
 const TEST_SELECTORS = [...COMMON_SELECTORS, ...NAMING_SELECTORS];
 const TOKEN_CLASSES = '/^(?:InjectionToken|HttpContextToken)$/';
@@ -310,6 +336,8 @@ export default defineConfig([
   },
   ...[
     ['*.ts', CODE_FILE_SELECTORS],
+    ['*.service.ts', [...CODE_FILE_SELECTORS, ...SERVICE_SELECTORS]],
+    ['*.{component,directive}.ts', [...CODE_FILE_SELECTORS, ...VIEW_SELECTORS]],
     ['interfaces/**/*.ts', INTERFACE_FILE_SELECTORS],
     ['types/**/*.ts', TYPE_FILE_SELECTORS],
     ['constants/**/*.ts', CONSTANT_FILE_SELECTORS],
@@ -352,6 +380,9 @@ export default defineConfig([
       'jsdoc/no-bad-blocks': 'error',
       'jsdoc/no-multi-asterisks': 'error',
       'jsdoc/check-alignment': 'error',
+      '@angular-eslint/prefer-host-metadata-property': 'error',
+      '@angular-eslint/component-max-inline-declarations': ['error', { template: 0, styles: 0, animations: 0 }],
+      '@angular-eslint/consistent-component-styles': ['error', 'string'],
     },
   },
   {

@@ -122,4 +122,19 @@ describe('textProblems', () => {
       'README.md:2: sales word: - a seamless API',
     ]);
   });
+
+  it('reports ngClass, ngStyle and the async pipe in the templates of the libraries', () => {
+    const path: string = 'projects/a/src/components/panel/panel.component.html';
+    const text: string = ['<p [ngClass]="classes()">', '<p [ngStyle]="styles()">', '<p>{{ itemsObservable | async }}</p>'].join('\n');
+    expect(textProblems(path, text)).toEqual([
+      `${path}:1: ngClass or ngStyle (bind [class.name] and [style.property]): <p [ngClass]="classes()">`,
+      `${path}:2: ngClass or ngStyle (bind [class.name] and [style.property]): <p [ngStyle]="styles()">`,
+      `${path}:3: async pipe (subscribe in a method and keep the value in a signal): <p>{{ itemsObservable | async }}</p>`,
+    ]);
+  });
+
+  it('accepts class and style bindings in the templates of the libraries', () => {
+    const text: string = '<p [class.isOpen]="isOpen()" [style.width.px]="width()">{{ total() }}</p>';
+    expect(textProblems('projects/a/src/components/panel/panel.component.html', text)).toEqual([]);
+  });
 });

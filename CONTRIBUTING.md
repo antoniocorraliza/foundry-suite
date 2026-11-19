@@ -141,7 +141,10 @@ ngOnInit(): void {
 
 // ACTIONS
 private loadItems(): void {
-  this.itemsService.load().subscribe((items) => this.items.set(items));
+  this.itemsSE
+    .load()
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe((items) => this.items.set(items));
 }
 ```
 
@@ -221,11 +224,11 @@ Booleans start with `is`, `has` or `can` (`IS_`, `HAS_` or `CAN_` in a constant)
 // Yes
 readonly isOpen: WritableSignal<boolean> = signal(false);
 const hasError: boolean = errors.length > 0;
-const itemsObservable: Observable<Array<Item>> = this.itemsService.load();
+const itemsObservable: Observable<Array<Item>> = this.itemsSE.load();
 
 // No
 readonly open: WritableSignal<boolean> = signal(false);
-const items$: Observable<Array<Item>> = this.itemsService.load();
+const items$: Observable<Array<Item>> = this.itemsSE.load();
 ```
 
 In the libraries, the public names that their designs fix stay as they are (`disabled`, `required`, `events`, `outcome`...): the rule is for the internal code. A field whose name comes from an outside format (`optional` in `package.json`) keeps it, with an `eslint-disable-next-line` that says so.
@@ -441,3 +444,94 @@ readonly #items: Array<Item> = [];
 ```
 
 Checked by: ESLint `no-restricted-syntax` (top-level constants whose value is a function, unless their type ends in `Fn`; `for...of`, `for` and `for...in` loops without `await`, `break` or `return` inside; any `#` name). A `return` or `break` inside a nested callback also lets a loop through: review.
+
+### 16. Angular
+
+These rules are for the Angular code of the libraries (`projects/`). Spec files keep their fixture components inline (rule 13). The size probes in `tools/size/app/` stand for an application and are not checked. The public names that the designs fix stay as they are, even when they do not follow these rules: public inputs without `is` or `has` (`disabled`, `required`), public outputs and observables, and the public members of components (rule 7).
+
+Classes:
+
+- Dependencies come from `inject()` in properties, under `// INJECTORS`; never from constructor parameters.
+- What only the template uses is `protected`.
+- Each file ends in its kind: `.component.ts`, `.directive.ts`, `.service.ts`, `.pipe.ts` (rule 13).
+- Inputs and outputs are declared with `input()`, `model()` and `output()`, never with decorators.
+- An output is named after what happened (`selectionChange`, `closed`), without `on`.
+- An event handler of the template starts with `on` (`onSave`) and goes in `// HANDLERS`.
+- Events, classes and attributes of the host element go in the `host` property of the decorator. Angular keeps `@HostListener` and `@HostBinding` only for backwards compatibility.
+
+```ts
+// Yes
+@Component({
+  selector: 'foundry-panel',
+  templateUrl: './foundry-panel.component.html',
+  styleUrl: './foundry-panel.component.scss',
+  host: { '[class.isOpen]': 'isOpen()', '(keydown.escape)': 'onEscape()' },
+})
+export class FoundryPanelComponent {
+  // INJECTORS
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+
+  // DATA BINDING
+  readonly closed: OutputEmitterRef<void> = output();
+
+  // CONTROL VARIABLES
+  protected readonly isOpen: WritableSignal<boolean> = signal(false);
+
+  // HANDLERS
+  protected onEscape(): void {
+    this.closed.emit();
+  }
+}
+
+// No
+@Component({ selector: 'foundry-panel', template: '<ng-content />' })
+export class FoundryPanelComponent {
+  constructor(private readonly destroyRef: DestroyRef) {}
+  @Output() onClose: EventEmitter<void> = new EventEmitter();
+  @HostBinding('class.isOpen') isOpen: boolean = false;
+  @HostListener('keydown.escape') escape(): void {}
+}
+```
+
+Data and subscriptions:
+
+- A service returns the Observable and does not subscribe to it: no `subscribe()` and no `toSignal()` in a service.
+- A component subscribes in a method and keeps the result in a signal: no `toSignal()` and no `async` pipe.
+- A subscription ends with `takeUntilDestroyed(this.destroyRef)`. What is not an Observable (a DOM listener, a timer) is cleaned up with `this.destroyRef.onDestroy(...)`.
+- The errors of an Observable are handled with `catchError` inside `pipe()`, not with an error callback in `subscribe()`.
+
+```ts
+// Yes
+// ACTIONS
+private loadItems(): void {
+  this.itemsSE
+    .load()
+    .pipe(
+      catchError(() => of([])),
+      takeUntilDestroyed(this.destroyRef),
+    )
+    .subscribe((items) => this.items.set(items));
+}
+
+// No
+protected readonly items: Signal<Array<Item>> = toSignal(this.itemsSE.load(), { initialValue: [] });
+this.itemsSE.load().pipe(takeUntil(this.destroyed)).subscribe({ next: (items) => this.items.set(items), error: () => this.items.set([]) });
+```
+
+Templates and styles:
+
+- The template and the styles live in their own files (`templateUrl`, `styleUrl`), never inline.
+- Only the built-in control flow: `@if`, `@for`, `@switch`. Never `*ngIf` or `*ngFor`.
+- Short expressions are fine in the template (`count.set(count() + 1)`).
+- Dynamic classes and styles are bound with `[class.name]` and `[style.property]`, or with the object form (`[class]="{ isOpen: isOpen() }"`). Never `ngClass` or `ngStyle`.
+- CSS classes: the class of the element plus state classes, all in camelCase (`.option.isSelected`). The global style sheets of UI (`styles/`) keep the public classes that its design fixes.
+
+```html
+<!-- Yes -->
+<li class="option" [class.isSelected]="isSelected(item)" (click)="onSelect(item)">{{ item.label }}</li>
+
+<!-- No -->
+<li class="option" [ngClass]="{ 'option--selected': isSelected(item) }" *ngIf="items$ | async">{{ item.label }}</li>
+```
+
+Checked by: ESLint in `projects/`, spec files aside: `@angular-eslint/prefer-inject`, `no-output-on-prefix`, `prefer-host-metadata-property`, `component-max-inline-declarations` (no inline template or styles), `consistent-component-styles` (`styleUrl`), `template/prefer-control-flow`, and `no-restricted-syntax` (`@Input()` and `@Output()`; `subscribe()` and `toSignal()` in a `.service.ts`; `toSignal()` in a component or directive; `takeUntil()` and `takeUntilDestroyed()` without the `DestroyRef`; an error callback in `subscribe()`). `tools/lint/check-text.ts`: a class with `@Component`, `@Directive`, `@Injectable` or `@Pipe` in a file without its suffix (in the whole repository); `ngClass`, `ngStyle` and the `async` pipe in the templates of `projects/`; CSS classes that are not camelCase in templates (`class="..."` and `[class.name]`) and in the style sheets of the components. Review: the `// INJECTORS` and `// HANDLERS` sections, `protected` for what only the template uses, the `on` prefix of the handlers, the subscription inside a method, `DestroyRef.onDestroy` for what is not an Observable, the element class plus state classes, and the keys of `[class]="{ ... }"`.

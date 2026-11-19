@@ -41,5 +41,7 @@ export const TEXT_RULES: ReadonlyArray<TextRule> = [
     onlyIn: TYPESCRIPT_FILE,
   },
   { name: 'comment in a library', pattern: /<!--/, onlyIn: LIBRARY_TEMPLATE_FILE },
+  { name: 'ngClass or ngStyle (bind [class.name] and [style.property])', pattern: /\bng(?:Class|Style)\b/, onlyIn: LIBRARY_TEMPLATE_FILE },
+  { name: 'async pipe (subscribe in a method and keep the value in a signal)', pattern: /\|\s*async\b/, onlyIn: LIBRARY_TEMPLATE_FILE },
   { name: 'comment in a library', pattern: /\/\*|^\s*\/\//, onlyIn: LIBRARY_STYLE_FILE },
 ];

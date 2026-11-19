@@ -2,12 +2,16 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import {
   CHECKED_FILE,
+  LIBRARY_COMPONENT_STYLE_FILE,
+  LIBRARY_TEMPLATE_FILE,
   LIBRARY_TYPESCRIPT_FILE,
   LOCKFILE,
   SKIPPED_FILES,
   SPEC_FILE,
   TYPESCRIPT_FILE,
 } from './constants/file-patterns.constant.ts';
+import { classNameProblems } from './functions/class-name-problems.function.ts';
+import { decoratorSuffixProblems } from './functions/decorator-suffix-problems.function.ts';
 import { folderSuffixProblem } from './functions/folder-suffix-problem.function.ts';
 import { libraryCommentProblems } from './functions/library-comment-problems.function.ts';
 import { signatureProblems } from './functions/signature-problems.function.ts';
@@ -31,6 +35,8 @@ function main(): number {
     if (folderProblem !== null) problems.push(folderProblem);
     if (TYPESCRIPT_FILE.test(path)) problems.push(...signatureProblems(path, text));
     if (SPEC_FILE.test(path)) problems.push(...testTitleProblems(path, text));
+    if (TYPESCRIPT_FILE.test(path) && !SPEC_FILE.test(path)) problems.push(...decoratorSuffixProblems(path, text));
+    if (LIBRARY_TEMPLATE_FILE.test(path) || LIBRARY_COMPONENT_STYLE_FILE.test(path)) problems.push(...classNameProblems(path, text));
     if (LIBRARY_TYPESCRIPT_FILE.test(path)) problems.push(...libraryCommentProblems(path, text));
   });
   problems.forEach((problem) => console.error(problem));

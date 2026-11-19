@@ -366,3 +366,129 @@ describe.skipIf(IS_ESLINT_MISSING)('null for missing values', () => {
     expect(await messageLines(code, 'tools/probe/probe.spec.ts', message)).toEqual([]);
   });
 });
+
+const ANGULAR_MESSAGES: ReadonlyArray<string> = [
+  'Inputs and outputs are declared with',
+  'Pass the DestroyRef',
+  'Subscriptions end with',
+  'The errors of an Observable',
+  'Services return the Observable',
+  'Components and directives subscribe',
+];
+
+async function angularLines(code: string, filePath: string): Promise<Array<string>> {
+  const [result] = await ESLINT.lintText(code, { filePath });
+  return (result?.messages ?? [])
+    .filter(
+      (message) => message.ruleId?.startsWith('@angular-eslint/') || ANGULAR_MESSAGES.some((start) => message.message.startsWith(start)),
+    )
+    .map((message) => `${message.line} ${message.ruleId === 'no-restricted-syntax' ? message.message.split(' ')[0] : message.ruleId}`);
+}
+
+describe.skipIf(IS_ESLINT_MISSING)('angular in the libraries', () => {
+  const componentPath: string = 'projects/antoniocorraliza/foundry-ui/panel/src/components/foundry-panel/foundry-panel.component.ts';
+  const servicePath: string = 'projects/antoniocorraliza/foundry-ui/panel/src/services/foundry-panel.service.ts';
+
+  it('accepts a component written as the guide asks', async () => {
+    const code: string = [
+      '@Component({',
+      "  selector: 'foundry-panel',",
+      "  templateUrl: './foundry-panel.component.html',",
+      "  styleUrl: './foundry-panel.component.scss',",
+      "  host: { '[class.isOpen]': 'isOpen()', '(keydown.escape)': 'onEscape()' },",
+      '})',
+      'export class FoundryPanelComponent {',
+      '  private readonly destroyRef: DestroyRef = inject(DestroyRef);',
+      '  private readonly foundryPanelSE: FoundryPanelService = inject(FoundryPanelService);',
+      "  readonly label: InputSignal<string> = input('');",
+      '  readonly closed: OutputEmitterRef<void> = output();',
+      '  protected readonly isOpen: WritableSignal<boolean> = signal(false);',
+      '  protected readonly items: WritableSignal<Array<string>> = signal([]);',
+      '  private loadItems(): void {',
+      '    this.foundryPanelSE',
+      '      .load()',
+      '      .pipe(',
+      '        catchError(() => of([])),',
+      '        takeUntilDestroyed(this.destroyRef),',
+      '      )',
+      '      .subscribe((items) => this.items.set(items));',
+      '  }',
+      '  protected onEscape(): void {',
+      '    this.closed.emit();',
+      '  }',
+      '}',
+      '',
+    ].join('\n');
+    expect(await angularLines(code, componentPath)).toEqual([]);
+  });
+
+  it('rejects decorators, inline templates and styles, host decorators, toSignal and the other ways to end or fail', async () => {
+    const code: string = [
+      '@Component({',
+      "  selector: 'foundry-panel',",
+      "  template: '<p>{{ label }}</p>',",
+      "  styleUrls: ['./foundry-panel.component.scss'],",
+      '})',
+      'export class FoundryPanelComponent {',
+      "  @Input() label: string = '';",
+      '  @Output() closed: EventEmitter<void> = new EventEmitter();',
+      "  @HostBinding('class.isOpen') protected isOpen: boolean = false;",
+      "  @HostListener('keydown.escape') protected onEscape(): void {",
+      '    this.closed.emit();',
+      '  }',
+      '  protected readonly items: Signal<Array<string>> = toSignal(this.foundryPanelSE.load(), { initialValue: [] });',
+      '  private loadItems(): void {',
+      '    this.foundryPanelSE',
+      '      .load()',
+      '      .pipe(takeUntil(this.destroyed), takeUntilDestroyed())',
+      '      .subscribe({ next: (items) => this.list.set(items), error: () => this.list.set([]) });',
+      '    this.foundryPanelSE.load().subscribe(',
+      '      (items) => this.list.set(items),',
+      '      () => this.list.set([]),',
+      '    );',
+      '  }',
+      '}',
+      '',
+    ].join('\n');
+    expect(await angularLines(code, componentPath)).toEqual([
+      '3 @angular-eslint/component-max-inline-declarations',
+      '4 @angular-eslint/consistent-component-styles',
+      '7 Inputs',
+      '8 Inputs',
+      '9 @angular-eslint/prefer-host-metadata-property',
+      '10 @angular-eslint/prefer-host-metadata-property',
+      '13 Components',
+      '17 Subscriptions',
+      '17 Pass',
+      '18 The',
+      '19 The',
+    ]);
+  });
+
+  it('rejects subscriptions and toSignal in a service, which returns the Observable', async () => {
+    const code: string = [
+      "@Injectable({ providedIn: 'root' })",
+      'export class FoundryPanelService {',
+      '  load(): Observable<Array<string>> {',
+      "    return this.httpClientSE.get<Array<string>>('/items');",
+      '  }',
+      '  private start(): void {',
+      '    this.load().subscribe((items) => this.items.set(items));',
+      '  }',
+      '  private readonly items: Signal<Array<string>> = toSignal(this.load(), { initialValue: [] });',
+      '}',
+      '',
+    ].join('\n');
+    expect(await angularLines(code, servicePath)).toEqual(['7 Services', '9 Services']);
+  });
+
+  it('lets the tests of the libraries declare inline fixture components', async () => {
+    const code: string = [
+      "@Component({ selector: 'foundry-host', template: '<foundry-panel />' })",
+      'class HostComponent {}',
+      "it('renders', () => TestBed.createComponent(HostComponent));",
+      '',
+    ].join('\n');
+    expect(await angularLines(code, componentPath.replace('.component.ts', '.component.spec.ts'))).toEqual([]);
+  });
+});
