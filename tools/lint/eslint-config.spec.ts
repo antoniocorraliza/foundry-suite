@@ -1,14 +1,22 @@
-import { ESLint } from 'eslint';
-import { describe, expect, it } from 'vitest';
+import type { ESLint } from 'eslint';
+import { beforeAll, describe, expect, it } from 'vitest';
 
-const ESLINT: ESLint = new ESLint();
+// The Angular 22 install of CI has no ESLint: the lint, and this configuration, only run with Angular 21.
+const WITHOUT_ESLINT: boolean = process.env['FOUNDRY_EXPECTED_ANGULAR_MAJOR'] === '22';
+let ESLINT: ESLint;
+
+beforeAll(async () => {
+  if (WITHOUT_ESLINT) return;
+  const { ESLint: ESLintClass } = await import('eslint');
+  ESLINT = new ESLintClass();
+});
 
 async function missingJsdocLines(code: string, filePath: string): Promise<Array<number>> {
   const [result] = await ESLINT.lintText(code, { filePath });
   return (result?.messages ?? []).filter((message) => message.ruleId === 'jsdoc/require-jsdoc').map((message) => message.line);
 }
 
-describe('jsdoc on the name of error classes', () => {
+describe.skipIf(WITHOUT_ESLINT)('jsdoc on the name of error classes', () => {
   const errorClass: string = [
     '/**',
     ' * Reports a failure inside Utils.',
@@ -59,7 +67,7 @@ async function lifecycleHookLines(code: string): Promise<Array<number>> {
     .map((message) => message.line);
 }
 
-describe('code in lifecycle hooks', () => {
+describe.skipIf(WITHOUT_ESLINT)('code in lifecycle hooks', () => {
   it('accepts hooks that only call methods of the class', async () => {
     const code: string = [
       'export class ProbeComponent {',
