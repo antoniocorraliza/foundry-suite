@@ -264,6 +264,7 @@ Each piece of a library (an entry point) and each folder of `tools/` splits its 
 | `functions/`    | one public function per file, with its private helpers | `.function.ts`                                        |
 | `components/`   | one folder per component                               | `.component.ts`, `.component.html`, `.component.scss` |
 | `directives/`   | directives                                             | `.directive.ts`                                       |
+| `errors/`       | error classes, one per file                            | `.error.ts`                                           |
 | `pipes/`        | pipes                                                  | `.pipe.ts`                                            |
 
 A piece only has the folders it needs. For example, a piece of a library:
@@ -282,6 +283,8 @@ projects/antoniocorraliza/foundry-core/storage/
   src/services/foundry-storage.service.spec.ts
   src/tokens/foundry-storage-options.token.ts
 ```
+
+A piece with an error class keeps it in `errors/`, like the HTTP client of Core: `src/errors/foundry-api.error.ts`.
 
 In `tools/`, the scripts that Node runs stay at the root of their folder, with a `main()` function; their definitions go in `constants/`, `interfaces/` and `types/`, and the logic that can be tested without the file system goes in `functions/`:
 
@@ -317,7 +320,7 @@ export interface ProjectOptions {
 // No: an interface declared in projects.ts, next to the functions that use it
 ```
 
-Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/` and `tokens/`, and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder. Spec and `.d.ts` files are exempt.
+Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/`, `tokens/` and `errors/` (only classes that extend an error, one per file with `max-classes-per-file`; an error class anywhere else is rejected), and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder. Spec and `.d.ts` files are exempt.
 
 ### 14. Commits and pull requests
 

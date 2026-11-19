@@ -43,8 +43,10 @@ const LIBRARY_FILES = 'projects/**/';
 const PUBLIC_PROPERTY =
   "PropertyDefinition:not([accessibility='private']):not([accessibility='protected']):not([key.type='PrivateIdentifier'])";
 const JSDOC_FUNCTION_DESCRIPTION = '^(?!(?:This|These|That|A|An|The|Helper|Utility|Wrapper)\\b)[A-Z][a-z]*s\\b[\\s\\S]*$';
+const ERROR_CLASS = '/Error$/';
 const CODE_FILE_SELECTORS = [
   ...forbid(['TSInterfaceDeclaration'], 'Interfaces go in interfaces/.'),
+  ...forbid([`ClassDeclaration[superClass.name=${ERROR_CLASS}]`], 'Error classes go in errors/.'),
   ...forbid(['TSTypeAliasDeclaration'], 'Types go in types/.'),
   ...forbid(['TSEnumDeclaration'], 'Enums go in constants/.'),
   ...forbid(
@@ -73,6 +75,17 @@ const TYPE_FILE_SELECTORS = forbid(
     `${prefix}TSInterfaceDeclaration`,
   ]),
   'Files in types/ only declare types; interfaces go in interfaces/.',
+);
+const ERROR_FILE_SELECTORS = forbid(
+  TOP_LEVEL.flatMap((prefix) => [
+    `${prefix}FunctionDeclaration`,
+    `${prefix}VariableDeclaration`,
+    `${prefix}ClassDeclaration:not([superClass.name=${ERROR_CLASS}])`,
+    `${prefix}TSEnumDeclaration`,
+    `${prefix}TSInterfaceDeclaration`,
+    `${prefix}TSTypeAliasDeclaration`,
+  ]),
+  'Files in errors/ only declare classes that extend an error.',
 );
 const CONSTANT_FILE_SELECTORS = [
   ...forbid(
@@ -180,12 +193,23 @@ export default defineConfig([
     ignores: EXEMPT_FILES,
     rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...TOKEN_FILE_SELECTORS] },
   },
+  {
+    files: ['**/errors/**/*.ts'],
+    ignores: EXEMPT_FILES,
+    rules: {
+      // The name of an error class is a literal type with its type annotation, as typedef asks.
+      '@typescript-eslint/prefer-as-const': 'off',
+      'max-classes-per-file': ['error', 1],
+      'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...ERROR_FILE_SELECTORS],
+    },
+  },
   ...[
     ['*.ts', CODE_FILE_SELECTORS],
     ['interfaces/**/*.ts', INTERFACE_FILE_SELECTORS],
     ['types/**/*.ts', TYPE_FILE_SELECTORS],
     ['constants/**/*.ts', CONSTANT_FILE_SELECTORS],
     ['tokens/**/*.ts', TOKEN_FILE_SELECTORS],
+    ['errors/**/*.ts', ERROR_FILE_SELECTORS],
   ].map(([pattern, selectors]) => ({
     files: [`${LIBRARY_FILES}${pattern}`],
     ignores: EXEMPT_FILES,
