@@ -28,6 +28,11 @@ export class SizeFormsAppComponent implements OnInit {
 
   // LIFECYCLE HOOKS
   ngOnInit(): void {
+    this.loadItems();
+  }
+
+  // API CALLS
+  private loadItems(): void {
     this.httpClientSE
       .get<Array<string>>('/items')
       .pipe(map((items) => items.map((item) => item.trim())))

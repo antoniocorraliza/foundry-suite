@@ -20,13 +20,13 @@
   "ui (root)": {
     "angular": {
       "raw": 12,
-      "gzip": 30
+      "gzip": 29
     }
   },
   "ui/icon": {
     "angular": {
       "raw": 12,
-      "gzip": 30
+      "gzip": 29
     }
   },
   "ui: every entry": {
