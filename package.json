@@ -26,7 +26,7 @@
     "build:core": "ng build @antoniocorraliza/foundry-core && node tools/packages/strip-tslib.ts foundry-core",
     "build:ui": "ng build @antoniocorraliza/foundry-ui && node tools/packages/strip-tslib.ts foundry-ui",
     "check:packages": "node tools/packages/check-packages.ts",
-    "lint": "eslint . && prettier --check . && npm run typecheck",
+    "lint": "eslint . && prettier --check . && node tools/lint/check-text.ts && npm run typecheck",
     "format": "prettier --write .",
     "typecheck": "tsc -p tsconfig.spec.json --noEmit && tsc -p tsconfig.tools.json",
     "test": "vitest run",
