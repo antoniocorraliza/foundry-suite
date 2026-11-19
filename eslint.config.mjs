@@ -1,6 +1,7 @@
 // @ts-check
 import eslint from '@eslint/js';
 import angular from 'angular-eslint';
+import jsdoc from 'eslint-plugin-jsdoc';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from 'typescript-eslint';
@@ -39,6 +40,9 @@ const LIBRARY_NAMED_OBJECT_TYPES = forbid(
   NAMED_OBJECT_TYPES_MESSAGE,
 );
 const LIBRARY_FILES = 'projects/**/';
+const PUBLIC_PROPERTY =
+  "PropertyDefinition:not([accessibility='private']):not([accessibility='protected']):not([key.type='PrivateIdentifier'])";
+const JSDOC_FUNCTION_DESCRIPTION = '^(?!(?:This|These|That|A|An|The|Helper|Utility|Wrapper)\\b)[A-Z][a-z]*s\\b[\\s\\S]*$';
 const CODE_FILE_SELECTORS = [
   ...forbid(['TSInterfaceDeclaration'], 'Interfaces go in interfaces/.'),
   ...forbid(['TSTypeAliasDeclaration'], 'Types go in types/.'),
@@ -190,6 +194,50 @@ export default defineConfig([
   {
     files: EXEMPT_FILES,
     rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS] },
+  },
+  {
+    files: ['projects/**/*.ts'],
+    ignores: EXEMPT_FILES,
+    plugins: { jsdoc },
+    settings: { jsdoc: { mode: 'typescript' } },
+    rules: {
+      'jsdoc/require-jsdoc': [
+        'error',
+        {
+          publicOnly: { esm: true },
+          require: { FunctionDeclaration: true, ClassDeclaration: true, MethodDefinition: true },
+          contexts: [
+            'TSInterfaceDeclaration',
+            'TSTypeAliasDeclaration',
+            'TSEnumDeclaration',
+            'ExportNamedDeclaration > VariableDeclaration',
+            PUBLIC_PROPERTY,
+          ],
+          checkConstructors: false,
+        },
+      ],
+      'jsdoc/match-description': [
+        'error',
+        {
+          contexts: ['FunctionDeclaration', 'MethodDefinition', 'TSMethodSignature'],
+          matchDescription: JSDOC_FUNCTION_DESCRIPTION,
+          message: 'A function description starts with a verb in the third person ("Parses...", "Returns...").',
+          tags: { example: { match: '^[^\\n]*$', message: 'An @example takes one line.' } },
+        },
+      ],
+      'jsdoc/informative-docs': 'error',
+      'jsdoc/require-throws': 'error',
+      'jsdoc/no-types': 'error',
+      'jsdoc/check-tag-names': ['error', { typed: true }],
+      'jsdoc/check-param-names': 'error',
+      'jsdoc/require-param-description': 'error',
+      'jsdoc/require-returns-description': 'error',
+      'jsdoc/no-blank-blocks': 'error',
+      'jsdoc/no-blank-block-descriptions': 'error',
+      'jsdoc/no-bad-blocks': 'error',
+      'jsdoc/no-multi-asterisks': 'error',
+      'jsdoc/check-alignment': 'error',
+    },
   },
   {
     files: ['**/*.html'],

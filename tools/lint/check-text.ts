@@ -1,7 +1,15 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import { CHECKED_FILE, LOCKFILE, SKIPPED_FILES, SPEC_FILE, TYPESCRIPT_FILE } from './constants/file-patterns.constant.ts';
+import {
+  CHECKED_FILE,
+  LIBRARY_TYPESCRIPT_FILE,
+  LOCKFILE,
+  SKIPPED_FILES,
+  SPEC_FILE,
+  TYPESCRIPT_FILE,
+} from './constants/file-patterns.constant.ts';
 import { folderSuffixProblem } from './functions/folder-suffix-problem.function.ts';
+import { libraryCommentProblems } from './functions/library-comment-problems.function.ts';
 import { signatureProblems } from './functions/signature-problems.function.ts';
 import { testTitleProblems } from './functions/test-title-problems.function.ts';
 import { textProblems } from './functions/text-problems.function.ts';
@@ -23,6 +31,7 @@ function main(): number {
     if (folderProblem !== undefined) problems.push(folderProblem);
     if (TYPESCRIPT_FILE.test(path)) problems.push(...signatureProblems(path, text));
     if (SPEC_FILE.test(path)) problems.push(...testTitleProblems(path, text));
+    if (LIBRARY_TYPESCRIPT_FILE.test(path)) problems.push(...libraryCommentProblems(path, text));
   }
   for (const problem of problems) console.error(problem);
   if (problems.length > 0) console.error(`[check-text]: ${problems.length} problem(s), see CONTRIBUTING.md`);

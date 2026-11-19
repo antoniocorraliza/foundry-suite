@@ -1,5 +1,5 @@
 import type { TextRule } from '../interfaces/text-rule.interface.ts';
-import { MARKDOWN_FILE } from './file-patterns.constant.ts';
+import { LIBRARY_STYLE_FILE, LIBRARY_TEMPLATE_FILE, MARKDOWN_FILE, TYPESCRIPT_FILE } from './file-patterns.constant.ts';
 
 export const TEXT_RULES: ReadonlyArray<TextRule> = [
   {
@@ -20,4 +20,19 @@ export const TEXT_RULES: ReadonlyArray<TextRule> = [
     pattern: /\b(?:seamless(?:ly)?|robust|comprehensive|powerful|enterprise|leverag(?:e|es|ed|ing))\b/i,
     onlyIn: MARKDOWN_FILE,
   },
+  // A line of a JSDoc block: it starts with /** or with the * of the block.
+  {
+    name: 'sales word in JSDoc',
+    pattern:
+      /^\s*(?:\/\*\*|\*(?!\/))[^\n]*?\b(?:seamless(?:ly)?|robust|comprehensive|powerful|enterprise|leverag(?:e|es|ed|ing)|simple|simply|easy|easily|efficient(?:ly)?|for convenience|as expected)\b/i,
+    onlyIn: TYPESCRIPT_FILE,
+  },
+  {
+    name: 'filler in JSDoc',
+    pattern:
+      /^\s*(?:\/\*\*|\*(?!\/))\s*(?:This (?:function|method|class|service|component|directive|pipe|type|interface|constant)|An? (?:helper|utility|wrapper)|(?:Helper|Utility) (?:to|for|that))\b|^\s*(?:\/\*\*|\*(?!\/))[^\n]*?\b(?:note that|under the hood|out of the box|it is worth noting)\b/i,
+    onlyIn: TYPESCRIPT_FILE,
+  },
+  { name: 'comment in a library', pattern: /<!--/, onlyIn: LIBRARY_TEMPLATE_FILE },
+  { name: 'comment in a library', pattern: /\/\*|^\s*\/\//, onlyIn: LIBRARY_STYLE_FILE },
 ];
