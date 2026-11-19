@@ -48,11 +48,11 @@ const ANGULAR_OPTIMIZED_DEPENDENCIES = [
 const isCoverageRun = process.env['FOUNDRY_TEST_COVERAGE'] === 'true';
 
 function isFoundryTestBrowser(value: string): value is FoundryTestBrowser {
-  return (FOUNDRY_TEST_BROWSERS as readonly string[]).includes(value);
+  return (FOUNDRY_TEST_BROWSERS as ReadonlyArray<string>).includes(value);
 }
 
 /** Browsers selected with FOUNDRY_TEST_BROWSERS. An unknown name fails at once instead of running fewer tests. */
-function selectedBrowsers(): readonly FoundryTestBrowser[] {
+function selectedBrowsers(): ReadonlyArray<FoundryTestBrowser> {
   const value = process.env['FOUNDRY_TEST_BROWSERS']?.trim();
   if (value === undefined || value === '') {
     return FOUNDRY_TEST_BROWSERS;
@@ -87,8 +87,8 @@ const ANGULAR_MAJOR = expectedAngularMajor();
 
 interface ProjectFiles {
   readonly name: string;
-  readonly include: readonly string[];
-  readonly exclude?: readonly string[];
+  readonly include: ReadonlyArray<string>;
+  readonly exclude?: ReadonlyArray<string>;
 }
 
 /** 'America/Santiago' → 'America-Santiago': project names without slashes. */
@@ -100,7 +100,7 @@ function angularPlugin() {
   return angular({ tsconfig: SPEC_TSCONFIG });
 }
 
-function browsersToRun(browsers: readonly FoundryTestBrowser[]): readonly FoundryTestBrowser[] {
+function browsersToRun(browsers: ReadonlyArray<FoundryTestBrowser>): ReadonlyArray<FoundryTestBrowser> {
   const selected = selectedBrowsers();
   return browsers.filter((browser) => selected.includes(browser) && (!isCoverageRun || browser === 'chromium'));
 }
@@ -126,8 +126,8 @@ export function angularNodeProject(
 
 /** Plain TypeScript on Node, without the Angular plugin: one forked process per time zone. */
 export function typescriptNodeProjects(
-  options: ProjectFiles & { readonly timeZones: readonly string[] },
-): TestProjectInlineConfiguration[] {
+  options: ProjectFiles & { readonly timeZones: ReadonlyArray<string> },
+): Array<TestProjectInlineConfiguration> {
   return options.timeZones.map((timeZone) => ({
     test: {
       name: `${options.name}:${timeZoneSlug(timeZone)}`,
@@ -153,10 +153,10 @@ export function typescriptNodeProjects(
 export function browserProjects(
   options: ProjectFiles & {
     readonly angular: boolean;
-    readonly browsers?: readonly FoundryTestBrowser[];
-    readonly timeZones?: readonly string[];
+    readonly browsers?: ReadonlyArray<FoundryTestBrowser>;
+    readonly timeZones?: ReadonlyArray<string>;
   },
-): TestProjectInlineConfiguration[] {
+): Array<TestProjectInlineConfiguration> {
   const browsers = browsersToRun(options.browsers ?? FOUNDRY_TEST_BROWSERS);
   if (browsers.length === 0) {
     return [];

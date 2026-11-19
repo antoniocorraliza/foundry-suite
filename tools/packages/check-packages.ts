@@ -30,7 +30,7 @@ import {
 } from './packages.ts';
 
 type Rule = 'exports' | 'license' | 'tslib' | 'any' | 'dependencies' | 'peers' | 'manifest' | 'notices';
-const RULES: readonly Rule[] = ['exports', 'license', 'tslib', 'any', 'dependencies', 'peers', 'manifest', 'notices'];
+const RULES: ReadonlyArray<Rule> = ['exports', 'license', 'tslib', 'any', 'dependencies', 'peers', 'manifest', 'notices'];
 
 interface Manifest {
   readonly name?: string;
@@ -56,14 +56,14 @@ interface Tarball {
   /** Folder with the unpacked `package/` contents. */
   readonly root: string;
   /** Paths relative to `root`, with `/`. */
-  readonly files: readonly string[];
+  readonly files: ReadonlyArray<string>;
   readonly manifest: Manifest;
 }
 
 const ROOT_LICENSE = readFileSync('LICENSE', 'utf8');
 const TSLIB_IMPORT = /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)['"]tslib(?:\/[^'"]*)?['"]/;
 
-function listFiles(directory: string): string[] {
+function listFiles(directory: string): Array<string> {
   return readdirSync(directory, { recursive: true, withFileTypes: true })
     .filter((entry) => entry.isFile())
     .map((entry) => relative(directory, join(entry.parentPath, entry.name)).split(sep).join('/'))
@@ -80,7 +80,7 @@ function pack(foundryPackage: FoundryPackage, workDirectory: string): Tarball {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
   });
-  const [packed] = JSON.parse(packOutput) as readonly { readonly filename: string }[];
+  const [packed] = JSON.parse(packOutput) as ReadonlyArray<{ readonly filename: string }>;
   if (!packed) throw new Error(`npm pack returned nothing for ${foundryPackage.name}.`);
   const root = join(workDirectory, foundryPackage.folder);
   mkdirSync(root, { recursive: true });
@@ -94,7 +94,7 @@ function readTarballFile(tarball: Tarball, path: string): string {
 }
 
 /** './date' for `projects/antoniocorraliza/foundry-utils/date/ng-package.json`; '.' for the primary entry. */
-function sourceEntrySubpaths(folder: FoundryPackageFolder): string[] {
+function sourceEntrySubpaths(folder: FoundryPackageFolder): Array<string> {
   const packageDirectory = join(PACKAGES_SOURCE_DIRECTORY, folder);
   return listFiles(packageDirectory)
     .filter((path) => path === 'ng-package.json' || path.endsWith('/ng-package.json'))
@@ -106,8 +106,8 @@ function stripDotSlash(path: string): string {
   return path.startsWith('./') ? path.slice(2) : path;
 }
 
-function checkExports(tarball: Tarball): string[] {
-  const problems: string[] = [];
+function checkExports(tarball: Tarball): Array<string> {
+  const problems: Array<string> = [];
   const { manifest, files, foundryPackage } = tarball;
   const exportsMap = manifest.exports;
   if (!exportsMap || typeof exportsMap !== 'object') return ['package.json has no "exports" map.'];
@@ -159,8 +159,8 @@ function checkExports(tarball: Tarball): string[] {
   return problems;
 }
 
-function checkLicense(tarball: Tarball): string[] {
-  const problems: string[] = [];
+function checkLicense(tarball: Tarball): Array<string> {
+  const problems: Array<string> = [];
   if (tarball.manifest.license !== LICENSE_ID) problems.push(`"license" is "${tarball.manifest.license ?? ''}", not "${LICENSE_ID}".`);
   if (!tarball.files.includes('LICENSE')) {
     problems.push('LICENSE is not in the tarball.');
@@ -170,8 +170,8 @@ function checkLicense(tarball: Tarball): string[] {
   return problems;
 }
 
-function checkTslib(tarball: Tarball): string[] {
-  const problems: string[] = [];
+function checkTslib(tarball: Tarball): Array<string> {
+  const problems: Array<string> = [];
   for (const file of tarball.files.filter((path) => /\.(?:mjs|js|cjs|d\.ts)$/.test(path))) {
     const lines = readTarballFile(tarball, file).split('\n');
     lines.forEach((line, index) => {
@@ -185,8 +185,8 @@ function checkTslib(tarball: Tarball): string[] {
   return problems;
 }
 
-function checkAny(tarball: Tarball): string[] {
-  const problems: string[] = [];
+function checkAny(tarball: Tarball): Array<string> {
+  const problems: Array<string> = [];
   for (const file of tarball.files.filter((path) => path.endsWith('.d.ts'))) {
     const source = ts.createSourceFile(file, readTarballFile(tarball, file), ts.ScriptTarget.Latest, true);
     const visit = (node: ts.Node): void => {
@@ -201,9 +201,9 @@ function checkAny(tarball: Tarball): string[] {
   return problems;
 }
 
-function checkDependencies(tarball: Tarball): string[] {
+function checkDependencies(tarball: Tarball): Array<string> {
   const { manifest } = tarball;
-  const problems: string[] = [];
+  const problems: Array<string> = [];
   const dependencies = Object.keys(manifest.dependencies ?? {});
   if (dependencies.length > 0) problems.push(`"dependencies" must be empty; it has: ${dependencies.join(', ')}.`);
   const optional = Object.keys(manifest.optionalDependencies ?? {});
@@ -214,9 +214,9 @@ function checkDependencies(tarball: Tarball): string[] {
   return problems;
 }
 
-function checkPeers(tarball: Tarball, versions: ReadonlyMap<FoundryPackageFolder, string>): string[] {
+function checkPeers(tarball: Tarball, versions: ReadonlyMap<FoundryPackageFolder, string>): Array<string> {
   const { manifest, foundryPackage } = tarball;
-  const problems: string[] = [];
+  const problems: Array<string> = [];
   const expected: Record<string, string> = { ...foundryPackage.peerDependencies };
   for (const folder of foundryPackage.foundryPeers) {
     const peer = FOUNDRY_PACKAGES.find((candidate) => candidate.folder === folder);
@@ -242,9 +242,9 @@ function checkPeers(tarball: Tarball, versions: ReadonlyMap<FoundryPackageFolder
   return problems;
 }
 
-function checkManifest(tarball: Tarball): string[] {
+function checkManifest(tarball: Tarball): Array<string> {
   const { manifest, foundryPackage } = tarball;
-  const problems: string[] = [];
+  const problems: Array<string> = [];
   if (manifest.name !== foundryPackage.name) problems.push(`"name" is "${manifest.name ?? ''}".`);
   if (manifest.type !== 'module') problems.push('"type" must be "module".');
   if (manifest.engines?.['node'] !== NODE_ENGINE) problems.push(`"engines.node" must be "${NODE_ENGINE}".`);
@@ -257,8 +257,8 @@ function checkManifest(tarball: Tarball): string[] {
   return problems;
 }
 
-function checkNotices(tarball: Tarball): string[] {
-  const problems: string[] = [];
+function checkNotices(tarball: Tarball): Array<string> {
+  const problems: Array<string> = [];
   const sourceFiles = listFiles(join(PACKAGES_SOURCE_DIRECTORY, tarball.foundryPackage.folder));
   for (const notice of tarball.foundryPackage.notices) {
     const trigger =
@@ -280,7 +280,7 @@ function main(): number {
     const versions = new Map(tarballs.map((tarball) => [tarball.foundryPackage.folder, tarball.manifest.version ?? '']));
     for (const tarball of tarballs) {
       console.log(`\n${tarball.foundryPackage.name}@${tarball.manifest.version ?? '?'} (${tarball.files.length} files)`);
-      const results: Readonly<Record<Rule, string[]>> = {
+      const results: Readonly<Record<Rule, Array<string>>> = {
         exports: checkExports(tarball),
         license: checkLicense(tarball),
         tslib: checkTslib(tarball),

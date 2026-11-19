@@ -1,8 +1,4 @@
 // @ts-check
-/*
- * Base ESLint configuration of the monorepo (block B1): the angular-eslint 21 defaults.
- * Library rules (selector prefixes, import boundaries…) are added in each library block.
- */
 import eslint from '@eslint/js';
 import angular from 'angular-eslint';
 import { defineConfig, globalIgnores } from 'eslint/config';
@@ -14,7 +10,12 @@ export default defineConfig([
     files: ['**/*.ts'],
     extends: [eslint.configs.recommended, tseslint.configs.recommended, tseslint.configs.stylistic, angular.configs.tsRecommended],
     processor: angular.processInlineTemplates,
-    rules: {},
+    rules: {
+      '@typescript-eslint/array-type': ['error', { default: 'generic' }],
+      '@typescript-eslint/consistent-generic-constructors': ['error', 'type-annotation'],
+      // Types are written out even when they could be inferred (CONTRIBUTING.md).
+      '@typescript-eslint/no-inferrable-types': 'off',
+    },
   },
   {
     files: ['**/*.html'],

@@ -7,7 +7,7 @@ import { angularNodeProject, browserProjects, typescriptNodeProjects } from '../
 
 const SMOKE = 'tools/vitest/smoke';
 
-export const smokeProjects: TestProjectInlineConfiguration[] = [
+export const smokeProjects: Array<TestProjectInlineConfiguration> = [
   angularNodeProject({
     name: 'smoke:ng-zoneless',
     changeDetection: 'zoneless',

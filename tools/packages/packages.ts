@@ -28,17 +28,17 @@ export interface FoundryPackage {
   readonly name: string;
   /** Exact peer ranges. Peers on other Foundry packages go in `foundryPeers`. */
   readonly peerDependencies: Readonly<Record<string, string>>;
-  readonly optionalPeers: readonly string[];
+  readonly optionalPeers: ReadonlyArray<string>;
   /** Foundry packages this one depends on as a peer. The expected range is `^<version of that package>`. */
-  readonly foundryPeers: readonly FoundryPackageFolder[];
-  readonly sideEffects: false | readonly string[];
+  readonly foundryPeers: ReadonlyArray<FoundryPackageFolder>;
+  readonly sideEffects: false | ReadonlyArray<string>;
   /** Export subpaths that do not come from an ng-packagr entry point. */
-  readonly extraExports: readonly string[];
-  readonly notices: readonly ThirdPartyNotice[];
+  readonly extraExports: ReadonlyArray<string>;
+  readonly notices: ReadonlyArray<ThirdPartyNotice>;
 }
 
 /** In build order: UI needs the compiled Utils (it is a peer, not bundled), so Utils goes first. */
-export const FOUNDRY_PACKAGES: readonly FoundryPackage[] = [
+export const FOUNDRY_PACKAGES: ReadonlyArray<FoundryPackage> = [
   {
     folder: 'foundry-utils',
     name: '@antoniocorraliza/foundry-utils',
