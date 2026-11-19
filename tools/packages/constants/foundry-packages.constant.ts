@@ -16,8 +16,8 @@ export const FOUNDRY_PACKAGES: ReadonlyArray<FoundryPackage> = [
     notices: [
       {
         description: 'Unicode license for the table derived from CLDR (getFirstDayOfWeek)',
-        // The generated CLDR table must be named *.cldr.ts for this check to see it.
-        whenSourceHas: /\.cldr\.ts$/,
+        // The generated CLDR table must be named *.cldr.constant.ts for this check to see it.
+        whenSourceHas: /\.cldr\.constant\.ts$/,
         noticePath: 'UNICODE-LICENSE.txt',
       },
     ],

@@ -53,16 +53,18 @@ The expected values (peers, `sideEffects`, non-entry exports, notices) are in `c
 
 ## Third-party notices
 
-| Package | Material                                              | Notice (inside the tarball) | Required when                            |
-| :------ | :---------------------------------------------------- | :-------------------------- | :--------------------------------------- |
-| UI      | Fonts Inter and Urbanist (SIL Open Font License)      | `styles/fonts/OFL.txt`      | the tarball has a `styles/fonts/*.woff2` |
-| Utils   | Table derived from Unicode CLDR (`getFirstDayOfWeek`) | `UNICODE-LICENSE.txt`       | the source has a file named `*.cldr.ts`  |
+No package has third-party material yet. When it is added, its notice must be inside the tarball:
 
-The `assets` of each `ng-package.json` already copy both notices: put the file in `projects/antoniocorraliza/foundry-ui/styles/fonts/OFL.txt` or `projects/antoniocorraliza/foundry-utils/UNICODE-LICENSE.txt`. The generated CLDR table must be named `*.cldr.ts` for the check to see it.
+| Package | Material, when it is added                            | Notice (inside the tarball) | Required when                                    |
+| :------ | :---------------------------------------------------- | :-------------------------- | :----------------------------------------------- |
+| UI      | Fonts Inter and Urbanist (SIL Open Font License)      | `styles/fonts/OFL.txt`      | the tarball has a `styles/fonts/*.woff2`         |
+| Utils   | Table derived from Unicode CLDR (`getFirstDayOfWeek`) | `UNICODE-LICENSE.txt`       | the source has a file named `*.cldr.constant.ts` |
+
+The `assets` of each `ng-package.json` already copy both notices: put the file in `projects/antoniocorraliza/foundry-ui/styles/fonts/OFL.txt` or `projects/antoniocorraliza/foundry-utils/UNICODE-LICENSE.txt`. The generated CLDR table is a constant, so it goes in `constants/`, and its name must end in `.cldr.constant.ts` (for example `constants/first-day-of-week.cldr.constant.ts`) for the check to see it.
 
 ## UI style sheets
 
-The `assets` of UI copy `projects/antoniocorraliza/foundry-ui/styles/**/*.css` and `styles/fonts/*.woff2` to the tarball. They are exported as `@antoniocorraliza/foundry-ui/styles/*.css` and listed in `sideEffects`, so that a bundler never drops an imported sheet.
+UI has no style sheets yet. Its `assets` already copy `projects/antoniocorraliza/foundry-ui/styles/**/*.css` and `styles/fonts/*.woff2` to the tarball, and its manifest already exports them as `@antoniocorraliza/foundry-ui/styles/*.css` and lists them in `sideEffects`, so that a bundler never drops an imported sheet.
 
 ## `moduleResolution: "node10"`
 
