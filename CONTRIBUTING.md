@@ -286,6 +286,20 @@ projects/antoniocorraliza/foundry-core/storage/
 
 A piece with an error class keeps it in `errors/`, like the HTTP client of Core: `src/errors/foundry-api.error.ts`.
 
+An error class always assigns its `name` as a literal, because that value is what survives minification. A class without subclasses also declares it with the literal type; a class with subclasses declares it as `string`, because a literal type there would stop the subclasses from declaring their own.
+
+```ts
+// errors/foundry-utils.error.ts: it has subclasses
+export class FoundryUtilsError extends Error {
+  override readonly name: string = 'FoundryUtilsError';
+}
+
+// errors/foundry-csv-parse.error.ts: no subclasses
+export class FoundryCsvParseError extends FoundryUtilsError {
+  override readonly name: 'FoundryCsvParseError' = 'FoundryCsvParseError';
+}
+```
+
 In `tools/`, the scripts that Node runs stay at the root of their folder, with a `main()` function; their definitions go in `constants/`, `interfaces/` and `types/`, and the logic that can be tested without the file system goes in `functions/`:
 
 ```
