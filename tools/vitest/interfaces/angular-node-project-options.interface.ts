@@ -1,4 +1,4 @@
-import type { ChangeDetection } from './change-detection.type.ts';
+import type { ChangeDetection } from '../types/change-detection.type.ts';
 import type { ProjectOptions } from './project-options.interface.ts';
 import type { TestEnvironment } from './test-environment.interface.ts';
 

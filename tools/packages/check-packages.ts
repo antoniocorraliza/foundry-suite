@@ -13,10 +13,10 @@ import { checkNotices } from './functions/check-notices.function.ts';
 import { checkPeers } from './functions/check-peers.function.ts';
 import { checkTslib } from './functions/check-tslib.function.ts';
 import type { FoundryPackage } from './interfaces/foundry-package.interface.ts';
-import type { FoundryPackageFolder } from './interfaces/foundry-package-folder.type.ts';
 import type { NpmPackEntry } from './interfaces/npm-pack-entry.interface.ts';
 import type { PackageManifest } from './interfaces/package-manifest.interface.ts';
 import type { Tarball } from './interfaces/tarball.interface.ts';
+import type { FoundryPackageFolder } from './types/foundry-package-folder.type.ts';
 
 function listFiles(directory: string): Array<string> {
   return readdirSync(directory, { recursive: true, withFileTypes: true })

@@ -8,9 +8,9 @@ import { SETUP_DIRECTORY, SPEC_TSCONFIG } from './constants/paths.constant.ts';
 import { TEST_BROWSERS } from './constants/test-browsers.constant.ts';
 import type { AngularNodeProjectOptions } from './interfaces/angular-node-project-options.interface.ts';
 import type { BrowserProjectOptions } from './interfaces/browser-project-options.interface.ts';
-import type { TestBrowser } from './interfaces/test-browser.type.ts';
 import type { TestEnvironment } from './interfaces/test-environment.interface.ts';
 import type { TypescriptNodeProjectOptions } from './interfaces/typescript-node-project-options.interface.ts';
+import type { TestBrowser } from './types/test-browser.type.ts';
 
 function isTestBrowser(value: string): value is TestBrowser {
   return (TEST_BROWSERS as ReadonlyArray<string>).includes(value);

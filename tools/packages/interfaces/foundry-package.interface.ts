@@ -1,4 +1,4 @@
-import type { FoundryPackageFolder } from './foundry-package-folder.type.ts';
+import type { FoundryPackageFolder } from '../types/foundry-package-folder.type.ts';
 import type { ThirdPartyNotice } from './third-party-notice.interface.ts';
 
 export interface FoundryPackage {

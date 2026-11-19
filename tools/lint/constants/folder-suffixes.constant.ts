@@ -5,10 +5,11 @@ export const FOLDER_SUFFIXES: Readonly<Record<string, ReadonlyArray<string>>> = 
   functions: ['.function.ts'],
   guards: ['.guard.ts'],
   interceptors: ['.interceptor.ts'],
-  interfaces: ['.interface.ts', '.type.ts'],
+  interfaces: ['.interface.ts'],
   pipes: ['.pipe.ts'],
   providers: ['.provider.ts'],
   resolvers: ['.resolver.ts'],
   services: ['.service.ts'],
   tokens: ['.token.ts'],
+  types: ['.type.ts'],
 };

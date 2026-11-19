@@ -1,5 +1,5 @@
 import 'vitest';
-import type { ChangeDetection } from './interfaces/change-detection.type.ts';
+import type { ChangeDetection } from './types/change-detection.type.ts';
 
 // Read them with `inject` from 'vitest', not the one from Angular.
 declare module 'vitest' {

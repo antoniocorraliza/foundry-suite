@@ -1,8 +1,8 @@
 import { appendFileSync, readFileSync } from 'node:fs';
 import { AUDIT_SEVERITIES } from './constants/audit-severities.constant.ts';
-import type { AuditCounts } from './interfaces/audit-counts.type.ts';
 import type { AuditReport } from './interfaces/audit-report.interface.ts';
 import type { AuditVulnerability } from './interfaces/audit-vulnerability.interface.ts';
+import type { AuditCounts } from './types/audit-counts.type.ts';
 
 // Development vulnerabilities are reviewed from time to time, so this script never fails the job.
 function main(): void {

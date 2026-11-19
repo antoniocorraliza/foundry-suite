@@ -1,4 +1,4 @@
-import type { AuditCounts } from './audit-counts.type.ts';
+import type { AuditCounts } from '../types/audit-counts.type.ts';
 
 export interface AuditMetadata {
   readonly vulnerabilities?: AuditCounts;

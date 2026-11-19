@@ -109,13 +109,13 @@ function clear() {}
 const names = rows.map((row: Row): string => row.name.trim());
 ```
 
-A closed list is the one exception: the constant ends in `as const`, without a type, and its type is derived from it in `interfaces/`, so the values are written once.
+A closed list is the one exception: the constant ends in `as const`, without a type, and its type is derived from it in `types/`, so the values are written once.
 
 ```ts
 // constants/audit-severities.constant.ts
 export const AUDIT_SEVERITIES = ['critical', 'high', 'moderate', 'low', 'info'] as const;
 
-// interfaces/audit-severity.type.ts
+// types/audit-severity.type.ts
 export type AuditSeverity = (typeof AUDIT_SEVERITIES)[number];
 ```
 
@@ -211,7 +211,8 @@ Each piece of a library (an entry point) and each folder of `tools/` splits its 
 
 | Folder          | Holds                                                  | Suffix                                                |
 | :-------------- | :----------------------------------------------------- | :---------------------------------------------------- |
-| `interfaces/`   | interfaces and types                                   | `.interface.ts`, `.type.ts`                           |
+| `interfaces/`   | interfaces                                             | `.interface.ts`                                       |
+| `types/`        | types (`type`)                                         | `.type.ts`                                            |
 | `constants/`    | constants and enums                                    | `.constant.ts`, `.enum.ts`                            |
 | `tokens/`       | `InjectionToken` and `HttpContextToken`                | `.token.ts`                                           |
 | `services/`     | services                                               | `.service.ts`                                         |
@@ -234,13 +235,14 @@ projects/antoniocorraliza/foundry-core/storage/
   src/functions/define-foundry-storage-key.function.spec.ts
   src/interfaces/foundry-storage-backend.interface.ts
   src/interfaces/foundry-storage-key.interface.ts
+  src/types/foundry-storage-area.type.ts
   src/providers/foundry-storage.provider.ts
   src/services/foundry-storage.service.ts
   src/services/foundry-storage.service.spec.ts
   src/tokens/foundry-storage-options.token.ts
 ```
 
-In `tools/`, the scripts that Node runs stay at the root of their folder, with a `main()` function; their definitions go in `constants/` and `interfaces/`, and the logic that can be tested without the file system goes in `functions/`:
+In `tools/`, the scripts that Node runs stay at the root of their folder, with a `main()` function; their definitions go in `constants/`, `interfaces/` and `types/`, and the logic that can be tested without the file system goes in `functions/`:
 
 ```
 tools/vitest/
@@ -250,11 +252,11 @@ tools/vitest/
   constants/test-browsers.constant.ts
   interfaces/angular-node-project-options.interface.ts
   interfaces/browser-project-options.interface.ts
-  interfaces/change-detection.type.ts
   interfaces/project-options.interface.ts
-  interfaces/test-browser.type.ts
   interfaces/test-environment.interface.ts
   interfaces/typescript-node-project-options.interface.ts
+  types/change-detection.type.ts
+  types/test-browser.type.ts
 ```
 
 More rules of the structure:
@@ -274,7 +276,7 @@ export interface ProjectOptions {
 // No: an interface declared in projects.ts, next to the functions that use it
 ```
 
-Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `constants/` and `tokens/`, and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder. Spec and `.d.ts` files are exempt.
+Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/` and `tokens/`, and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder. Spec and `.d.ts` files are exempt.
 
 ### 14. Commits and pull requests
 

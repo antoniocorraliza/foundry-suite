@@ -1,4 +1,4 @@
-import type { TestBrowser } from './test-browser.type.ts';
+import type { TestBrowser } from '../types/test-browser.type.ts';
 
 export interface TestEnvironment {
   readonly browsers: ReadonlyArray<TestBrowser>;

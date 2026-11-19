@@ -1,8 +1,8 @@
 import { FOUNDRY_PACKAGES } from '../constants/foundry-packages.constant.ts';
 import type { FoundryPackage } from '../interfaces/foundry-package.interface.ts';
-import type { FoundryPackageFolder } from '../interfaces/foundry-package-folder.type.ts';
 import type { PeerDependencyMeta } from '../interfaces/peer-dependency-meta.interface.ts';
 import type { Tarball } from '../interfaces/tarball.interface.ts';
+import type { FoundryPackageFolder } from '../types/foundry-package-folder.type.ts';
 
 export function checkPeers(tarball: Tarball, versions: ReadonlyMap<FoundryPackageFolder, string>): Array<string> {
   const { manifest, foundryPackage } = tarball;

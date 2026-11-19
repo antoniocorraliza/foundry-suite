@@ -40,7 +40,9 @@ const LIBRARY_NAMED_OBJECT_TYPES = forbid(
 );
 const LIBRARY_FILES = 'projects/**/';
 const CODE_FILE_SELECTORS = [
-  ...forbid(['TSInterfaceDeclaration', 'TSTypeAliasDeclaration', 'TSEnumDeclaration'], 'Interfaces and types go in interfaces/.'),
+  ...forbid(['TSInterfaceDeclaration'], 'Interfaces go in interfaces/.'),
+  ...forbid(['TSTypeAliasDeclaration'], 'Types go in types/.'),
+  ...forbid(['TSEnumDeclaration'], 'Enums go in constants/.'),
   ...forbid(
     TOP_LEVEL.map(
       (prefix) => `${prefix}VariableDeclaration > VariableDeclarator[init.type!=/^(?:ArrowFunctionExpression|FunctionExpression)$/]`,
@@ -54,8 +56,19 @@ const INTERFACE_FILE_SELECTORS = forbid(
     `${prefix}VariableDeclaration`,
     `${prefix}ClassDeclaration`,
     `${prefix}TSEnumDeclaration`,
+    `${prefix}TSTypeAliasDeclaration`,
   ]),
-  'Files in interfaces/ only declare interfaces and types.',
+  'Files in interfaces/ only declare interfaces; types go in types/.',
+);
+const TYPE_FILE_SELECTORS = forbid(
+  TOP_LEVEL.flatMap((prefix) => [
+    `${prefix}FunctionDeclaration`,
+    `${prefix}VariableDeclaration`,
+    `${prefix}ClassDeclaration`,
+    `${prefix}TSEnumDeclaration`,
+    `${prefix}TSInterfaceDeclaration`,
+  ]),
+  'Files in types/ only declare types; interfaces go in interfaces/.',
 );
 const CONSTANT_FILE_SELECTORS = [
   ...forbid(
@@ -146,10 +159,15 @@ export default defineConfig([
     rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...INTERFACE_FILE_SELECTORS] },
   },
   {
+    files: ['**/types/**/*.ts'],
+    ignores: EXEMPT_FILES,
+    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...TYPE_FILE_SELECTORS] },
+  },
+  {
     files: ['**/constants/**/*.ts'],
     ignores: EXEMPT_FILES,
     rules: {
-      // A closed list is `as const`, and its type is derived from it in interfaces/.
+      // A closed list is `as const`, and its type is derived from it in types/.
       '@typescript-eslint/typedef': ['error', { ...TYPEDEF_OPTIONS, variableDeclaration: false }],
       'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...CONSTANT_FILE_SELECTORS],
     },
@@ -162,6 +180,7 @@ export default defineConfig([
   ...[
     ['*.ts', CODE_FILE_SELECTORS],
     ['interfaces/**/*.ts', INTERFACE_FILE_SELECTORS],
+    ['types/**/*.ts', TYPE_FILE_SELECTORS],
     ['constants/**/*.ts', CONSTANT_FILE_SELECTORS],
     ['tokens/**/*.ts', TOKEN_FILE_SELECTORS],
   ].map(([pattern, selectors]) => ({

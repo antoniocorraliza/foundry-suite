@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { FOUNDRY_PACKAGES } from '../constants/foundry-packages.constant.ts';
 import type { FoundryPackage } from '../interfaces/foundry-package.interface.ts';
-import type { FoundryPackageFolder } from '../interfaces/foundry-package-folder.type.ts';
 import type { PackageManifest } from '../interfaces/package-manifest.interface.ts';
 import type { Tarball } from '../interfaces/tarball.interface.ts';
+import type { FoundryPackageFolder } from '../types/foundry-package-folder.type.ts';
 import { checkLicense } from './check-license.function.ts';
 
 function tarballOf(folder: FoundryPackageFolder, manifest: PackageManifest, contents: Readonly<Record<string, string>> = {}): Tarball {
