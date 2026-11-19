@@ -638,6 +638,6 @@ Checked by: the directive and its reason; the review checks the format.
 
 ### The size probes
 
-The components in `tools/size/app/` stand for an application, with its inline template and `NgClass`, and the Angular rules do not check them. Why: they are the base that every size is measured against; changing them moves every measurement.
+The components in `tools/size/app/` stand for an application, with its inline template and `NgClass`, and the Angular rules do not check them. Why: the designs fix how the size of an entry is measured, against an application that already uses the router, `HttpClient`, `@for`, `ngClass` and RxJS (with reactive forms for the form entries); a probe written with our rules would no longer be that application. Their class sections still follow rule 5.
 
 Checked by: the Angular rules of ESLint only cover `projects/`.

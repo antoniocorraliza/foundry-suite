@@ -31,7 +31,7 @@ export class SizeFormsAppComponent implements OnInit {
     this.loadItems();
   }
 
-  // API CALLS
+  // ACTIONS
   private loadItems(): void {
     this.httpClientSE
       .get<Array<string>>('/items')
