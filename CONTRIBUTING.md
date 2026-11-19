@@ -108,6 +108,8 @@ Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `desc
 
 No typographic arrows, ellipses, middle dots, multiplication signs, check marks, long dashes, curly quotes or emoji in code, comments, test names, job names or READMEs. Accented letters in proper names and the copyright sign are fine. Angular's `ɵ` prefix (exported but private) is allowed at the start of a name, and nowhere else.
 
+The text literals of spec files are test data and take any character (`'Nuñez'`, `'🍎🍌🍒'`, `'١٢٣'`, `'日本語'`); test titles and the rest of the code do not. In the code of the libraries, a character you cannot type is written as an escape: `'…'`, not `'…'`.
+
 ```yaml
 # Yes
 name: Unit - Angular 21 - Node 22

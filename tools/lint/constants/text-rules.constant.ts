@@ -7,9 +7,10 @@ export const TEXT_RULES: ReadonlyArray<TextRule> = [
     // Arrows, ellipsis, middle dot, multiplication sign, check marks, long dashes, curly quotes and box drawing; and the
     // Angular private prefix anywhere but at the start of a name.
     pattern: /[←-⇿…·×✓-✘–—‘’“”─-╿]|(?<=[\p{L}\p{N}_$])ɵ|ɵ(?![\p{L}\p{N}_$])/u,
+    allowedInTestData: true,
   },
   // The copyright and registered signs are pictographic too, but they are allowed.
-  { name: 'emoji', pattern: /(?![\u00a9\u00ae])\p{Extended_Pictographic}/u },
+  { name: 'emoji', pattern: /(?![\u00a9\u00ae])\p{Extended_Pictographic}/u, allowedInTestData: true },
   {
     name: 'process reference',
     pattern: /\bdecisions? \d+\b/i,

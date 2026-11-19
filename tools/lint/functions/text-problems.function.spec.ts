@@ -37,6 +37,35 @@ describe('textProblems', () => {
     expect(textProblems('projects/a/src/functions/for-each-own-key.function.ts', text)).toEqual([]);
   });
 
+  it('accepts any character in the text literals of a spec', () => {
+    const text: string = [
+      "it('truncates a long name', () => {",
+      "  expect(truncateText('Nuñez Ibáñez', 8)).toBe('Nuñez I…');",
+      "  expect(splitGraphemes(`🍎🍌🍒`)).toEqual(['🍎', '🍌', '🍒']);",
+      "  expect(toTitleCase('o’neill')).toBe('O’Neill');",
+      "  expect(parseDecimal('١٢٣', 'ar-EG')).toBe(123);",
+      "  expect(toSlug('日本語 — ×')).toBe('');",
+      '});',
+    ].join('\n');
+    expect(textProblems('projects/a/src/functions/truncate-text.function.spec.ts', text)).toEqual([]);
+  });
+
+  it('still checks the titles and the code of a spec', () => {
+    const text: string = ["it('truncates with …', () => {", '  expect(/…/.test(value)).toBe(true);', '});'].join('\n');
+    expect(textProblems('projects/a/src/functions/truncate-text.function.spec.ts', text)).toEqual([
+      "projects/a/src/functions/truncate-text.function.spec.ts:1: typographic character: it('truncates with …', () => {",
+      'projects/a/src/functions/truncate-text.function.spec.ts:2: typographic character: expect(/…/.test(value)).toBe(true);',
+    ]);
+  });
+
+  it('checks the text literals of the library code', () => {
+    const text: string = "const suffix: string = '…';\nconst fruit: string = '🍎';";
+    expect(textProblems('projects/a/src/functions/truncate-text.function.ts', text)).toEqual([
+      "projects/a/src/functions/truncate-text.function.ts:1: typographic character: const suffix: string = '…';",
+      "projects/a/src/functions/truncate-text.function.ts:2: emoji: const fruit: string = '🍎';",
+    ]);
+  });
+
   it('leaves the same words alone outside JSDoc', () => {
     expect(textProblems('a.ts', "const simple: string = 'easy';\n// Helper to read a file.")).toEqual([]);
   });
