@@ -52,7 +52,7 @@ No work blocks, decision numbers, review codes or paths to internal notes. Write
 // V8 coverage only works in Chromium (PF-INF3, decision 32).
 ```
 
-Tests describe behaviour. Their titles carry no review codes, not even short ones like `R2` or `U17`: the mapping from a finding to its test lives outside the repository.
+Tests describe behavior. Their titles carry no review codes, not even short ones like `R2` or `U17`: the mapping from a finding to its test lives outside the repository.
 
 ```ts
 // Yes
@@ -141,7 +141,7 @@ Checked by: ESLint `curly` (`multi-line`).
 throw new Error('[strip-tslib]: unknown package folder "foundry-x"');
 ```
 
-Checked by: ESLint `no-restricted-syntax` for string literals; template literals: review.
+Checked by: ESLint `no-restricted-syntax`, on string literals and on the start of template literals.
 
 ### 10. Imports
 

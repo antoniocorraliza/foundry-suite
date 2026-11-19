@@ -1,4 +1,4 @@
-// Each folder of a piece holds one kind of file, recognised by its suffix. Tests sit next to the file they test.
+// Each folder of a piece holds one kind of file, recognized by its suffix. Tests sit next to the file they test.
 export const FOLDER_SUFFIXES: Readonly<Record<string, ReadonlyArray<string>>> = {
   components: ['.component.ts', '.component.html', '.component.scss', '.component.css'],
   constants: ['.constant.ts', '.enum.ts'],

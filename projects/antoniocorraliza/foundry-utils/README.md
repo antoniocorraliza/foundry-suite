@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Framework-agnostic TypeScript utilities of Foundry Suite.
+Framework-agnostic TypeScript utilities of The Foundry Suite.
 
 ## Status
 
