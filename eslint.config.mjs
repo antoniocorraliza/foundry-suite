@@ -45,6 +45,13 @@ const INTERFACE_FILE_SELECTORS = forbid(
 );
 const CONSTANT_FILE_SELECTORS = [
   ...forbid(
+    TOP_LEVEL.map(
+      (prefix) =>
+        `${prefix}VariableDeclaration > VariableDeclarator:not([id.typeAnnotation]):not([init.type='TSAsExpression'][init.typeAnnotation.typeName.name='const'])`,
+    ),
+    'Constants declare their type, or end in `as const` when they are a closed list.',
+  ),
+  ...forbid(
     TOP_LEVEL.flatMap((prefix) => [
       `${prefix}FunctionDeclaration`,
       `${prefix}ClassDeclaration`,
@@ -55,6 +62,16 @@ const CONSTANT_FILE_SELECTORS = [
   ),
   ...forbid([`NewExpression[callee.name=${TOKEN_CLASSES}]`], 'Angular tokens go in tokens/.'),
 ];
+const TYPEDEF_OPTIONS = {
+  variableDeclaration: true,
+  variableDeclarationIgnoreFunction: true,
+  memberVariableDeclaration: true,
+  parameter: true,
+  propertyDeclaration: true,
+  arrowParameter: false,
+  arrayDestructuring: false,
+  objectDestructuring: false,
+};
 const TOKEN_FILE_SELECTORS = forbid(
   TOP_LEVEL.flatMap((prefix) => [
     `${prefix}FunctionDeclaration`,
@@ -106,19 +123,7 @@ export default defineConfig([
       // Types are written out even when they could be inferred.
       '@typescript-eslint/no-inferrable-types': 'off',
       // Deprecated in typescript-eslint 8.33 but still working, and nothing else requires annotations on variables.
-      '@typescript-eslint/typedef': [
-        'error',
-        {
-          variableDeclaration: true,
-          variableDeclarationIgnoreFunction: true,
-          memberVariableDeclaration: true,
-          parameter: true,
-          propertyDeclaration: true,
-          arrowParameter: false,
-          arrayDestructuring: false,
-          objectDestructuring: false,
-        },
-      ],
+      '@typescript-eslint/typedef': ['error', TYPEDEF_OPTIONS],
     },
   },
   {
@@ -129,7 +134,11 @@ export default defineConfig([
   {
     files: ['**/constants/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...CONSTANT_FILE_SELECTORS] },
+    rules: {
+      // A closed list is `as const`, and its type is derived from it in interfaces/.
+      '@typescript-eslint/typedef': ['error', { ...TYPEDEF_OPTIONS, variableDeclaration: false }],
+      'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...CONSTANT_FILE_SELECTORS],
+    },
   },
   {
     files: ['**/tokens/**/*.ts'],

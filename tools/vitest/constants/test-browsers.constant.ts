@@ -1,3 +1,1 @@
-import type { TestBrowser } from '../interfaces/test-browser.type.ts';
-
-export const TEST_BROWSERS: ReadonlyArray<TestBrowser> = ['chromium', 'firefox', 'webkit'];
+export const TEST_BROWSERS = ['chromium', 'firefox', 'webkit'] as const;
