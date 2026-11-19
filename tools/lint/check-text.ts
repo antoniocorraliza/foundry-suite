@@ -43,8 +43,7 @@ function testTitleProblems(path: string, text: string): Array<string> {
   return problems;
 }
 
-// From the name to the opening brace: a signature that Prettier had to split because it does not fit in one line.
-function multilineSignature(source: ts.SourceFile, node: ts.Node): ts.Node | undefined {
+function signatureSplitAcrossLines(source: ts.SourceFile, node: ts.Node): ts.Node | undefined {
   const isFunction: boolean =
     ts.isFunctionDeclaration(node) ||
     ts.isMethodDeclaration(node) ||
@@ -67,7 +66,7 @@ function signatureProblems(path: string, text: string): Array<string> {
   const problems: Array<string> = [];
   const source: ts.SourceFile = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
   const visit = (node: ts.Node): void => {
-    const signature: ts.Node | undefined = multilineSignature(source, node);
+    const signature: ts.Node | undefined = signatureSplitAcrossLines(source, node);
     if (signature !== undefined) {
       const { line } = source.getLineAndCharacterOfPosition(signature.getStart(source));
       problems.push(`${path}:${line + 1}: signature on several lines: extract a named type for the parameters`);
@@ -78,15 +77,14 @@ function signatureProblems(path: string, text: string): Array<string> {
   return problems;
 }
 
-// The nearest folder of the path that has a kind decides which suffixes the file may have.
 function folderSuffixProblem(path: string): string | undefined {
   const segments: Array<string> = path.split('/');
   const fileName: string = (segments.pop() ?? '').replace(/\.spec\.ts$/, '.ts');
-  const folder: string | undefined = segments.reverse().find((segment) => segment in FOLDER_SUFFIXES);
-  if (folder !== undefined) {
-    const suffixes: ReadonlyArray<string> = FOLDER_SUFFIXES[folder] ?? [];
-    if (!suffixes.some((suffix) => fileName.endsWith(suffix))) return `${path}: a file in ${folder}/ must end in ${suffixes.join(', ')}`;
-    return undefined;
+  const nearestKindFolder: string | undefined = segments.reverse().find((segment) => segment in FOLDER_SUFFIXES);
+  if (nearestKindFolder !== undefined) {
+    const suffixes: ReadonlyArray<string> = FOLDER_SUFFIXES[nearestKindFolder] ?? [];
+    if (suffixes.some((suffix) => fileName.endsWith(suffix))) return undefined;
+    return `${path}: a file in ${nearestKindFolder}/ must end in ${suffixes.join(', ')}`;
   }
   const kind: string | undefined = Object.keys(FOLDER_SUFFIXES).find((candidate) =>
     (FOLDER_SUFFIXES[candidate] ?? []).some((suffix) => fileName.endsWith(suffix)),

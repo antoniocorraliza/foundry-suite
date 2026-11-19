@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { ATTRIBUTION, COMMIT_SCOPES, COMMIT_TITLE, MAXIMUM_TITLE_LENGTH } from './constants/commit-rules.constant.ts';
+import { ASSISTANT_ATTRIBUTION, COMMIT_SCOPES, COMMIT_TITLE, MAXIMUM_TITLE_LENGTH } from './constants/commit-rules.constant.ts';
 import type { Commit } from './interfaces/commit.interface.ts';
 
 function titleProblems(title: string): Array<string> {
@@ -17,7 +17,7 @@ function messageProblems(message: string): Array<string> {
   const [title = '', lineAfterTitle]: Array<string> = message.trimEnd().split('\n');
   const problems: Array<string> = titleProblems(title);
   if (lineAfterTitle !== undefined && lineAfterTitle !== '') problems.push('the body must be separated from the title by a blank line');
-  if (ATTRIBUTION.test(message)) problems.push('the message credits a tool or an assistant');
+  if (ASSISTANT_ATTRIBUTION.test(message)) problems.push('the message credits a tool or an assistant');
   return problems;
 }
 
@@ -33,7 +33,6 @@ function commitsInRange(range: string): Array<Commit> {
     });
 }
 
-// Usage: node tools/ci/check-commits.ts <git range>   or   node tools/ci/check-commits.ts --title "<pull request title>"
 function main(): number {
   const [firstArgument, secondArgument]: Array<string> = process.argv.slice(2);
   if (firstArgument === undefined) {
