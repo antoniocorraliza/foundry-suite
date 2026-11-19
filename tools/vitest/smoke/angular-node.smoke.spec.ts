@@ -1,9 +1,6 @@
-/*
- * B1 smoke test: Angular on Node (jsdom), zoneless and with zone.js.
- * It only proves that the project starts; it does not test any library.
- * `describe`/`it`/`expect` are globals on purpose (see setup/angular-zone.ts).
- */
-import { ChangeDetectionStrategy, Component, NgZone, VERSION, input } from '@angular/core';
+import type { InputSignal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, NgZone, VERSION } from '@angular/core';
+import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { inject } from 'vitest';
 
@@ -13,15 +10,17 @@ import { inject } from 'vitest';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class SmokeGreetingComponent {
-  readonly name = input.required<string>();
+  readonly name: InputSignal<string> = input.required<string>();
 }
 
-describe('B1 smoke · Angular on Node (jsdom)', () => {
+// describe and it are the globals on purpose: imported from vitest, the test would run outside the zone.js ProxyZone.
+describe('smoke: Angular on Node (jsdom)', () => {
   it('runs with the expected Angular major', () => {
     expect(Number(VERSION.major)).toBe(inject('expectedAngularMajor'));
   });
+
   it('renders an OnPush component with a required signal input', async () => {
-    const fixture = TestBed.createComponent(SmokeGreetingComponent);
+    const fixture: ComponentFixture<SmokeGreetingComponent> = TestBed.createComponent(SmokeGreetingComponent);
     fixture.componentRef.setInput('name', 'Foundry');
     fixture.autoDetectChanges();
     await fixture.whenStable();
@@ -31,7 +30,7 @@ describe('B1 smoke · Angular on Node (jsdom)', () => {
   });
 
   it('uses the change detection of its project', () => {
-    const runsInsideAngularZone = TestBed.inject(NgZone).run(() => NgZone.isInAngularZone());
+    const runsInsideAngularZone: boolean = TestBed.inject(NgZone).run(() => NgZone.isInAngularZone());
     expect(runsInsideAngularZone).toBe(inject('changeDetection') === 'zone');
   });
 });

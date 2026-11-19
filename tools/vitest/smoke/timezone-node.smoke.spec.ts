@@ -1,11 +1,7 @@
-/*
- * B1 smoke test: plain TypeScript on Node, one forked process per time zone.
- * The first test is the guard that every time zone project needs: if TZ is lost,
- * date tests could pass in UTC by chance.
- */
 import { describe, expect, inject, it } from 'vitest';
 
-describe('B1 smoke · plain TypeScript on Node', () => {
+describe('smoke: plain TypeScript on Node', () => {
+  // Every time zone project needs this guard: if TZ is lost, date tests could pass in UTC by chance.
   it('runs in the time zone of its project', () => {
     expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(inject('expectedTimeZone'));
   });

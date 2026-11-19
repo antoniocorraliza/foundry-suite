@@ -1,4 +1,4 @@
-/* Tests and test setup. The Angular plugin of Vitest compiles with it, so it must be able to emit (no noEmit here). */
+/* The Angular plugin of Vitest compiles with this file, so it must not set noEmit. */
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
