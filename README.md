@@ -24,9 +24,11 @@ Node 24 (see `.nvmrc`).
 npm ci
 npm run lint
 npm test
-npm run build            # utils → core → ui
+npm run build            # utils, core and ui, in that order
 npm run check:packages   # checks what goes inside each tarball
 ```
+
+Style guide, commit messages and checks before a pull request: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

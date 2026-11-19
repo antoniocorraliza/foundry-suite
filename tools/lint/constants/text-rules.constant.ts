@@ -1,0 +1,23 @@
+import type { TextRule } from '../interfaces/text-rule.interface.ts';
+import { MARKDOWN_FILE } from './file-patterns.constant.ts';
+
+export const TEXT_RULES: ReadonlyArray<TextRule> = [
+  {
+    name: 'typographic character',
+    // Arrows, ellipsis, middle dot, multiplication sign, check marks, long dashes, curly quotes and box drawing.
+    pattern: /[←-⇿…·×✓-✘–—‘’“”─-╿]/u,
+  },
+  // The copyright and registered signs are pictographic too, but they are allowed.
+  { name: 'emoji', pattern: /(?![\u00a9\u00ae])\p{Extended_Pictographic}/u },
+  {
+    name: 'process reference',
+    pattern: /\bclaude\/|\bblock B\d|\bdecisi(?:on|ón) \d|\bPF-[A-Z0-9]|\b(?:CORE2?|UTILS2?|UI2?|CONJ)-[A-Z]?\d|\bDI-\d|\bF-(?:C|UI)\d/i,
+  },
+  { name: 'section marker as JSDoc', pattern: /\/\*\*\s*[A-Z][A-Z &]+\s*\*\// },
+  { name: 'list item that starts in bold', pattern: /^\s*(?:[-*+]|\d+\.)\s+\*\*/, onlyIn: MARKDOWN_FILE },
+  {
+    name: 'sales word',
+    pattern: /\b(?:seamless(?:ly)?|robust|comprehensive|powerful|enterprise|leverag(?:e|es|ed|ing))\b/i,
+    onlyIn: MARKDOWN_FILE,
+  },
+];

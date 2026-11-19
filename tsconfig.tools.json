@@ -1,4 +1,4 @@
-/* Tool configuration that runs on Node (Vitest config and project factories). Only type-checked, never emitted. */
+/* Node runs these files directly, so tsc only type-checks them. */
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
@@ -7,5 +7,16 @@
     "lib": ["ES2022"],
     "types": ["node"]
   },
-  "include": ["vitest.config.ts", "tools/vitest/projects.ts", "tools/vitest/smoke/smoke.projects.ts", "tools/packages/*.ts", "tools/ci/*.ts"]
+  "include": [
+    "vitest.config.ts",
+    "tools/vitest/projects.ts",
+    "tools/vitest/constants/*.ts",
+    "tools/vitest/interfaces/*.ts",
+    "tools/vitest/smoke/smoke.projects.ts",
+    "tools/packages/**/*.ts",
+    "tools/ci/*.ts",
+    "tools/ci/constants/*.ts",
+    "tools/ci/interfaces/*.ts",
+    "tools/lint/**/*.ts"
+  ]
 }
