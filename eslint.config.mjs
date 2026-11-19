@@ -29,18 +29,29 @@ const LIFECYCLE_HOOK_SELECTORS = [
     message: 'Lifecycle hooks only call methods of the class: move the code to a named method.',
   },
 ];
-const COMMON_SELECTORS = [...MESSAGE_SELECTORS, ...LIFECYCLE_HOOK_SELECTORS];
-
 // no-restricted-syntax takes the last matching block whole, so every block below repeats the common selectors.
 const TOP_LEVEL = ['Program > ', 'Program > ExportNamedDeclaration > '];
+// Functional interceptors, guards and resolvers keep the constant with the type that Angular expects (HttpInterceptorFn...).
+const FUNCTION_VALUE =
+  '[init.type=/^(?:ArrowFunctionExpression|FunctionExpression)$/]:not([id.typeAnnotation.typeAnnotation.typeName.name=/Fn$/])';
+const CODE_SHAPE_SELECTORS = [
+  ...TOP_LEVEL.map((prefix) => ({
+    selector: `${prefix}VariableDeclaration > VariableDeclarator${FUNCTION_VALUE}`,
+    message: 'Top-level functions are declared with `function`, not as constants.',
+  })),
+  { selector: 'PrivateIdentifier', message: 'Private members use the TypeScript `private` modifier, not `#`.' },
+];
+const COMMON_SELECTORS = [...MESSAGE_SELECTORS, ...LIFECYCLE_HOOK_SELECTORS, ...CODE_SHAPE_SELECTORS];
 const TOKEN_CLASSES = '/^(?:InjectionToken|HttpContextToken)$/';
 const EXEMPT_FILES = ['**/*.spec.ts', '**/*.d.ts'];
-const forbid = (selectors, message) => selectors.map((selector) => ({ selector, message }));
+function forbid(selectors, message) {
+  return selectors.map((selector) => ({ selector, message }));
+}
 const NAMED_OBJECT_TYPES_MESSAGE = 'Object types get a name: declare an interface in interfaces/.';
 const NAMED_OBJECT_TYPES = forbid(['TSTypeLiteral'], NAMED_OBJECT_TYPES_MESSAGE);
 // The public API of the libraries is written as its design fixes it, inline object types included, so only what is
 // not exported has to name them: declarations that are not exported, function bodies and private members.
-const PRIVATE_MEMBER = ":matches(PropertyDefinition, MethodDefinition):matches([accessibility='private'], [key.type='PrivateIdentifier'])";
+const PRIVATE_MEMBER = ":matches(PropertyDefinition, MethodDefinition)[accessibility='private']";
 const LIBRARY_NAMED_OBJECT_TYPES = forbid(
   [
     'TSTypeLiteral:not(ExportNamedDeclaration TSTypeLiteral)',
@@ -50,22 +61,23 @@ const LIBRARY_NAMED_OBJECT_TYPES = forbid(
   NAMED_OBJECT_TYPES_MESSAGE,
 );
 const LIBRARY_FILES = 'projects/**/';
-const PUBLIC_PROPERTY =
-  "PropertyDefinition:not([accessibility='private']):not([accessibility='protected']):not([key.type='PrivateIdentifier'])";
+const PUBLIC_PROPERTY = "PropertyDefinition:not([accessibility='private']):not([accessibility='protected'])";
 // The name of an error class is its literal value: a JSDoc there would only repeat it.
 const ERROR_CLASS_NAME = "[override=true][readonly=true][key.name='name']";
-const REQUIRE_JSDOC_OPTIONS = (publicProperty) => ({
-  publicOnly: { esm: true },
-  require: { FunctionDeclaration: true, ClassDeclaration: true, MethodDefinition: true },
-  contexts: [
-    'TSInterfaceDeclaration',
-    'TSTypeAliasDeclaration',
-    'TSEnumDeclaration',
-    'ExportNamedDeclaration > VariableDeclaration',
-    publicProperty,
-  ],
-  checkConstructors: false,
-});
+function requireJsdocOptions(publicProperty) {
+  return {
+    publicOnly: { esm: true },
+    require: { FunctionDeclaration: true, ClassDeclaration: true, MethodDefinition: true },
+    contexts: [
+      'TSInterfaceDeclaration',
+      'TSTypeAliasDeclaration',
+      'TSEnumDeclaration',
+      'ExportNamedDeclaration > VariableDeclaration',
+      publicProperty,
+    ],
+    checkConstructors: false,
+  };
+}
 const JSDOC_FUNCTION_DESCRIPTION = '^(?!(?:This|These|That|A|An|The|Helper|Utility|Wrapper)\\b)[A-Z][a-z]*s\\b[\\s\\S]*$';
 const ERROR_CLASS = '/Error$/';
 const CODE_FILE_SELECTORS = [
@@ -249,7 +261,7 @@ export default defineConfig([
     plugins: { jsdoc },
     settings: { jsdoc: { mode: 'typescript' } },
     rules: {
-      'jsdoc/require-jsdoc': ['error', REQUIRE_JSDOC_OPTIONS(PUBLIC_PROPERTY)],
+      'jsdoc/require-jsdoc': ['error', requireJsdocOptions(PUBLIC_PROPERTY)],
       'jsdoc/match-description': [
         'error',
         {
@@ -276,7 +288,7 @@ export default defineConfig([
   {
     files: ['projects/**/errors/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'jsdoc/require-jsdoc': ['error', REQUIRE_JSDOC_OPTIONS(`${PUBLIC_PROPERTY}:not(${ERROR_CLASS_NAME})`)] },
+    rules: { 'jsdoc/require-jsdoc': ['error', requireJsdocOptions(`${PUBLIC_PROPERTY}:not(${ERROR_CLASS_NAME})`)] },
   },
   {
     files: ['**/*.html'],

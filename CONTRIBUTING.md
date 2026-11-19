@@ -173,7 +173,20 @@ export const AUDIT_SEVERITIES = ['critical', 'high', 'moderate', 'low', 'info'] 
 export type AuditSeverity = (typeof AUDIT_SEVERITIES)[number];
 ```
 
-Checked by: ESLint `@typescript-eslint/typedef`, `explicit-function-return-type`, `array-type` and `consistent-generic-constructors`; in `constants/`, `no-restricted-syntax` accepts a constant without a type only when it ends in `as const`.
+Object shapes are interfaces. `type` is only for unions and computed types (mapped, conditional, `typeof`, indexed access).
+
+```ts
+// Yes
+export interface Point {
+  readonly x: number;
+}
+export type Shape = Circle | Square;
+
+// No
+export type Point = { readonly x: number };
+```
+
+Checked by: ESLint `@typescript-eslint/typedef`, `explicit-function-return-type`, `array-type`, `consistent-generic-constructors` and `consistent-type-definitions`; in `constants/`, `no-restricted-syntax` accepts a constant without a type only when it ends in `as const`.
 
 ### 7. Names
 
@@ -363,3 +376,28 @@ No:  Update CI workflows to improve reliability
 ```
 
 Checked by: `tools/ci/check-commits.ts`, on the commits of the branch (fast level) and on the pull request title (`pr-title.yml`).
+
+### 15. Functions, loops and private members
+
+Top-level functions are declared with `function`, not kept in constants. Functional interceptors, guards and resolvers are the exception: they stay as a constant with the type that Angular expects (rule 13). Functions inside other functions can be arrows.
+
+```ts
+// Yes
+export function loadItems(): Array<Item> {}
+export const foundrySessionInterceptor: HttpInterceptorFn = (request, next) => next(request);
+
+// No
+export const loadItems = (): Array<Item> => [];
+```
+
+Private members use the TypeScript `private` modifier, not `#`.
+
+```ts
+// Yes
+private readonly items: Array<Item> = [];
+
+// No
+readonly #items: Array<Item> = [];
+```
+
+Checked by: ESLint `no-restricted-syntax` (top-level constants whose value is a function, unless their type ends in `Fn`; any `#` name).
