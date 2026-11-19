@@ -10,6 +10,7 @@ npm run lint             # ESLint, Prettier, text rules and type-check
 npm test
 npm run build
 npm run check:packages
+npm run size             # size of each entry: see tools/size/README.md
 ```
 
 `npm run format` fixes the formatting. CI runs the same checks: see `tools/ci/README.md`.
@@ -130,9 +131,23 @@ clear(): void {}
 
 `computed()` and `linkedSignal()` go in `// CONTROL VARIABLES`; `effect()` goes in `// LIFECYCLE HOOKS`.
 
+An Angular lifecycle hook (`ngOnInit`, `ngOnChanges`, `ngOnDestroy`...) runs no code of its own: it only calls methods of the class, and each method goes in the section that fits what it does.
+
+```ts
+// LIFECYCLE HOOKS
+ngOnInit(): void {
+  this.loadItems();
+}
+
+// ACTIONS
+private loadItems(): void {
+  this.itemsService.load().subscribe((items) => this.items.set(items));
+}
+```
+
 Never `/** ACTIONS */`: a `/** */` comment becomes the documentation of the next member in the published `.d.ts`.
 
-Checked by: `tools/lint/check-text.ts` rejects `/** UPPERCASE */`. Order and blank lines: review.
+Checked by: `tools/lint/check-text.ts` rejects `/** UPPERCASE */`; ESLint `no-restricted-syntax` rejects any statement of a lifecycle hook that is not a `this.method()` call. Order, the section of each method and blank lines: review.
 
 ### 6. Explicit types
 
@@ -287,6 +302,8 @@ projects/antoniocorraliza/foundry-core/storage/
 A piece with an error class keeps it in `errors/`, like the HTTP client of Core: `src/errors/foundry-api.error.ts`.
 
 An error class always assigns its `name` as a literal, because that value is what survives minification. A class without subclasses also declares it with the literal type; a class with subclasses declares it as `string`, because a literal type there would stop the subclasses from declaring their own.
+
+That `name` takes no JSDoc: its literal already says everything, and a comment there would be filler. `jsdoc/require-jsdoc` skips `override readonly name` in `errors/` and nowhere else.
 
 ```ts
 // errors/foundry-utils.error.ts: it has subclasses

@@ -9,7 +9,7 @@ Both use `.github/actions/setup-workspace` (Node, npm, dependencies and browsers
 
 ## Fast level
 
-Angular 21, Node 24, one job: `npm ci`, commit messages of the branch (`tools/ci/check-commits.ts origin/main..HEAD`), production audit, lint, warm-up, unit tests on Node and Chromium, build and `check:packages`.
+Angular 21, Node 24, one job: `npm ci`, commit messages of the branch (`tools/ci/check-commits.ts origin/main..HEAD`), production audit, lint, warm-up, unit tests on Node and Chromium, build, `check:packages`, size of each entry (`npm run size`) and the changelog line of the entries that grew (`npm run size:changelog`).
 
 ## Pull request title
 

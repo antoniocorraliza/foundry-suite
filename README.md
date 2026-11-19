@@ -26,6 +26,7 @@ npm run lint
 npm test
 npm run build            # utils, core and ui, in that order
 npm run check:packages   # checks what goes inside each tarball
+npm run size             # size of each entry against its budget and the saved reference
 ```
 
 Style guide, commit messages and checks before a pull request: [CONTRIBUTING.md](CONTRIBUTING.md).

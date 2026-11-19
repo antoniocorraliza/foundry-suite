@@ -64,3 +64,9 @@ jobs:
 
       - name: Check the packages
         run: npm run check:packages
+
+      - name: Check the size of each entry
+        run: npm run size
+
+      - name: Check the changelog of the entries that grew
+        run: npm run size:changelog -- origin/main

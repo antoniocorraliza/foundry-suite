@@ -21,7 +21,17 @@ const MESSAGE_SELECTORS = [
   })),
 ];
 
-// no-restricted-syntax takes the last matching block whole, so every block below repeats the message selectors.
+const LIFECYCLE_HOOK = '/^ng(?:OnInit|OnChanges|DoCheck|AfterContentInit|AfterContentChecked|AfterViewInit|AfterViewChecked|OnDestroy)$/';
+const OWN_METHOD_CALL = "ExpressionStatement[expression.type='CallExpression'][expression.callee.object.type='ThisExpression']";
+const LIFECYCLE_HOOK_SELECTORS = [
+  {
+    selector: `MethodDefinition[key.name=${LIFECYCLE_HOOK}] > FunctionExpression > BlockStatement > :not(${OWN_METHOD_CALL})`,
+    message: 'Lifecycle hooks only call methods of the class: move the code to a named method.',
+  },
+];
+const COMMON_SELECTORS = [...MESSAGE_SELECTORS, ...LIFECYCLE_HOOK_SELECTORS];
+
+// no-restricted-syntax takes the last matching block whole, so every block below repeats the common selectors.
 const TOP_LEVEL = ['Program > ', 'Program > ExportNamedDeclaration > '];
 const TOKEN_CLASSES = '/^(?:InjectionToken|HttpContextToken)$/';
 const EXEMPT_FILES = ['**/*.spec.ts', '**/*.d.ts'];
@@ -42,6 +52,20 @@ const LIBRARY_NAMED_OBJECT_TYPES = forbid(
 const LIBRARY_FILES = 'projects/**/';
 const PUBLIC_PROPERTY =
   "PropertyDefinition:not([accessibility='private']):not([accessibility='protected']):not([key.type='PrivateIdentifier'])";
+// The name of an error class is its literal value: a JSDoc there would only repeat it.
+const ERROR_CLASS_NAME = "[override=true][readonly=true][key.name='name']";
+const REQUIRE_JSDOC_OPTIONS = (publicProperty) => ({
+  publicOnly: { esm: true },
+  require: { FunctionDeclaration: true, ClassDeclaration: true, MethodDefinition: true },
+  contexts: [
+    'TSInterfaceDeclaration',
+    'TSTypeAliasDeclaration',
+    'TSEnumDeclaration',
+    'ExportNamedDeclaration > VariableDeclaration',
+    publicProperty,
+  ],
+  checkConstructors: false,
+});
 const JSDOC_FUNCTION_DESCRIPTION = '^(?!(?:This|These|That|A|An|The|Helper|Utility|Wrapper)\\b)[A-Z][a-z]*s\\b[\\s\\S]*$';
 const ERROR_CLASS = '/Error$/';
 const CODE_FILE_SELECTORS = [
@@ -157,7 +181,7 @@ export default defineConfig([
         'tmp',
         'val',
       ],
-      'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...CODE_FILE_SELECTORS],
+      'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...NAMED_OBJECT_TYPES, ...CODE_FILE_SELECTORS],
       '@typescript-eslint/consistent-type-imports': 'error',
       // One inner list: the groups keep their order but are not separated by blank lines.
       'simple-import-sort/imports': ['error', { groups: [['^\\u0000', '^node:', '^@?\\w', '^@antoniocorraliza(?:/|$)', '^\\.']] }],
@@ -172,12 +196,12 @@ export default defineConfig([
   {
     files: ['**/interfaces/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...INTERFACE_FILE_SELECTORS] },
+    rules: { 'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...NAMED_OBJECT_TYPES, ...INTERFACE_FILE_SELECTORS] },
   },
   {
     files: ['**/types/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...TYPE_FILE_SELECTORS] },
+    rules: { 'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...NAMED_OBJECT_TYPES, ...TYPE_FILE_SELECTORS] },
   },
   {
     files: ['**/constants/**/*.ts'],
@@ -185,13 +209,13 @@ export default defineConfig([
     rules: {
       // A closed list is `as const`, and its type is derived from it in types/.
       '@typescript-eslint/typedef': ['error', { ...TYPEDEF_OPTIONS, variableDeclaration: false }],
-      'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...CONSTANT_FILE_SELECTORS],
+      'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...NAMED_OBJECT_TYPES, ...CONSTANT_FILE_SELECTORS],
     },
   },
   {
     files: ['**/tokens/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...TOKEN_FILE_SELECTORS] },
+    rules: { 'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...NAMED_OBJECT_TYPES, ...TOKEN_FILE_SELECTORS] },
   },
   {
     files: ['**/errors/**/*.ts'],
@@ -200,7 +224,7 @@ export default defineConfig([
       // The name of an error class is a literal type with its type annotation, as typedef asks.
       '@typescript-eslint/prefer-as-const': 'off',
       'max-classes-per-file': ['error', 1],
-      'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...ERROR_FILE_SELECTORS],
+      'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...NAMED_OBJECT_TYPES, ...ERROR_FILE_SELECTORS],
     },
   },
   ...[
@@ -213,11 +237,11 @@ export default defineConfig([
   ].map(([pattern, selectors]) => ({
     files: [`${LIBRARY_FILES}${pattern}`],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...LIBRARY_NAMED_OBJECT_TYPES, ...selectors] },
+    rules: { 'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...LIBRARY_NAMED_OBJECT_TYPES, ...selectors] },
   })),
   {
     files: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS] },
+    rules: { 'no-restricted-syntax': ['error', ...COMMON_SELECTORS] },
   },
   {
     files: ['projects/**/*.ts'],
@@ -225,21 +249,7 @@ export default defineConfig([
     plugins: { jsdoc },
     settings: { jsdoc: { mode: 'typescript' } },
     rules: {
-      'jsdoc/require-jsdoc': [
-        'error',
-        {
-          publicOnly: { esm: true },
-          require: { FunctionDeclaration: true, ClassDeclaration: true, MethodDefinition: true },
-          contexts: [
-            'TSInterfaceDeclaration',
-            'TSTypeAliasDeclaration',
-            'TSEnumDeclaration',
-            'ExportNamedDeclaration > VariableDeclaration',
-            PUBLIC_PROPERTY,
-          ],
-          checkConstructors: false,
-        },
-      ],
+      'jsdoc/require-jsdoc': ['error', REQUIRE_JSDOC_OPTIONS(PUBLIC_PROPERTY)],
       'jsdoc/match-description': [
         'error',
         {
@@ -262,6 +272,11 @@ export default defineConfig([
       'jsdoc/no-multi-asterisks': 'error',
       'jsdoc/check-alignment': 'error',
     },
+  },
+  {
+    files: ['projects/**/errors/**/*.ts'],
+    ignores: EXEMPT_FILES,
+    rules: { 'jsdoc/require-jsdoc': ['error', REQUIRE_JSDOC_OPTIONS(`${PUBLIC_PROPERTY}:not(${ERROR_CLASS_NAME})`)] },
   },
   {
     files: ['**/*.html'],
