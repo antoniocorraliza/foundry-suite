@@ -1,0 +1,31 @@
+import { describe, expect, it } from 'vitest';
+import { folderSuffixProblem } from './folder-suffix-problem.function.ts';
+
+describe('folderSuffixProblem', () => {
+  it.each([
+    'core/storage/src/interfaces/foundry-storage-key.interface.ts',
+    'core/storage/src/interfaces/foundry-storage-area.type.ts',
+    'core/storage/src/services/foundry-storage.service.spec.ts',
+    'ui/select/src/components/foundry-select/foundry-select.component.html',
+    'tools/ci/check-commits.ts',
+    'README.md',
+  ])('accepts %s', (path) => {
+    expect(folderSuffixProblem(path)).toBeUndefined();
+  });
+
+  it('reports a file without the suffix of its folder', () => {
+    expect(folderSuffixProblem('tools/ci/interfaces/commit.ts')).toBe(
+      'tools/ci/interfaces/commit.ts: a file in interfaces/ must end in .interface.ts, .type.ts',
+    );
+  });
+
+  it('reports a suffix outside its folder', () => {
+    expect(folderSuffixProblem('core/storage/src/foundry-storage.service.ts')).toBe(
+      'core/storage/src/foundry-storage.service.ts: a file with this suffix belongs in a services/ folder',
+    );
+  });
+
+  it('uses the nearest folder that has a kind', () => {
+    expect(folderSuffixProblem('ui/src/services/components/x/x.component.ts')).toBeUndefined();
+  });
+});
