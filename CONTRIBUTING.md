@@ -186,7 +186,21 @@ export type Shape = Circle | Square;
 export type Point = { readonly x: number };
 ```
 
-Checked by: ESLint `@typescript-eslint/typedef`, `explicit-function-return-type`, `array-type`, `consistent-generic-constructors` and `consistent-type-definitions`; in `constants/`, `no-restricted-syntax` accepts a constant without a type only when it ends in `as const`.
+"No value" is `null`. `undefined` is only what the language or an API gives (an optional property, `array[0]`, `find()`): it is compared, or turned into `null` with `?? null`, but never written as a value or returned by our own functions. In the libraries, the public API keeps `undefined` where its design uses it.
+
+```ts
+// Yes
+function findItem(id: string): Item | null {
+  return items.find((item) => item.id === id) ?? null;
+}
+
+// No
+function findItem(id: string): Item | undefined {
+  return undefined;
+}
+```
+
+Checked by: ESLint `@typescript-eslint/typedef`, `explicit-function-return-type`, `array-type`, `consistent-generic-constructors` and `consistent-type-definitions`; `no-restricted-syntax` rejects `undefined` written as a value (outside a comparison) and in the return type of a function, a method or a function type, except in spec files and in the exported declarations of `projects/`; in `constants/`, `no-restricted-syntax` accepts a constant without a type only when it ends in `as const`.
 
 ### 7. Names
 

@@ -1,17 +1,17 @@
 import type { Tarball } from '../interfaces/tarball.interface.ts';
 import type { ThirdPartyNotice } from '../interfaces/third-party-notice.interface.ts';
 
-function fileRequiringNotice(notice: ThirdPartyNotice, tarball: Tarball, sourceFiles: ReadonlyArray<string>): string | undefined {
+function fileRequiringNotice(notice: ThirdPartyNotice, tarball: Tarball, sourceFiles: ReadonlyArray<string>): string | null {
   const { whenTarballHas, whenSourceHas } = notice;
-  const inTarball: string | undefined = whenTarballHas ? tarball.files.find((file) => whenTarballHas.test(file)) : undefined;
+  const inTarball: string | null = whenTarballHas ? (tarball.files.find((file) => whenTarballHas.test(file)) ?? null) : null;
   if (inTarball) return inTarball;
-  return whenSourceHas ? sourceFiles.find((file) => whenSourceHas.test(file)) : undefined;
+  return whenSourceHas ? (sourceFiles.find((file) => whenSourceHas.test(file)) ?? null) : null;
 }
 
 export function checkNotices(tarball: Tarball, sourceFiles: ReadonlyArray<string>): Array<string> {
   const problems: Array<string> = [];
   tarball.foundryPackage.notices.forEach((notice) => {
-    const trigger: string | undefined = fileRequiringNotice(notice, tarball, sourceFiles);
+    const trigger: string | null = fileRequiringNotice(notice, tarball, sourceFiles);
     if (!trigger) {
       console.log(`    - notices: ${notice.noticePath} not required yet (nothing it covers is present)`);
     } else if (!tarball.files.includes(notice.noticePath)) {

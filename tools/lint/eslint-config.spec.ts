@@ -315,3 +315,54 @@ describe.skipIf(IS_ESLINT_MISSING)('loops over lists', () => {
     expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([3, 4, 5]);
   });
 });
+
+describe.skipIf(IS_ESLINT_MISSING)('null for missing values', () => {
+  const message: string = 'Internal code uses null';
+
+  it('accepts null, and undefined that comes from the language and is only compared', async () => {
+    const code: string = [
+      'export function firstName(names: ReadonlyArray<string>, fallback?: string): string | null {',
+      '  const first: string | undefined = names[0];',
+      '  if (first === undefined) return fallback ?? null;',
+      '  return first;',
+      '}',
+      '',
+    ].join('\n');
+    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
+  });
+
+  it('rejects undefined as a value and in return types', async () => {
+    const code: string = [
+      'export function firstName(names: ReadonlyArray<string>): string | undefined {',
+      '  if (names.length === 0) return undefined;',
+      '  const first: string | null = names[0] ?? undefined ?? null;',
+      '  return first ?? undefined;',
+      '}',
+      'export interface NameReader {',
+      '  read(): Promise<string | undefined>;',
+      '  readonly next: () => string | undefined;',
+      '}',
+      '',
+    ].join('\n');
+    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([1, 2, 3, 4, 7, 8]);
+  });
+
+  it('leaves undefined in the public API of the libraries to their designs', async () => {
+    const code: string = [
+      'export function message(body: unknown): string | undefined {',
+      "  return typeof body === 'string' ? body : undefined;",
+      '}',
+      'function title(body: unknown): string | undefined {',
+      "  return typeof body === 'string' ? body : null;",
+      '}',
+      '',
+    ].join('\n');
+    const path: string = 'projects/antoniocorraliza/foundry-core/http-client/src/functions/message.function.ts';
+    expect(await messageLines(code, path, message)).toEqual([2, 4]);
+  });
+
+  it('lets tests use undefined', async () => {
+    const code: string = ["it('returns nothing', () => {", '  expect(read()).toBe(undefined);', '});', ''].join('\n');
+    expect(await messageLines(code, 'tools/probe/probe.spec.ts', message)).toEqual([]);
+  });
+});

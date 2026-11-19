@@ -143,8 +143,8 @@ async function errorNameProblems(builtEntries: ReadonlyArray<BuiltEntry>, contex
       const outputFile: string = join(workDirectory, `error-name-${checked}.mjs`);
       checked += 1;
       const printed: string = await printedErrorName({ bundle: { ...bundleRequest, source }, bundler, outputFile });
-      const problem: string | undefined = errorNameProblem(builtEntry.specifier, errorClass.className, bundler, printed);
-      if (problem !== undefined) problems.push(problem);
+      const problem: string | null = errorNameProblem(builtEntry.specifier, errorClass.className, bundler, printed);
+      if (problem !== null) problems.push(problem);
     }
   }
   console.log(

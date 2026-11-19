@@ -3,7 +3,7 @@ import { errorNameProblem } from './error-name-problem.function.ts';
 
 describe('errorNameProblem', () => {
   it('accepts the class name printed after minifying', () => {
-    expect(errorNameProblem('@antoniocorraliza/foundry-utils', 'FoundryUtilsError', 'esbuild', 'FoundryUtilsError')).toBeUndefined();
+    expect(errorNameProblem('@antoniocorraliza/foundry-utils', 'FoundryUtilsError', 'esbuild', 'FoundryUtilsError')).toBeNull();
   });
 
   it('reports a minified or inherited name', () => {

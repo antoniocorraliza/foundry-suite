@@ -95,8 +95,22 @@ const NAMING_SELECTORS = NAMING_RULES.map(({ selector, message }) => ({ selector
 const LIBRARY_NAMING_SELECTORS = NAMING_RULES.flatMap(({ selector, subject, message }) =>
   internalOnly(selector, subject).map((internalSelector) => ({ selector: internalSelector, message })),
 );
-const GENERAL_SELECTORS = [...COMMON_SELECTORS, ...NAMING_SELECTORS];
-const LIBRARY_GENERAL_SELECTORS = [...COMMON_SELECTORS, ...LIBRARY_NAMING_SELECTORS];
+const NULL_MESSAGE = 'Internal code uses null for "no value": undefined only comes from the language, and is only compared.';
+const NULL_RULES = [
+  { selector: "Identifier[name='undefined']:not(BinaryExpression > Identifier)", subject: 'Identifier' },
+  ...[':function', 'TSMethodSignature', 'TSFunctionType'].map((owner) => ({
+    selector: `${owner} > TSTypeAnnotation TSUndefinedKeyword`,
+    subject: 'TSUndefinedKeyword',
+  })),
+];
+const NULL_SELECTORS = NULL_RULES.map(({ selector }) => ({ selector, message: NULL_MESSAGE }));
+const LIBRARY_NULL_SELECTORS = NULL_RULES.flatMap(({ selector, subject }) =>
+  internalOnly(selector, subject).map((internalSelector) => ({ selector: internalSelector, message: NULL_MESSAGE })),
+);
+const GENERAL_SELECTORS = [...COMMON_SELECTORS, ...NAMING_SELECTORS, ...NULL_SELECTORS];
+const LIBRARY_GENERAL_SELECTORS = [...COMMON_SELECTORS, ...LIBRARY_NAMING_SELECTORS, ...LIBRARY_NULL_SELECTORS];
+// Tests compare with undefined when the code under test returns it.
+const TEST_SELECTORS = [...COMMON_SELECTORS, ...NAMING_SELECTORS];
 const TOKEN_CLASSES = '/^(?:InjectionToken|HttpContextToken)$/';
 const EXEMPT_FILES = ['**/*.spec.ts', '**/*.d.ts'];
 function forbid(selectors, message) {
@@ -308,7 +322,7 @@ export default defineConfig([
   })),
   {
     files: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...GENERAL_SELECTORS] },
+    rules: { 'no-restricted-syntax': ['error', ...TEST_SELECTORS] },
   },
   {
     files: ['projects/**/*.ts'],

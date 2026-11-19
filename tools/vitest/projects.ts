@@ -32,10 +32,10 @@ function selectedBrowsers(variable: string | undefined): ReadonlyArray<TestBrows
 
 function expectedAngularMajor(variable: string | undefined, manifestText: string): number {
   const manifest: unknown = JSON.parse(manifestText);
-  const fromManifest: string | undefined =
+  const fromManifest: string | null =
     typeof manifest === 'object' && manifest !== null && 'dependencies' in manifest
-      ? (manifest.dependencies as Record<string, string | undefined>)['@angular/core']
-      : undefined;
+      ? ((manifest.dependencies as Record<string, string | undefined>)['@angular/core'] ?? null)
+      : null;
   const major: number = Number.parseInt(variable?.trim() || (fromManifest ?? ''), 10);
   if (Number.isInteger(major)) return major;
   throw new Error('[test-projects]: cannot tell the expected Angular major, set FOUNDRY_EXPECTED_ANGULAR_MAJOR');

@@ -17,8 +17,8 @@ describe('measurementSubject', () => {
     });
   });
 
-  it('returns undefined for a name outside the convention', () => {
-    expect(measurementSubject('date picker')).toBeUndefined();
+  it('returns null for a name outside the convention', () => {
+    expect(measurementSubject('date picker')).toBeNull();
   });
 
   it('matches the package and the entry of every budget row', () => {

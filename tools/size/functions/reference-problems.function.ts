@@ -5,10 +5,10 @@ import type { SizeToolFigures } from '../types/size-tool-figures.type.ts';
 import { formatKilobytes } from './format-kilobytes.function.ts';
 import { signedBytes } from './signed-bytes.function.ts';
 
-function changeProblem(label: string, measured: SizeFigures, reference: SizeFigures): string | undefined {
+function changeProblem(label: string, measured: SizeFigures, reference: SizeFigures): string | null {
   const rawChange: number = measured.raw - reference.raw;
   const gzipChange: number = measured.gzip - reference.gzip;
-  if (rawChange === 0 && gzipChange === 0) return undefined;
+  if (rawChange === 0 && gzipChange === 0) return null;
   const direction: string = rawChange > 0 || (rawChange === 0 && gzipChange > 0) ? 'grew' : 'shrank';
   const now: string = `${formatKilobytes(measured.raw)}, gzip ${formatKilobytes(measured.gzip)}`;
   return `${label}: ${direction} by ${signedBytes(rawChange)} (gzip ${signedBytes(gzipChange)}), now ${now}`;
@@ -35,8 +35,8 @@ export function referenceProblems(measured: SizeReference, reference: SizeRefere
       if (!toolMeasured) problems.push(`${name} [${tool}]: in the reference but no longer measured`);
       else if (!toolReference) problems.push(`${name} [${tool}]: new, not in the reference yet`);
       else {
-        const problem: string | undefined = changeProblem(`${name} [${tool}]`, toolMeasured, toolReference);
-        if (problem !== undefined) problems.push(problem);
+        const problem: string | null = changeProblem(`${name} [${tool}]`, toolMeasured, toolReference);
+        if (problem !== null) problems.push(problem);
       }
     });
   });

@@ -27,8 +27,8 @@ function main(): number {
   repositoryFiles().forEach((path) => {
     const text: string = readFileSync(path, 'utf8');
     problems.push(...textProblems(path, text));
-    const folderProblem: string | undefined = folderSuffixProblem(path);
-    if (folderProblem !== undefined) problems.push(folderProblem);
+    const folderProblem: string | null = folderSuffixProblem(path);
+    if (folderProblem !== null) problems.push(folderProblem);
     if (TYPESCRIPT_FILE.test(path)) problems.push(...signatureProblems(path, text));
     if (SPEC_FILE.test(path)) problems.push(...testTitleProblems(path, text));
     if (LIBRARY_TYPESCRIPT_FILE.test(path)) problems.push(...libraryCommentProblems(path, text));
