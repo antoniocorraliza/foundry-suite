@@ -12,17 +12,17 @@ inputs:
     description: Lowest accepted Node version for this job, for example 22.22.3.
     required: true
   angular:
-    description: "21: the development workspace and its lockfile. 22: tools/ci/angular-22 and its own lockfile."
+    description: '21: the development workspace and its lockfile. 22: tools/ci/angular-22 and its own lockfile.'
     required: false
-    default: "21"
+    default: '21'
   browsers:
-    description: "Comma-separated Playwright browsers (chromium,firefox,webkit), or none. Also sets FOUNDRY_TEST_BROWSERS."
+    description: 'Comma-separated Playwright browsers (chromium,firefox,webkit), or none. Also sets FOUNDRY_TEST_BROWSERS.'
     required: false
     default: none
   browsers-preinstalled:
     description: "'true' when the job runs in the Playwright image, which already has the browsers and their system packages."
     required: false
-    default: "false"
+    default: 'false'
 
 runs:
   using: composite

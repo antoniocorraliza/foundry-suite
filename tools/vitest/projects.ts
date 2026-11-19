@@ -47,7 +47,6 @@ const ANGULAR_OPTIMIZED_DEPENDENCIES = [
 
 const isCoverageRun = process.env['FOUNDRY_TEST_COVERAGE'] === 'true';
 
-
 function isFoundryTestBrowser(value: string): value is FoundryTestBrowser {
   return (FOUNDRY_TEST_BROWSERS as readonly string[]).includes(value);
 }
@@ -64,9 +63,7 @@ function selectedBrowsers(): readonly FoundryTestBrowser[] {
   const names = value.split(',').map((name) => name.trim());
   const unknown = names.filter((name) => !isFoundryTestBrowser(name));
   if (unknown.length > 0) {
-    throw new Error(
-      `FOUNDRY_TEST_BROWSERS: unknown browser(s) ${unknown.join(', ')}. Use ${FOUNDRY_TEST_BROWSERS.join(', ')} or none.`,
-    );
+    throw new Error(`FOUNDRY_TEST_BROWSERS: unknown browser(s) ${unknown.join(', ')}. Use ${FOUNDRY_TEST_BROWSERS.join(', ')} or none.`);
   }
   return names.filter(isFoundryTestBrowser);
 }
@@ -105,13 +102,13 @@ function angularPlugin() {
 
 function browsersToRun(browsers: readonly FoundryTestBrowser[]): readonly FoundryTestBrowser[] {
   const selected = selectedBrowsers();
-  return browsers.filter(
-    (browser) => selected.includes(browser) && (!isCoverageRun || browser === 'chromium'),
-  );
+  return browsers.filter((browser) => selected.includes(browser) && (!isCoverageRun || browser === 'chromium'));
 }
 
 /** Angular on Node with jsdom, zoneless or with zone.js. */
-export function angularNodeProject(options: ProjectFiles & { readonly changeDetection: FoundryChangeDetection }): TestProjectInlineConfiguration {
+export function angularNodeProject(
+  options: ProjectFiles & { readonly changeDetection: FoundryChangeDetection },
+): TestProjectInlineConfiguration {
   return {
     plugins: [angularPlugin()],
     optimizeDeps: { include: ANGULAR_OPTIMIZED_DEPENDENCIES },
@@ -166,13 +163,13 @@ export function browserProjects(
   }
   const instances = options.timeZones
     ? browsers.flatMap((browser) =>
-      (options.timeZones ?? []).map((timeZone) => ({
-        browser,
-        name: `${options.name}:${browser}:${timeZoneSlug(timeZone)}`,
-        provider: playwright({ contextOptions: { timezoneId: timeZone } }),
-        provide: { expectedTimeZone: timeZone, expectedAngularMajor: ANGULAR_MAJOR },
-      })),
-    )
+        (options.timeZones ?? []).map((timeZone) => ({
+          browser,
+          name: `${options.name}:${browser}:${timeZoneSlug(timeZone)}`,
+          provider: playwright({ contextOptions: { timezoneId: timeZone } }),
+          provide: { expectedTimeZone: timeZone, expectedAngularMajor: ANGULAR_MAJOR },
+        })),
+      )
     : browsers.map((browser) => ({ browser, name: `${options.name}:${browser}` }));
 
   return [

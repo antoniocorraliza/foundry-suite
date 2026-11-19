@@ -6,7 +6,7 @@ name: CI fast
 
 on:
   push:
-    branches: ["**"]
+    branches: ['**']
   workflow_dispatch:
 
 permissions:
@@ -31,9 +31,9 @@ jobs:
       - name: Set up the workspace
         uses: ./.github/actions/setup-workspace
         with:
-          node-version: "24"
+          node-version: '24'
           node-minimum: 24.15.0
-          angular: "21"
+          angular: '21'
           browsers: chromium
 
       # Any production vulnerability fails (today the root dependencies are the

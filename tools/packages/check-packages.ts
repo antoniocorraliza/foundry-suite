@@ -232,7 +232,9 @@ function checkPeers(tarball: Tarball, versions: ReadonlyMap<FoundryPackageFolder
     if (expected[name] === undefined) problems.push(`unexpected peer ${name}.`);
   }
   const meta = manifest.peerDependenciesMeta ?? {};
-  const optional = Object.keys(meta).filter((name) => meta[name]?.optional === true).sort();
+  const optional = Object.keys(meta)
+    .filter((name) => meta[name]?.optional === true)
+    .sort();
   const expectedOptional = [...foundryPackage.optionalPeers].sort();
   if (optional.join() !== expectedOptional.join()) {
     problems.push(`optional peers are [${optional.join(', ')}], expected [${expectedOptional.join(', ')}].`);
