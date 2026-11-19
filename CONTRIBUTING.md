@@ -405,6 +405,17 @@ export const foundrySessionInterceptor: HttpInterceptorFn = (request, next) => n
 export const loadItems = (): Array<Item> => [];
 ```
 
+Lists are walked with array methods (`forEach`, `map`, `filter`, `reduce`...). A `for...of` loop only when an array method does not fit: to `await` inside it or to stop early (`break`, `return`).
+
+```ts
+// Yes
+items.forEach((item) => console.log(item));
+for (const file of files) await upload(file);
+
+// No
+for (const item of items) console.log(item);
+```
+
 Private members use the TypeScript `private` modifier, not `#`.
 
 ```ts
@@ -415,4 +426,4 @@ private readonly items: Array<Item> = [];
 readonly #items: Array<Item> = [];
 ```
 
-Checked by: ESLint `no-restricted-syntax` (top-level constants whose value is a function, unless their type ends in `Fn`; any `#` name).
+Checked by: ESLint `no-restricted-syntax` (top-level constants whose value is a function, unless their type ends in `Fn`; `for...of`, `for` and `for...in` loops without `await`, `break` or `return` inside; any `#` name). A `return` or `break` inside a nested callback also lets a loop through: review.

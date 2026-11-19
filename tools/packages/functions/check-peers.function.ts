@@ -8,19 +8,19 @@ export function checkPeers(tarball: Tarball, versions: ReadonlyMap<FoundryPackag
   const { manifest, foundryPackage } = tarball;
   const problems: Array<string> = [];
   const expected: Record<string, string> = { ...foundryPackage.peerDependencies };
-  for (const folder of foundryPackage.foundryPeers) {
+  foundryPackage.foundryPeers.forEach((folder) => {
     const peer: FoundryPackage | undefined = FOUNDRY_PACKAGES.find((candidate) => candidate.folder === folder);
     const version: string | undefined = versions.get(folder);
     if (peer && version) expected[peer.name] = `^${version}`;
-  }
+  });
   const actual: Readonly<Record<string, string>> = manifest.peerDependencies ?? {};
-  for (const [name, range] of Object.entries(expected)) {
+  Object.entries(expected).forEach(([name, range]) => {
     if (actual[name] === undefined) problems.push(`peer ${name} is missing (expected "${range}")`);
     else if (actual[name] !== range) problems.push(`peer ${name} is "${actual[name]}", expected "${range}"`);
-  }
-  for (const name of Object.keys(actual)) {
+  });
+  Object.keys(actual).forEach((name) => {
     if (expected[name] === undefined) problems.push(`unexpected peer ${name}`);
-  }
+  });
   const peersMeta: Readonly<Record<string, PeerDependencyMeta>> = manifest.peerDependenciesMeta ?? {};
   const optionalPeers: Array<string> = Object.keys(peersMeta)
     .filter((name) => peersMeta[name]?.optional === true)

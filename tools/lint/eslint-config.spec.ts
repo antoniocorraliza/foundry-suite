@@ -278,3 +278,40 @@ describe.skipIf(IS_ESLINT_MISSING)('names of observables', () => {
     expect(await messageLines(code, path, 'Observables end in')).toEqual([3]);
   });
 });
+
+describe.skipIf(IS_ESLINT_MISSING)('loops over lists', () => {
+  const message: string = 'Lists are walked with array methods';
+
+  it('accepts array methods, and loops that await or stop early', async () => {
+    const code: string = [
+      'export async function process(items: ReadonlyArray<string>): Promise<string | null> {',
+      '  items.forEach((item) => console.log(item));',
+      '  for (const item of items) await save(item);',
+      '  for await (const line of lines()) console.log(line);',
+      '  for (const item of items) {',
+      "    if (item === '') break;",
+      '  }',
+      '  for (const item of items) {',
+      '    if (item.length > 3) return item;',
+      '  }',
+      '  return null;',
+      '}',
+      '',
+    ].join('\n');
+    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
+  });
+
+  it('rejects for...of, for and for...in loops that only walk the list', async () => {
+    const code: string = [
+      'export function totals(items: ReadonlyArray<number>, counts: Readonly<Record<string, number>>): number {',
+      '  let total: number = 0;',
+      '  for (const item of items) total += item;',
+      '  for (let index: number = 0; index < items.length; index++) total += items[index] ?? 0;',
+      '  for (const name in counts) total += counts[name] ?? 0;',
+      '  return total;',
+      '}',
+      '',
+    ].join('\n');
+    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([3, 4, 5]);
+  });
+});

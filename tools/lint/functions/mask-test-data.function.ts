@@ -17,9 +17,10 @@ export function maskTestData(path: string, text: string): string {
     if (title !== undefined && (ts.isStringLiteralLike(title) || ts.isTemplateExpression(title))) titles.add(title);
     const content: [number, number] | undefined = titles.has(node) ? undefined : textLiteralContent(node, source);
     if (content !== undefined) {
-      for (let position: number = content[0]; position < content[1]; position++) {
-        if (characters[position] !== '\n' && characters[position] !== '\r') characters[position] = ' ';
-      }
+      const [start, end]: [number, number] = content;
+      characters.slice(start, end).forEach((character, offset) => {
+        if (character !== '\n' && character !== '\r') characters[start + offset] = ' ';
+      });
     }
     if (!titles.has(node)) node.getChildren(source).forEach(visit);
   };

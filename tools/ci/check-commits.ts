@@ -23,17 +23,15 @@ function main(): number {
   }
   if (firstArgument === '--title') {
     const problems: Array<string> = titleProblems(secondArgument ?? '');
-    for (const problem of problems) console.error(`[check-commits]: pull request ${problem}`);
+    problems.forEach((problem) => console.error(`[check-commits]: pull request ${problem}`));
     return problems.length === 0 ? 0 : 1;
   }
-  let failures: number = 0;
   const commits: Array<Commit> = commitsInRange(firstArgument);
-  for (const commit of commits) {
-    for (const problem of messageProblems(commit.message)) {
-      console.error(`[check-commits]: ${commit.hash.slice(0, 7)} ${problem}`);
-      failures++;
-    }
-  }
+  const problems: Array<string> = commits.flatMap((commit) =>
+    messageProblems(commit.message).map((problem) => `[check-commits]: ${commit.hash.slice(0, 7)} ${problem}`),
+  );
+  problems.forEach((problem) => console.error(problem));
+  const failures: number = problems.length;
   console.log(`[check-commits]: ${commits.length} commit(s) checked, ${failures} problem(s)`);
   return failures === 0 ? 0 : 1;
 }

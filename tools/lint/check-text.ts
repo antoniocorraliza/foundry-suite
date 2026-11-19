@@ -24,7 +24,7 @@ function repositoryFiles(): Array<string> {
 
 function main(): number {
   const problems: Array<string> = [];
-  for (const path of repositoryFiles()) {
+  repositoryFiles().forEach((path) => {
     const text: string = readFileSync(path, 'utf8');
     problems.push(...textProblems(path, text));
     const folderProblem: string | undefined = folderSuffixProblem(path);
@@ -32,8 +32,8 @@ function main(): number {
     if (TYPESCRIPT_FILE.test(path)) problems.push(...signatureProblems(path, text));
     if (SPEC_FILE.test(path)) problems.push(...testTitleProblems(path, text));
     if (LIBRARY_TYPESCRIPT_FILE.test(path)) problems.push(...libraryCommentProblems(path, text));
-  }
-  for (const problem of problems) console.error(problem);
+  });
+  problems.forEach((problem) => console.error(problem));
   if (problems.length > 0) console.error(`[check-text]: ${problems.length} problem(s), see CONTRIBUTING.md`);
   return problems.length === 0 ? 0 : 1;
 }

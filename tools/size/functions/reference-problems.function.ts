@@ -17,28 +17,28 @@ function changeProblem(label: string, measured: SizeFigures, reference: SizeFigu
 export function referenceProblems(measured: SizeReference, reference: SizeReference): Array<string> {
   const problems: Array<string> = [];
   const names: Array<string> = [...new Set([...Object.keys(measured), ...Object.keys(reference)])].sort();
-  for (const name of names) {
+  names.forEach((name) => {
     const measuredFigures: SizeToolFigures | undefined = measured[name];
     const referenceFigures: SizeToolFigures | undefined = reference[name];
     if (!measuredFigures) {
       problems.push(`${name}: in the reference but no longer measured`);
-      continue;
+      return;
     }
     if (!referenceFigures) {
       problems.push(`${name}: new, not in the reference yet`);
-      continue;
+      return;
     }
-    for (const tool of SIZE_TOOLS) {
+    SIZE_TOOLS.forEach((tool) => {
       const toolMeasured: SizeFigures | undefined = measuredFigures[tool];
       const toolReference: SizeFigures | undefined = referenceFigures[tool];
-      if (!toolMeasured && !toolReference) continue;
+      if (!toolMeasured && !toolReference) return;
       if (!toolMeasured) problems.push(`${name} [${tool}]: in the reference but no longer measured`);
       else if (!toolReference) problems.push(`${name} [${tool}]: new, not in the reference yet`);
       else {
         const problem: string | undefined = changeProblem(`${name} [${tool}]`, toolMeasured, toolReference);
         if (problem !== undefined) problems.push(problem);
       }
-    }
-  }
+    });
+  });
   return problems;
 }

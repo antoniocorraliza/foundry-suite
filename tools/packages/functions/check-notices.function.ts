@@ -10,13 +10,13 @@ function fileRequiringNotice(notice: ThirdPartyNotice, tarball: Tarball, sourceF
 
 export function checkNotices(tarball: Tarball, sourceFiles: ReadonlyArray<string>): Array<string> {
   const problems: Array<string> = [];
-  for (const notice of tarball.foundryPackage.notices) {
+  tarball.foundryPackage.notices.forEach((notice) => {
     const trigger: string | undefined = fileRequiringNotice(notice, tarball, sourceFiles);
     if (!trigger) {
       console.log(`    - notices: ${notice.noticePath} not required yet (nothing it covers is present)`);
     } else if (!tarball.files.includes(notice.noticePath)) {
       problems.push(`${notice.noticePath} is missing (${notice.description}); required because of ${trigger}`);
     }
-  }
+  });
   return problems;
 }

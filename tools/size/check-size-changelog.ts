@@ -44,22 +44,22 @@ function main(): number {
   }
   const after: SizeReference = JSON.parse(readFileSync(SIZE_REFERENCE_PATH, 'utf8')) as SizeReference;
   const grownByChangelog: Map<string, Array<GrownMeasurement>> = new Map();
-  for (const name of grownMeasurements(before, after)) {
+  grownMeasurements(before, after).forEach((name) => {
     const subject: MeasurementSubject | undefined = measurementSubject(name);
     if (subject === undefined) throw new Error(`[size-changelog]: cannot tell the package of the measurement '${name}'`);
     const changelogPath: string = join(PACKAGES_SOURCE_DIRECTORY, subject.packageFolder, 'CHANGELOG.md');
     grownByChangelog.set(changelogPath, [...(grownByChangelog.get(changelogPath) ?? []), { name, mentions: [subject.specifier] }]);
-  }
+  });
   const problems: Array<string> = [];
-  for (const [changelogPath, grown] of grownByChangelog) {
+  grownByChangelog.forEach((grown, changelogPath) => {
     console.log(`[size-changelog]: grew since ${base}: ${grown.map((measurement) => measurement.name).join(', ')}`);
     if (!existsSync(changelogPath)) {
       console.log(`[size-changelog]: ${changelogPath} does not exist yet, so no line is required`);
-      continue;
+      return;
     }
     problems.push(...changelogProblems({ changelogPath, grown, addedLines: addedLines(mergeBase, changelogPath) }));
-  }
-  for (const problem of problems) console.error(`[size-changelog]: ${problem}`);
+  });
+  problems.forEach((problem) => console.error(`[size-changelog]: ${problem}`));
   if (problems.length === 0) console.log('[size-changelog]: ok');
   return problems.length === 0 ? 0 : 1;
 }

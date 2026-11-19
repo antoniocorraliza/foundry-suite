@@ -40,6 +40,11 @@ const CODE_SHAPE_SELECTORS = [
     message: 'Top-level functions are declared with `function`, not as constants.',
   })),
   { selector: 'PrivateIdentifier', message: 'Private members use the TypeScript `private` modifier, not `#`.' },
+  // A return or break inside a nested callback also lets a loop through.
+  ...['ForOfStatement[await=false]', 'ForInStatement', 'ForStatement'].map((loop) => ({
+    selector: `${loop}:not(:has(AwaitExpression, BreakStatement, ReturnStatement, YieldExpression))`,
+    message: 'Lists are walked with array methods (forEach, map, filter, reduce...): a loop only to await inside it or to stop early.',
+  })),
 ];
 const COMMON_SELECTORS = [
   ...MESSAGE_SELECTORS,
