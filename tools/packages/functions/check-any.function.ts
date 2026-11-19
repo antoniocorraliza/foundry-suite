@@ -5,7 +5,6 @@ function readTarballFile(tarball: Tarball, path: string): string {
   return tarball.contents.get(path) ?? '';
 }
 
-// Uses the TypeScript parser: a regular expression would also match `any` inside comments and names.
 export function checkAny(tarball: Tarball): Array<string> {
   const problems: Array<string> = [];
   for (const file of tarball.files.filter((path) => path.endsWith('.d.ts'))) {

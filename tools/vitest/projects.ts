@@ -22,7 +22,6 @@ function selectedBrowsers(variable: string | undefined): ReadonlyArray<TestBrows
   if (value === 'none') return [];
   const names: Array<string> = value.split(',').map((name) => name.trim());
   const unknownNames: Array<string> = names.filter((name) => !isTestBrowser(name));
-  // An unknown name fails instead of silently running fewer tests.
   if (unknownNames.length > 0) {
     throw new Error(
       `[test-projects]: unknown browser in FOUNDRY_TEST_BROWSERS: ${unknownNames.join(', ')}; use ${TEST_BROWSERS.join(', ')} or none`,

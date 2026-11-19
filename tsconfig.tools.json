@@ -1,4 +1,3 @@
-/* Node runs these files directly, so tsc only type-checks them. */
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {

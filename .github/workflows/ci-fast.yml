@@ -43,7 +43,6 @@ jobs:
       - name: Lint and type-check
         run: npm run lint
 
-      # A real test run: if it fails, the job fails.
       - name: Warm up Vite
         run: npm run test:warmup
 

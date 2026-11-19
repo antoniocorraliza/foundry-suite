@@ -2,7 +2,6 @@ import ts from 'typescript';
 import { TEST_FUNCTIONS } from '../constants/test-titles.constant.ts';
 import { hasReviewCode } from './has-review-code.function.ts';
 
-// describe('...'), it.each(...)('...') and the like: the name of the call, without modifiers.
 function testFunctionName(expression: ts.Expression): string | undefined {
   if (ts.isIdentifier(expression)) return expression.text;
   if (ts.isPropertyAccessExpression(expression)) return testFunctionName(expression.expression);
@@ -17,7 +16,6 @@ function testTitleText(argument: ts.Expression | undefined): string | undefined 
   return undefined;
 }
 
-// Uses the TypeScript parser because Prettier moves long titles to their own line.
 export function testTitleProblems(path: string, text: string): Array<string> {
   const problems: Array<string> = [];
   const source: ts.SourceFile = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);

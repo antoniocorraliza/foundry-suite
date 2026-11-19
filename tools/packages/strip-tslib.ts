@@ -17,7 +17,6 @@ function main(): number {
     return 1;
   }
 
-  // If the source manifest ever declares tslib on purpose, removing it from the build would be wrong.
   const sourceManifest: PackageManifest = readManifest(join(PACKAGES_SOURCE_DIRECTORY, foundryPackage.folder, 'package.json'));
   if (sourceManifest.dependencies?.['tslib'] !== undefined) {
     console.error(`[strip-tslib]: ${foundryPackage.name} declares tslib itself, nothing to strip`);

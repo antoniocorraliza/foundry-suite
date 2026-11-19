@@ -81,7 +81,6 @@ runs:
         path: ~/.cache/ms-playwright
         key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}-${{ steps.playwright.outputs.key }}
 
-    # Vitest runs Chromium headless, so the headless shell is enough.
     - name: Install the Playwright browsers
       if: inputs.browsers-preinstalled != 'true' && inputs.browsers != 'none' && steps.playwright-cache.outputs.cache-hit != 'true'
       shell: bash

@@ -3,10 +3,8 @@ name: CI full
 on:
   pull_request:
     branches: [main]
-    # Drafts only get the fast level: the full one starts when the pull request is marked ready for review.
     types: [opened, synchronize, reopened, ready_for_review]
   schedule:
-    # Not on the hour, when GitHub delays scheduled runs the most.
     - cron: '17 2 * * *'
   workflow_dispatch:
 
@@ -46,7 +44,6 @@ jobs:
             echo "main is $SHA; last successful full run on main: ${last:-none}. Running." >> "$GITHUB_STEP_SUMMARY"
           fi
 
-  # The build and the package checks also run here because Node 22 is the lowest Node of the matrix.
   unit-node:
     name: Unit - Angular ${{ matrix.angular }} - Node 22
     needs: gate
@@ -81,8 +78,6 @@ jobs:
         if: matrix.angular == '21'
         run: npm run check:packages
 
-  # Browsers only on Node 24: the code under test runs inside the browser, not on the Node of the runner.
-  # The Playwright image already has the browsers and their system packages; installing them with apt is very slow.
   # Its tag must match the Playwright version of both lockfiles.
   unit-browsers:
     name: Unit - Angular ${{ matrix.angular }} - Node 24 - browsers

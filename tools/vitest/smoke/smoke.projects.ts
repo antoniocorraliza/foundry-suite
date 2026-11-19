@@ -3,7 +3,6 @@ import { SMOKE_DIRECTORY } from '../constants/paths.constant.ts';
 import type { TestEnvironment } from '../interfaces/test-environment.interface.ts';
 import { angularNodeProject, browserProjects, typescriptNodeProjects } from '../projects.ts';
 
-// The time zones only prove the mechanism; each library sets its own list.
 export function smokeProjects(environment: TestEnvironment): Array<TestProjectInlineConfiguration> {
   return [
     angularNodeProject({

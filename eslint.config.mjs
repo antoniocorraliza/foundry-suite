@@ -147,7 +147,6 @@ export default defineConfig([
       '@typescript-eslint/array-type': ['error', { default: 'generic' }],
       '@typescript-eslint/consistent-generic-constructors': ['error', 'type-annotation'],
       '@typescript-eslint/explicit-function-return-type': ['error', { allowExpressions: true, allowTypedFunctionExpressions: true }],
-      // Types are written out even when they could be inferred.
       '@typescript-eslint/no-inferrable-types': 'off',
       // Deprecated in typescript-eslint 8.33 but still working, and nothing else requires annotations on variables.
       '@typescript-eslint/typedef': ['error', TYPEDEF_OPTIONS],
