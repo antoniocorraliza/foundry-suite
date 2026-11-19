@@ -9,12 +9,7 @@ import { map } from 'rxjs';
   selector: 'foundry-size-base-app',
   imports: [NgClass, RouterOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    @for (item of items(); track item) {
-      <p [ngClass]="{ selected: item === selectedItem() }">{{ item }}</p>
-    }
-    <router-outlet />
-  `,
+  templateUrl: './size-base-app.component.html',
 })
 export class SizeBaseAppComponent implements OnInit {
   // INJECTORS

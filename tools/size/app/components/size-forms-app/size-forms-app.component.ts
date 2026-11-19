@@ -10,13 +10,7 @@ import { map } from 'rxjs';
   selector: 'foundry-size-forms-app',
   imports: [NgClass, ReactiveFormsModule, RouterOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <input [formControl]="search" />
-    @for (item of items(); track item) {
-      <p [ngClass]="{ selected: item === search.value }">{{ item }}</p>
-    }
-    <router-outlet />
-  `,
+  templateUrl: './size-forms-app.component.html',
 })
 export class SizeFormsAppComponent implements OnInit {
   // INJECTORS
