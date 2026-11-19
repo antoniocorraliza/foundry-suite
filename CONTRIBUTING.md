@@ -106,14 +106,16 @@ Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `desc
 
 ### 4. Only characters you can type
 
-No typographic arrows, ellipses, middle dots, multiplication signs, check marks, long dashes, curly quotes or emoji in code, comments, test names, job names or READMEs. Accented letters in proper names and the copyright sign are fine.
+No typographic arrows, ellipses, middle dots, multiplication signs, check marks, long dashes, curly quotes or emoji in code, comments, test names, job names or READMEs. Accented letters in proper names and the copyright sign are fine. Angular's `ɵ` prefix (exported but private) is allowed at the start of a name, and nowhere else.
+
+The code of the libraries (`projects/`, spec files aside) only takes ASCII characters, apart from `ɵ` at the start of a name: anything else is written as an escape, `'\u2026'` and not `'…'`, `'\u00a0'` and not a pasted no-break space. The text literals of spec files are test data and take any character (`'Nuñez'`, `'🍎🍌🍒'`, `'١٢٣'`, `'日本語'`); test titles and the rest of the code do not.
 
 ```yaml
 # Yes
 name: Unit - Angular 21 - Node 22
 ```
 
-Checked by: `tools/lint/check-text.ts`.
+Checked by: `tools/lint/check-text.ts`; in the code of the libraries, any character that is not plain ASCII.
 
 ### 5. Class sections
 
@@ -240,7 +242,9 @@ export function browserProjects(
 ): Array<TestProjectInlineConfiguration> {}
 ```
 
-Checked by: Prettier joins a signature that fits; `tools/lint/check-text.ts` rejects one split over several lines.
+The public API of the libraries is the exception: an exported function, an exported arrow constant and the non-private members of an exported class keep the signature that their design fixes, so when it does not fit, it is split as Prettier writes it. Internal code and `tools/` keep the rule.
+
+Checked by: Prettier joins a signature that fits; `tools/lint/check-text.ts` rejects one split over several lines, except in the exported declarations of `projects/` (not in their function bodies or private members).
 
 ### 13. Folder structure: definitions apart from the code
 
@@ -260,6 +264,7 @@ Each piece of a library (an entry point) and each folder of `tools/` splits its 
 | `functions/`    | one public function per file, with its private helpers | `.function.ts`                                        |
 | `components/`   | one folder per component                               | `.component.ts`, `.component.html`, `.component.scss` |
 | `directives/`   | directives                                             | `.directive.ts`                                       |
+| `errors/`       | error classes, one per file                            | `.error.ts`                                           |
 | `pipes/`        | pipes                                                  | `.pipe.ts`                                            |
 
 A piece only has the folders it needs. For example, a piece of a library:
@@ -277,6 +282,22 @@ projects/antoniocorraliza/foundry-core/storage/
   src/services/foundry-storage.service.ts
   src/services/foundry-storage.service.spec.ts
   src/tokens/foundry-storage-options.token.ts
+```
+
+A piece with an error class keeps it in `errors/`, like the HTTP client of Core: `src/errors/foundry-api.error.ts`.
+
+An error class always assigns its `name` as a literal, because that value is what survives minification. A class without subclasses also declares it with the literal type; a class with subclasses declares it as `string`, because a literal type there would stop the subclasses from declaring their own.
+
+```ts
+// errors/foundry-utils.error.ts: it has subclasses
+export class FoundryUtilsError extends Error {
+  override readonly name: string = 'FoundryUtilsError';
+}
+
+// errors/foundry-csv-parse.error.ts: no subclasses
+export class FoundryCsvParseError extends FoundryUtilsError {
+  override readonly name: 'FoundryCsvParseError' = 'FoundryCsvParseError';
+}
 ```
 
 In `tools/`, the scripts that Node runs stay at the root of their folder, with a `main()` function; their definitions go in `constants/`, `interfaces/` and `types/`, and the logic that can be tested without the file system goes in `functions/`:
@@ -313,7 +334,7 @@ export interface ProjectOptions {
 // No: an interface declared in projects.ts, next to the functions that use it
 ```
 
-Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/` and `tokens/`, and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder. Spec and `.d.ts` files are exempt.
+Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/`, `tokens/` and `errors/` (only classes that extend an error, one per file with `max-classes-per-file`; an error class anywhere else is rejected), and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder. Spec and `.d.ts` files are exempt.
 
 ### 14. Commits and pull requests
 

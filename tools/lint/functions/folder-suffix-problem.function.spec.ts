@@ -6,6 +6,8 @@ describe('folderSuffixProblem', () => {
     'core/storage/src/interfaces/foundry-storage-key.interface.ts',
     'core/storage/src/types/foundry-storage-area.type.ts',
     'core/storage/src/services/foundry-storage.service.spec.ts',
+    'utils/src/errors/foundry-utils.error.ts',
+    'utils/csv/src/errors/foundry-csv-parse.error.spec.ts',
     'ui/select/src/components/foundry-select/foundry-select.component.html',
     'tools/ci/check-commits.ts',
     'README.md',
@@ -25,6 +27,18 @@ describe('folderSuffixProblem', () => {
     );
     expect(folderSuffixProblem('tools/ci/types/commit.interface.ts')).toBe(
       'tools/ci/types/commit.interface.ts: a file in types/ must end in .type.ts',
+    );
+  });
+
+  it('keeps error classes in errors/', () => {
+    expect(folderSuffixProblem('utils/csv/src/errors/foundry-csv-parse-error.ts')).toBe(
+      'utils/csv/src/errors/foundry-csv-parse-error.ts: a file in errors/ must end in .error.ts',
+    );
+    expect(folderSuffixProblem('utils/csv/src/functions/foundry-csv-parse.error.ts')).toBe(
+      'utils/csv/src/functions/foundry-csv-parse.error.ts: a file in functions/ must end in .function.ts',
+    );
+    expect(folderSuffixProblem('utils/csv/src/foundry-csv-parse.error.ts')).toBe(
+      'utils/csv/src/foundry-csv-parse.error.ts: a file with this suffix belongs in a errors/ folder',
     );
   });
 

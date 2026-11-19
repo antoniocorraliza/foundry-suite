@@ -2,6 +2,7 @@ export const FOLDER_SUFFIXES: Readonly<Record<string, ReadonlyArray<string>>> = 
   components: ['.component.ts', '.component.html', '.component.scss', '.component.css'],
   constants: ['.constant.ts', '.enum.ts'],
   directives: ['.directive.ts'],
+  errors: ['.error.ts'],
   functions: ['.function.ts'],
   guards: ['.guard.ts'],
   interceptors: ['.interceptor.ts'],
