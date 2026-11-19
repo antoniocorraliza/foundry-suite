@@ -38,16 +38,16 @@ After each `ng build`, `strip-tslib.ts` removes the `tslib` dependency that ng-p
 
 Run it after `npm run build`. It packs each package with `npm pack`, unpacks the tarball and checks these rules. It exits with code 1 if any of them fails.
 
-| Rule           | What it checks                                                                                           |
-| :------------- | :------------------------------------------------------------------------------------------------------- |
-| `exports`      | every entry point has an export with `types` (first) and `default` (last), and the files exist           |
-| `license`      | `LICENSE` is in the tarball, identical to the root one, and `"license"` is `"MIT"`                       |
-| `tslib`        | no file imports tslib and no manifest field declares it                                                  |
-| `any`          | no `any` in the published `.d.ts` files                                                                  |
-| `dependencies` | `dependencies` is empty; no `optionalDependencies` or `bundleDependencies`                               |
-| `peers`        | the peers in `constants/foundry-packages.constant.ts`, and Foundry peers as `^<version of that package>` |
-| `manifest`     | `name`, `type`, `engines`, `sideEffects` and `repository`                                                |
-| `notices`      | the third-party notices are in the tarball when the material they cover is in the package                |
+| Rule           | What it checks                                                                                                                                                                                                                    |
+| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `exports`      | every entry point has an export with `types` (first) and `default` (last), and the files exist; a pattern export (`./styles/*.css`) fails without matching files when `sideEffects` lists CSS and its folder exists in the source |
+| `license`      | `LICENSE` is in the tarball, identical to the root one, and `"license"` is `"MIT"`                                                                                                                                                |
+| `tslib`        | no file imports tslib and no manifest field declares it                                                                                                                                                                           |
+| `any`          | no `any` in the published `.d.ts` files                                                                                                                                                                                           |
+| `dependencies` | `dependencies` is empty; no `optionalDependencies` or `bundleDependencies`                                                                                                                                                        |
+| `peers`        | the peers in `constants/foundry-packages.constant.ts`, and Foundry peers as `^<version of that package>`                                                                                                                          |
+| `manifest`     | `name`, `type`, `engines`, `sideEffects` and `repository`                                                                                                                                                                         |
+| `notices`      | the third-party notices are in the tarball when the material they cover is in the package                                                                                                                                         |
 
 The expected values (peers, `sideEffects`, non-entry exports, notices) are in `constants/foundry-packages.constant.ts`: change them there.
 

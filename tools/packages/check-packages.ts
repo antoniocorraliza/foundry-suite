@@ -61,7 +61,11 @@ function stripDotSlash(path: string): string {
   return path.startsWith('./') ? path.slice(2) : path;
 }
 
-function checkExports(tarball: Tarball): Array<string> {
+function declaresCssSideEffects(foundryPackage: FoundryPackage): boolean {
+  return foundryPackage.sideEffects !== false && foundryPackage.sideEffects.some((pattern) => pattern.endsWith('.css'));
+}
+
+function checkExports(tarball: Tarball, sourceFiles: ReadonlyArray<string>): Array<string> {
   const problems: Array<string> = [];
   const { manifest, files, foundryPackage } = tarball;
   const exportsMap: Readonly<Record<string, unknown>> | undefined = manifest.exports;
@@ -85,6 +89,11 @@ function checkExports(tarball: Tarball): Array<string> {
       const [prefix = '', suffix = ''] = stripDotSlash(target).split('*');
       const matches: Array<string> = files.filter((file) => file.startsWith(prefix) && file.endsWith(suffix));
       console.log(`    - exports: ${subpath} matches ${matches.length} file(s) in the tarball`);
+      const sourceFolder: string = prefix.slice(0, prefix.lastIndexOf('/') + 1);
+      const sourceHasFolder: boolean = sourceFiles.some((file) => file.startsWith(sourceFolder));
+      if (matches.length === 0 && declaresCssSideEffects(foundryPackage) && sourceHasFolder) {
+        problems.push(`pattern export "${subpath}" matches no file in the tarball, but the source has ${sourceFolder}`);
+      }
       continue;
     }
     if (subpath === './package.json') continue;
@@ -221,9 +230,8 @@ function fileRequiringNotice(notice: ThirdPartyNotice, tarball: Tarball, sourceF
   return whenSourceHas ? sourceFiles.find((file) => whenSourceHas.test(file)) : undefined;
 }
 
-function checkNotices(tarball: Tarball): Array<string> {
+function checkNotices(tarball: Tarball, sourceFiles: ReadonlyArray<string>): Array<string> {
   const problems: Array<string> = [];
-  const sourceFiles: Array<string> = listFiles(join(PACKAGES_SOURCE_DIRECTORY, tarball.foundryPackage.folder));
   for (const notice of tarball.foundryPackage.notices) {
     const trigger: string | undefined = fileRequiringNotice(notice, tarball, sourceFiles);
     if (!trigger) {
@@ -245,15 +253,16 @@ function main(): number {
     );
     for (const tarball of tarballs) {
       console.log(`\n${tarball.foundryPackage.name}@${tarball.manifest.version ?? '?'} (${tarball.files.length} files)`);
+      const sourceFiles: Array<string> = listFiles(join(PACKAGES_SOURCE_DIRECTORY, tarball.foundryPackage.folder));
       const results: Readonly<Record<string, Array<string>>> = {
-        exports: checkExports(tarball),
+        exports: checkExports(tarball, sourceFiles),
         license: checkLicense(tarball),
         tslib: checkTslib(tarball),
         any: checkAny(tarball),
         dependencies: checkDependencies(tarball),
         peers: checkPeers(tarball, versions),
         manifest: checkManifest(tarball),
-        notices: checkNotices(tarball),
+        notices: checkNotices(tarball, sourceFiles),
       };
       for (const [rule, problems] of Object.entries(results)) {
         console.log(`  ${problems.length === 0 ? 'ok  ' : 'FAIL'} ${rule}`);
