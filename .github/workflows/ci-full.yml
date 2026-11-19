@@ -9,11 +9,6 @@ on:
     # Not on the hour, when GitHub delays scheduled runs the most.
     - cron: '17 2 * * *'
   workflow_dispatch:
-    inputs:
-      reason:
-        description: Why it runs (for example, "before 2.0.0-rc.1")
-        required: false
-        default: ''
 
 permissions:
   contents: read
@@ -23,9 +18,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # Skips the night run when main has not changed since the last successful night or manual run.
   gate:
-    name: Night gate
+    name: Skip the night run if main is unchanged
     if: github.event_name == 'schedule'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -73,7 +67,6 @@ jobs:
         uses: ./.github/actions/setup-workspace
         with:
           node-version: '22'
-          node-minimum: 22.22.3
           angular: ${{ matrix.angular }}
           browsers: none
 
@@ -115,7 +108,6 @@ jobs:
         uses: ./.github/actions/setup-workspace
         with:
           node-version: '24'
-          node-minimum: 24.15.0
           angular: ${{ matrix.angular }}
           browsers: chromium,firefox,webkit
           browsers-preinstalled: 'true'
@@ -159,7 +151,6 @@ jobs:
         uses: ./.github/actions/setup-workspace
         with:
           node-version: '26'
-          node-minimum: 26.0.0
           angular: '21'
           browsers: none
 

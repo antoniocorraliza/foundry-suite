@@ -31,11 +31,9 @@ jobs:
         uses: ./.github/actions/setup-workspace
         with:
           node-version: '24'
-          node-minimum: 24.15.0
           angular: '21'
           browsers: chromium
 
-      # On main itself the range is empty: its history is not rewritten.
       - name: Check the commit messages
         run: node tools/ci/check-commits.ts origin/main..HEAD
 
@@ -45,7 +43,7 @@ jobs:
       - name: Lint and type-check
         run: npm run lint
 
-      # Lets Vite optimize the dependencies before the real run. It is a real test: if it fails, the job fails.
+      # A real test run: if it fails, the job fails.
       - name: Warm up Vite
         run: npm run test:warmup
 

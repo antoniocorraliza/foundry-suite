@@ -3,10 +3,7 @@ description: Node, npm, dependencies (Angular 21 or 22) and Playwright browsers 
 
 inputs:
   node-version:
-    description: Node line to install (22, 24 or 26). setup-node takes the latest release of the line.
-    required: true
-  node-minimum:
-    description: Lowest accepted Node version for this job, for example 22.22.3.
+    description: Node line to install (22, 24 or 26).
     required: true
   angular:
     description: '21: the development workspace and its lockfile. 22: tools/ci/angular-22 and its own lockfile.'
@@ -28,23 +25,10 @@ runs:
       uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: ${{ inputs.node-version }}
+        # Without it, setup-node may take an older release of the line cached on the runner.
+        check-latest: true
         cache: npm
         cache-dependency-path: ${{ inputs.angular == '22' && 'tools/ci/angular-22/package-lock.json' || 'package-lock.json' }}
-
-    - name: Check the Node minimum (${{ inputs.node-minimum }})
-      shell: bash
-      env:
-        NODE_MINIMUM: ${{ inputs.node-minimum }}
-      run: |
-        node -e '
-          const toParts = (version) => version.replace(/^v/, "").split(".").map(Number);
-          const current = toParts(process.version);
-          const minimum = toParts(process.env.NODE_MINIMUM);
-          const index = current.findIndex((part, position) => part !== minimum[position]);
-          const ok = index === -1 || current[index] > minimum[index];
-          console.log(`Node ${process.version}, minimum ${process.env.NODE_MINIMUM}: ${ok ? "OK" : "TOO OLD"}`);
-          process.exit(ok ? 0 : 1);
-        '
 
     # Node 22 ships npm 10, which ignores allowScripts and would run every install script.
     - name: Pin npm 11.21.3 (allowScripts policy)
