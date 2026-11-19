@@ -32,8 +32,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "FOUNDRY_TEST_COVERAGE=true vitest run --coverage",
-    "test:warmup": "vitest run --project \"smoke:ng-browser:*\"",
-    "generate:changes:history": "git diff --staged > changes_history.diff"
+    "test:warmup": "vitest run --project \"smoke:ng-browser:*\""
   },
   "dependencies": {
     "@angular/common": "21.2.26",

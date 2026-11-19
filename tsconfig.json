@@ -17,7 +17,6 @@
       "@antoniocorraliza/foundry-utils": ["./dist/antoniocorraliza/foundry-utils"],
       "@antoniocorraliza/foundry-utils/*": ["./dist/antoniocorraliza/foundry-utils/*"]
     },
-    "outDir": "./dist/out-tsc",
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,

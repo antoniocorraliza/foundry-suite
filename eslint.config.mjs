@@ -5,7 +5,6 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
-// "[who]: lowercase sentence without a final period" (CONTRIBUTING.md, rule 9).
 const MESSAGE_FORMAT = String.raw`/^\[[a-z0-9-]+\]: [^A-Z].*[^.]$/`;
 const MESSAGE_PREFIX = String.raw`/^\[[a-z0-9-]+\]: /`;
 const MESSAGE_RULE = 'Messages read "[who]: lowercase sentence without a final period" (CONTRIBUTING.md).';
@@ -21,8 +20,7 @@ const MESSAGE_SELECTORS = [
   })),
 ];
 
-// Definitions live in their own folder of each piece (CONTRIBUTING.md, rule 13). no-restricted-syntax takes the last
-// matching block whole, so every block below repeats the message selectors.
+// no-restricted-syntax takes the last matching block whole, so every block below repeats the message selectors.
 const TOP_LEVEL = ['Program > ', 'Program > ExportNamedDeclaration > '];
 const TOKEN_CLASSES = '/^(?:InjectionToken|HttpContextToken)$/';
 const EXEMPT_FILES = ['**/*.spec.ts', '**/*.d.ts'];
@@ -145,6 +143,5 @@ export default defineConfig([
   {
     files: ['**/*.html'],
     extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
-    rules: {},
   },
 ]);
