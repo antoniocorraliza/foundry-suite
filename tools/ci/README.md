@@ -5,7 +5,7 @@
 | Fast  | `.github/workflows/ci-fast.yml` | Every push to any branch (pull requests included: GitHub reads the check of the head commit)            | `Fast level`   |
 | Full  | `.github/workflows/ci-full.yml` | Pull request to `main` (not while it is a draft); every night if `main` changed; by hand before each rc | `Full level`   |
 
-Both use `.github/actions/setup-workspace` (Node, npm, dependencies and browsers). Each job takes the latest release of its Node line. Actions are pinned by commit SHA, with the version in a comment.
+Both use `.github/actions/setup-workspace` (Node, npm, dependencies and browsers). `check-latest` makes `setup-node` install the latest release of each Node line, so the jobs meet the minimums of the matrix (22.22.3 and 24.15). Actions are pinned by commit SHA, with the version in a comment.
 
 ## Fast level
 

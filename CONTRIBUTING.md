@@ -262,6 +262,7 @@ More rules of the structure:
 - No values computed when a module loads: what depends on the environment or a file is read once, in `main()` or in the function that the tool calls first (`readTestEnvironment()`), and passed on as a parameter.
 - Functional interceptors, guards and resolvers keep the type that Angular expects: `export const foundrySessionInterceptor: HttpInterceptorFn = (request, next) => ...`. A top-level constant whose value is a function is code, not a definition.
 - Every object type written inline (`{ ... }`) becomes a named interface: in signatures, in annotations and inside other interfaces (`readonly repository?: PackageRepository`, not `{ readonly url?: string }`). Common generics (`Record`, `Partial`, `Readonly`, `ReadonlyArray`...) are fine.
+- What a library exports (signatures, interfaces, types and constants of its public API) is written as its design fixes it, inline object types and typed constants included: the named object types of this rule and the `as const` lists of rule 6 are for the internal code of the libraries and for `tools/`. ESLint does not ask for names in exported declarations of `projects/`, except inside function bodies and in private members.
 - Tests are exempt: the data and the fixture components of a test stay in its spec, where they are read.
 
 ```ts
