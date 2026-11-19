@@ -1,8 +1,10 @@
-import type { FoundryTestBrowser } from './foundry-test-browser.type.ts';
 import type { ProjectOptions } from './project-options.interface.ts';
+import type { TestBrowser } from './test-browser.type.ts';
+import type { TestEnvironment } from './test-environment.interface.ts';
 
 export interface BrowserProjectOptions extends ProjectOptions {
   readonly angular: boolean;
-  readonly browsers?: ReadonlyArray<FoundryTestBrowser>;
+  readonly environment: TestEnvironment;
+  readonly browsers?: ReadonlyArray<TestBrowser>;
   readonly timeZones?: ReadonlyArray<string>;
 }

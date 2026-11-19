@@ -1,9 +1,10 @@
 import 'vitest';
+import type { ChangeDetection } from './interfaces/change-detection.type.ts';
 
-// Values that the project factories pass to the tests with `provide`; read them with `inject` from 'vitest'.
+// Read them with `inject` from 'vitest', not the one from Angular.
 declare module 'vitest' {
   export interface ProvidedContext {
-    changeDetection: 'zone' | 'zoneless';
+    changeDetection: ChangeDetection;
     expectedTimeZone: string;
     expectedAngularMajor: number;
   }

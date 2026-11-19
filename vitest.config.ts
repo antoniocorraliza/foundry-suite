@@ -1,12 +1,12 @@
 import { defineConfig } from 'vitest/config';
+import { readTestEnvironment } from './tools/vitest/projects.ts';
 import { smokeProjects } from './tools/vitest/smoke/smoke.projects.ts';
 
-// Each library adds its projects here, built with the factories of tools/vitest/projects.ts.
 export default defineConfig({
   test: {
-    projects: [...smokeProjects()],
+    projects: [...smokeProjects(readTestEnvironment())],
     coverage: {
-      // Run it with `npm run test:coverage`: Node projects and Chromium only.
+      // `npm run test:coverage` sets FOUNDRY_TEST_COVERAGE; without it, Firefox and WebKit break the coverage run.
       provider: 'v8',
       include: ['projects/antoniocorraliza/*/src/**/*.ts'],
       exclude: ['**/*.spec.ts', '**/*.d.ts'],
