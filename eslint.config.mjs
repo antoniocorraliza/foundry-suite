@@ -5,7 +5,6 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
-// "[who]: lowercase sentence without a final period" (CONTRIBUTING.md, rule 9).
 const MESSAGE_FORMAT = String.raw`/^\[[a-z0-9-]+\]: [^A-Z].*[^.]$/`;
 const MESSAGE_PREFIX = String.raw`/^\[[a-z0-9-]+\]: /`;
 const MESSAGE_RULE = 'Messages read "[who]: lowercase sentence without a final period" (CONTRIBUTING.md).';
@@ -21,14 +20,29 @@ const MESSAGE_SELECTORS = [
   })),
 ];
 
-// Definitions live in their own folder of each piece (CONTRIBUTING.md, rule 13). no-restricted-syntax takes the last
-// matching block whole, so every block below repeats the message selectors.
+// no-restricted-syntax takes the last matching block whole, so every block below repeats the message selectors.
 const TOP_LEVEL = ['Program > ', 'Program > ExportNamedDeclaration > '];
 const TOKEN_CLASSES = '/^(?:InjectionToken|HttpContextToken)$/';
 const EXEMPT_FILES = ['**/*.spec.ts', '**/*.d.ts'];
 const forbid = (selectors, message) => selectors.map((selector) => ({ selector, message }));
+const NAMED_OBJECT_TYPES_MESSAGE = 'Object types get a name: declare an interface in interfaces/.';
+const NAMED_OBJECT_TYPES = forbid(['TSTypeLiteral'], NAMED_OBJECT_TYPES_MESSAGE);
+// The public API of the libraries is written as its design fixes it, inline object types included, so only what is
+// not exported has to name them: declarations that are not exported, function bodies and private members.
+const PRIVATE_MEMBER = ":matches(PropertyDefinition, MethodDefinition):matches([accessibility='private'], [key.type='PrivateIdentifier'])";
+const LIBRARY_NAMED_OBJECT_TYPES = forbid(
+  [
+    'TSTypeLiteral:not(ExportNamedDeclaration TSTypeLiteral)',
+    'ExportNamedDeclaration BlockStatement TSTypeLiteral',
+    `ExportNamedDeclaration ${PRIVATE_MEMBER} TSTypeLiteral`,
+  ],
+  NAMED_OBJECT_TYPES_MESSAGE,
+);
+const LIBRARY_FILES = 'projects/**/';
 const CODE_FILE_SELECTORS = [
-  ...forbid(['TSInterfaceDeclaration', 'TSTypeAliasDeclaration', 'TSEnumDeclaration'], 'Interfaces and types go in interfaces/.'),
+  ...forbid(['TSInterfaceDeclaration'], 'Interfaces go in interfaces/.'),
+  ...forbid(['TSTypeAliasDeclaration'], 'Types go in types/.'),
+  ...forbid(['TSEnumDeclaration'], 'Enums go in constants/.'),
   ...forbid(
     TOP_LEVEL.map(
       (prefix) => `${prefix}VariableDeclaration > VariableDeclarator[init.type!=/^(?:ArrowFunctionExpression|FunctionExpression)$/]`,
@@ -42,10 +56,28 @@ const INTERFACE_FILE_SELECTORS = forbid(
     `${prefix}VariableDeclaration`,
     `${prefix}ClassDeclaration`,
     `${prefix}TSEnumDeclaration`,
+    `${prefix}TSTypeAliasDeclaration`,
   ]),
-  'Files in interfaces/ only declare interfaces and types.',
+  'Files in interfaces/ only declare interfaces; types go in types/.',
+);
+const TYPE_FILE_SELECTORS = forbid(
+  TOP_LEVEL.flatMap((prefix) => [
+    `${prefix}FunctionDeclaration`,
+    `${prefix}VariableDeclaration`,
+    `${prefix}ClassDeclaration`,
+    `${prefix}TSEnumDeclaration`,
+    `${prefix}TSInterfaceDeclaration`,
+  ]),
+  'Files in types/ only declare types; interfaces go in interfaces/.',
 );
 const CONSTANT_FILE_SELECTORS = [
+  ...forbid(
+    TOP_LEVEL.map(
+      (prefix) =>
+        `${prefix}VariableDeclaration > VariableDeclarator:not([id.typeAnnotation]):not([init.type='TSAsExpression'][init.typeAnnotation.typeName.name='const'])`,
+    ),
+    'Constants declare their type, or end in `as const` when they are a closed list.',
+  ),
   ...forbid(
     TOP_LEVEL.flatMap((prefix) => [
       `${prefix}FunctionDeclaration`,
@@ -57,6 +89,16 @@ const CONSTANT_FILE_SELECTORS = [
   ),
   ...forbid([`NewExpression[callee.name=${TOKEN_CLASSES}]`], 'Angular tokens go in tokens/.'),
 ];
+const TYPEDEF_OPTIONS = {
+  variableDeclaration: true,
+  variableDeclarationIgnoreFunction: true,
+  memberVariableDeclaration: true,
+  parameter: true,
+  propertyDeclaration: true,
+  arrowParameter: false,
+  arrayDestructuring: false,
+  objectDestructuring: false,
+};
 const TOKEN_FILE_SELECTORS = forbid(
   TOP_LEVEL.flatMap((prefix) => [
     `${prefix}FunctionDeclaration`,
@@ -98,46 +140,53 @@ export default defineConfig([
         'tmp',
         'val',
       ],
-      'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...CODE_FILE_SELECTORS],
+      'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...CODE_FILE_SELECTORS],
       '@typescript-eslint/consistent-type-imports': 'error',
       // One inner list: the groups keep their order but are not separated by blank lines.
       'simple-import-sort/imports': ['error', { groups: [['^\\u0000', '^node:', '^@?\\w', '^@antoniocorraliza(?:/|$)', '^\\.']] }],
       '@typescript-eslint/array-type': ['error', { default: 'generic' }],
       '@typescript-eslint/consistent-generic-constructors': ['error', 'type-annotation'],
       '@typescript-eslint/explicit-function-return-type': ['error', { allowExpressions: true, allowTypedFunctionExpressions: true }],
-      // Types are written out even when they could be inferred.
       '@typescript-eslint/no-inferrable-types': 'off',
       // Deprecated in typescript-eslint 8.33 but still working, and nothing else requires annotations on variables.
-      '@typescript-eslint/typedef': [
-        'error',
-        {
-          variableDeclaration: true,
-          variableDeclarationIgnoreFunction: true,
-          memberVariableDeclaration: true,
-          parameter: true,
-          propertyDeclaration: true,
-          arrowParameter: false,
-          arrayDestructuring: false,
-          objectDestructuring: false,
-        },
-      ],
+      '@typescript-eslint/typedef': ['error', TYPEDEF_OPTIONS],
     },
   },
   {
     files: ['**/interfaces/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...INTERFACE_FILE_SELECTORS] },
+    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...INTERFACE_FILE_SELECTORS] },
+  },
+  {
+    files: ['**/types/**/*.ts'],
+    ignores: EXEMPT_FILES,
+    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...TYPE_FILE_SELECTORS] },
   },
   {
     files: ['**/constants/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...CONSTANT_FILE_SELECTORS] },
+    rules: {
+      // A closed list is `as const`, and its type is derived from it in types/.
+      '@typescript-eslint/typedef': ['error', { ...TYPEDEF_OPTIONS, variableDeclaration: false }],
+      'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...CONSTANT_FILE_SELECTORS],
+    },
   },
   {
     files: ['**/tokens/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...TOKEN_FILE_SELECTORS] },
+    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...TOKEN_FILE_SELECTORS] },
   },
+  ...[
+    ['*.ts', CODE_FILE_SELECTORS],
+    ['interfaces/**/*.ts', INTERFACE_FILE_SELECTORS],
+    ['types/**/*.ts', TYPE_FILE_SELECTORS],
+    ['constants/**/*.ts', CONSTANT_FILE_SELECTORS],
+    ['tokens/**/*.ts', TOKEN_FILE_SELECTORS],
+  ].map(([pattern, selectors]) => ({
+    files: [`${LIBRARY_FILES}${pattern}`],
+    ignores: EXEMPT_FILES,
+    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...LIBRARY_NAMED_OBJECT_TYPES, ...selectors] },
+  })),
   {
     files: EXEMPT_FILES,
     rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS] },
@@ -145,6 +194,5 @@ export default defineConfig([
   {
     files: ['**/*.html'],
     extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
-    rules: {},
   },
 ]);

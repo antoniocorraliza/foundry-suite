@@ -5,7 +5,7 @@
 | Fast  | `.github/workflows/ci-fast.yml` | Every push to any branch (pull requests included: GitHub reads the check of the head commit)            | `Fast level`   |
 | Full  | `.github/workflows/ci-full.yml` | Pull request to `main` (not while it is a draft); every night if `main` changed; by hand before each rc | `Full level`   |
 
-Both use `.github/actions/setup-workspace` (Node, npm, dependencies and browsers). Actions are pinned by commit SHA, with the version in a comment.
+Both use `.github/actions/setup-workspace` (Node, npm, dependencies and browsers). `check-latest` makes `setup-node` install the latest release of each Node line, so the jobs meet the minimums of the matrix (22.22.3 and 24.15). Actions are pinned by commit SHA, with the version in a comment.
 
 ## Fast level
 
@@ -17,13 +17,13 @@ Angular 21, Node 24, one job: `npm ci`, commit messages of the branch (`tools/ci
 
 ## Full level
 
-| Job                                                              | Angular |      Node       | Browsers                                            | Pull request | Night and rc |
-| :--------------------------------------------------------------- | :-----: | :-------------: | :-------------------------------------------------- | :----------: | :----------: |
-| `Unit - Angular 21 - Node 22` (and build and `check:packages`)   |   21    | 22 (>= 22.22.3) | none                                                |     yes      |     yes      |
-| `Unit - Angular 21 - Node 24 - browsers` (and development audit) |   21    |  24 (>= 24.15)  | Chromium, Firefox, WebKit (in the Playwright image) |     yes      |     yes      |
-| `Unit - Angular 22 - Node 22`                                    |   22    |       22        | none                                                |      no      |     yes      |
-| `Unit - Angular 22 - Node 24 - browsers`                         |   22    |       24        | Chromium, Firefox, WebKit (in the Playwright image) |      no      |     yes      |
-| `Smoke - Node 26` (smoke tests, build and `check:packages`)      |   21    |       26        | none                                                |      no      |     yes      |
+| Job                                                              | Angular | Node | Browsers                                            | Pull request | Night and rc |
+| :--------------------------------------------------------------- | :-----: | :--: | :-------------------------------------------------- | :----------: | :----------: |
+| `Unit - Angular 21 - Node 22` (and build and `check:packages`)   |   21    |  22  | none                                                |     yes      |     yes      |
+| `Unit - Angular 21 - Node 24 - browsers` (and development audit) |   21    |  24  | Chromium, Firefox, WebKit (in the Playwright image) |     yes      |     yes      |
+| `Unit - Angular 22 - Node 22`                                    |   22    |  22  | none                                                |      no      |     yes      |
+| `Unit - Angular 22 - Node 24 - browsers`                         |   22    |  24  | Chromium, Firefox, WebKit (in the Playwright image) |      no      |     yes      |
+| `Smoke - Node 26` (smoke tests, build and `check:packages`)      |   21    |  26  | none                                                |      no      |     yes      |
 
 Every unit job runs the zone.js and the zoneless projects.
 
@@ -94,15 +94,6 @@ To review a new one: `npm install-scripts ls`, then `npm install-scripts approve
 - Development: full level, in the Angular 21 browsers job, never blocking. `tools/ci/audit-report.ts` writes the table to the job summary and adds a warning when there is any high or critical vulnerability.
 
 ## Adding a job
-
-| Job                                                      | Where                                                                      | Level                   |
-| :------------------------------------------------------- | :------------------------------------------------------------------------- | :---------------------- |
-| `contracts:check` (generated copy of the contract types) | step in `ci-fast.yml`, after lint                                          | fast                    |
-| `contract-tests/`                                        | job in `ci-full.yml`, matrix `angular: ['21', '22']`                       | full, pull requests too |
-| size per entry                                           | step in `ci-fast.yml`, after `check:packages`                              | fast                    |
-| SSR                                                      | job in `ci-full.yml`, matrix `angular: ['21', '22']`                       | full, pull requests too |
-| integration                                              | job in `ci-full.yml`, one per Angular version running zone.js and zoneless | full, pull requests too |
-| real Safari                                              | its own workflow on macOS (`ci-safari.yml`)                                | its own triggers        |
 
 A new job of the full level must be added to `needs` of the `result` job: that makes it part of the required `Full level` check without changing the branch rule. Prefer one more step in an existing job over a new job, because every job pays about a minute of setup.
 

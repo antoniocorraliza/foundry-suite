@@ -1,4 +1,4 @@
-import type { FoundryPackageFolder } from './foundry-package-folder.type.ts';
+import type { FoundryPackageFolder } from '../types/foundry-package-folder.type.ts';
 import type { ThirdPartyNotice } from './third-party-notice.interface.ts';
 
 export interface FoundryPackage {
@@ -9,7 +9,6 @@ export interface FoundryPackage {
   readonly optionalPeers: ReadonlyArray<string>;
   readonly foundryPeers: ReadonlyArray<FoundryPackageFolder>;
   readonly sideEffects: false | ReadonlyArray<string>;
-  // Export subpaths that are not ng-packagr entry points.
-  readonly extraExports: ReadonlyArray<string>;
+  readonly nonEntryExports: ReadonlyArray<string>;
   readonly notices: ReadonlyArray<ThirdPartyNotice>;
 }

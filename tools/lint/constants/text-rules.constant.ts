@@ -11,7 +11,7 @@ export const TEXT_RULES: ReadonlyArray<TextRule> = [
   { name: 'emoji', pattern: /(?![\u00a9\u00ae])\p{Extended_Pictographic}/u },
   {
     name: 'process reference',
-    pattern: /\bclaude\/|\bblock B\d|\bdecisi(?:on|ón) \d|\bPF-[A-Z0-9]|\b(?:CORE2?|UTILS2?|UI2?|CONJ)-[A-Z]?\d|\bDI-\d|\bF-(?:C|UI)\d/i,
+    pattern: /\bdecisions? \d+\b/i,
   },
   { name: 'section marker as JSDoc', pattern: /\/\*\*\s*[A-Z][A-Z &]+\s*\*\// },
   { name: 'list item that starts in bold', pattern: /^\s*(?:[-*+]|\d+\.)\s+\*\*/, onlyIn: MARKDOWN_FILE },

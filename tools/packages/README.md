@@ -38,31 +38,33 @@ After each `ng build`, `strip-tslib.ts` removes the `tslib` dependency that ng-p
 
 Run it after `npm run build`. It packs each package with `npm pack`, unpacks the tarball and checks these rules. It exits with code 1 if any of them fails.
 
-| Rule           | What it checks                                                                                           |
-| :------------- | :------------------------------------------------------------------------------------------------------- |
-| `exports`      | every entry point has an export with `types` (first) and `default` (last), and the files exist           |
-| `license`      | `LICENSE` is in the tarball, identical to the root one, and `"license"` is `"MIT"`                       |
-| `tslib`        | no file imports tslib and no manifest field declares it                                                  |
-| `any`          | no `any` in the published `.d.ts` files                                                                  |
-| `dependencies` | `dependencies` is empty; no `optionalDependencies` or `bundleDependencies`                               |
-| `peers`        | the peers in `constants/foundry-packages.constant.ts`, and Foundry peers as `^<version of that package>` |
-| `manifest`     | `name`, `type`, `engines`, `sideEffects` and `repository`                                                |
-| `notices`      | the third-party notices are in the tarball when the material they cover is in the package                |
+| Rule           | What it checks                                                                                                                                                                                                                    |
+| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `exports`      | every entry point has an export with `types` (first) and `default` (last), and the files exist; a pattern export (`./styles/*.css`) fails without matching files when `sideEffects` lists CSS and its folder exists in the source |
+| `license`      | `LICENSE` is in the tarball, identical to the root one, and `"license"` is `"MIT"`                                                                                                                                                |
+| `tslib`        | no file imports tslib and no manifest field declares it                                                                                                                                                                           |
+| `any`          | no `any` in the published `.d.ts` files                                                                                                                                                                                           |
+| `dependencies` | `dependencies` is empty; no `optionalDependencies` or `bundleDependencies`                                                                                                                                                        |
+| `peers`        | the peers in `constants/foundry-packages.constant.ts`, and Foundry peers as `^<version of that package>`                                                                                                                          |
+| `manifest`     | `name`, `type`, `engines`, `sideEffects` and `repository`                                                                                                                                                                         |
+| `notices`      | the third-party notices are in the tarball when the material they cover is in the package                                                                                                                                         |
 
-The expected values (peers, `sideEffects`, extra exports, notices) are in `constants/foundry-packages.constant.ts`: change them there.
+The expected values (peers, `sideEffects`, non-entry exports, notices) are in `constants/foundry-packages.constant.ts`: change them there.
 
 ## Third-party notices
 
-| Package | Material                                              | Notice (inside the tarball) | Required when                            |
-| :------ | :---------------------------------------------------- | :-------------------------- | :--------------------------------------- |
-| UI      | Fonts Inter and Urbanist (SIL Open Font License)      | `styles/fonts/OFL.txt`      | the tarball has a `styles/fonts/*.woff2` |
-| Utils   | Table derived from Unicode CLDR (`getFirstDayOfWeek`) | `UNICODE-LICENSE.txt`       | the source has a file named `*.cldr.ts`  |
+No package has third-party material yet. When it is added, its notice must be inside the tarball:
 
-The `assets` of each `ng-package.json` already copy both notices: put the file in `projects/antoniocorraliza/foundry-ui/styles/fonts/OFL.txt` or `projects/antoniocorraliza/foundry-utils/UNICODE-LICENSE.txt`. The generated CLDR table must be named `*.cldr.ts` for the check to see it.
+| Package | Material, when it is added                            | Notice (inside the tarball) | Required when                                    |
+| :------ | :---------------------------------------------------- | :-------------------------- | :----------------------------------------------- |
+| UI      | Fonts Inter and Urbanist (SIL Open Font License)      | `styles/fonts/OFL.txt`      | the tarball has a `styles/fonts/*.woff2`         |
+| Utils   | Table derived from Unicode CLDR (`getFirstDayOfWeek`) | `UNICODE-LICENSE.txt`       | the source has a file named `*.cldr.constant.ts` |
+
+The `assets` of each `ng-package.json` already copy both notices: put the file in `projects/antoniocorraliza/foundry-ui/styles/fonts/OFL.txt` or `projects/antoniocorraliza/foundry-utils/UNICODE-LICENSE.txt`. The generated CLDR table is a constant, so it goes in `constants/`, and its name must end in `.cldr.constant.ts` (for example `constants/first-day-of-week.cldr.constant.ts`) for the check to see it.
 
 ## UI style sheets
 
-The `assets` of UI copy `projects/antoniocorraliza/foundry-ui/styles/**/*.css` and `styles/fonts/*.woff2` to the tarball. They are exported as `@antoniocorraliza/foundry-ui/styles/*.css` and listed in `sideEffects`, so that a bundler never drops an imported sheet.
+UI has no style sheets yet. Its `assets` already copy `projects/antoniocorraliza/foundry-ui/styles/**/*.css` and `styles/fonts/*.woff2` to the tarball, and its manifest already exports them as `@antoniocorraliza/foundry-ui/styles/*.css` and lists them in `sideEffects`, so that a bundler never drops an imported sheet.
 
 ## `moduleResolution: "node10"`
 

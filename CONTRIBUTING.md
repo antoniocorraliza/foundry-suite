@@ -24,9 +24,11 @@ Prettier: 140 columns, single quotes, semicolons, trailing commas and a final ne
 
 Checked by: `prettier --check`.
 
-### 2. Comments explain why, not what
+### 2. Comments only where the code cannot speak
 
-No file headers, no comments that repeat the code and no history of how something was reached. In English.
+Write a comment only if, without it, someone could change the code and break it: a quirk of a tool, a limit outside the code, a reason that cannot be read from it. Try a better name or a smaller function first. No comments that describe the code, give examples of its output, point to other files or give instructions for future work. One line, in English, next to the line it explains.
+
+Test: delete it. If nobody could break anything for lack of it, leave it deleted.
 
 The public API of the libraries is documented with JSDoc, also in English. That is documentation for the users of the package, not a comment, and it is required.
 
@@ -36,6 +38,7 @@ The public API of the libraries is documented with JSDoc, also in English. That 
 
 // No
 // TestBed on Node (jsdom) without zone.js.
+// The rules are described in tools/packages/README.md.
 ```
 
 Checked by: review.
@@ -52,7 +55,7 @@ No work blocks, decision numbers, review codes or paths to internal notes. Write
 // V8 coverage only works in Chromium (PF-INF3, decision 32).
 ```
 
-Tests describe behaviour. Their titles carry no review codes, not even short ones like `R2` or `U17`: the mapping from a finding to its test lives outside the repository.
+Tests describe behavior. Their titles carry no review codes, not even short ones like `R2` or `U17`: the mapping from a finding to its test lives outside the repository.
 
 ```ts
 // Yes
@@ -62,7 +65,7 @@ it('returns the first instant of a day without midnight', () => {});
 it('U17: parseDate in Santiago', () => {});
 ```
 
-Checked by: `tools/lint/check-text.ts`, which also reads the titles of `describe`, `it` and `test` with the TypeScript parser.
+Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `describe`, `it` and `test` (read with the TypeScript parser). It looks for anything shaped like a code (capitals and digits joined by hyphens, or one to four capitals followed by one to three digits) and for decision numbers. Names that look like a code are listed as exceptions in `tools/lint/constants/review-code.constant.ts` (`UTF-8`, `ISO-8601`, `ES2022`, `V8`, `F2`...): add one there when a real name is rejected.
 
 ### 4. Only characters you can type
 
@@ -86,6 +89,8 @@ remove(key: string): void {}
 clear(): void {}
 ```
 
+`computed()` and `linkedSignal()` go in `// CONTROL VARIABLES`; `effect()` goes in `// LIFECYCLE HOOKS`.
+
 Never `/** ACTIONS */`: a `/** */` comment becomes the documentation of the next member in the published `.d.ts`.
 
 Checked by: `tools/lint/check-text.ts` rejects `/** UPPERCASE */`. Order and blank lines: review.
@@ -104,7 +109,17 @@ function clear() {}
 const names = rows.map((row: Row): string => row.name.trim());
 ```
 
-Checked by: ESLint `@typescript-eslint/typedef`, `explicit-function-return-type`, `array-type` and `consistent-generic-constructors`.
+A closed list is the one exception: the constant ends in `as const`, without a type, and its type is derived from it in `types/`, so the values are written once.
+
+```ts
+// constants/audit-severities.constant.ts
+export const AUDIT_SEVERITIES = ['critical', 'high', 'moderate', 'low', 'info'] as const;
+
+// types/audit-severity.type.ts
+export type AuditSeverity = (typeof AUDIT_SEVERITIES)[number];
+```
+
+Checked by: ESLint `@typescript-eslint/typedef`, `explicit-function-return-type`, `array-type` and `consistent-generic-constructors`; in `constants/`, `no-restricted-syntax` accepts a constant without a type only when it ends in `as const`.
 
 ### 7. Names
 
@@ -141,7 +156,7 @@ Checked by: ESLint `curly` (`multi-line`).
 throw new Error('[strip-tslib]: unknown package folder "foundry-x"');
 ```
 
-Checked by: ESLint `no-restricted-syntax` for string literals; template literals: review.
+Checked by: ESLint `no-restricted-syntax`, on string literals and on the start of template literals.
 
 ### 10. Imports
 
@@ -196,7 +211,8 @@ Each piece of a library (an entry point) and each folder of `tools/` splits its 
 
 | Folder          | Holds                                                  | Suffix                                                |
 | :-------------- | :----------------------------------------------------- | :---------------------------------------------------- |
-| `interfaces/`   | interfaces and types                                   | `.interface.ts`, `.type.ts`                           |
+| `interfaces/`   | interfaces                                             | `.interface.ts`                                       |
+| `types/`        | types (`type`)                                         | `.type.ts`                                            |
 | `constants/`    | constants and enums                                    | `.constant.ts`, `.enum.ts`                            |
 | `tokens/`       | `InjectionToken` and `HttpContextToken`                | `.token.ts`                                           |
 | `services/`     | services                                               | `.service.ts`                                         |
@@ -209,7 +225,7 @@ Each piece of a library (an entry point) and each folder of `tools/` splits its 
 | `directives/`   | directives                                             | `.directive.ts`                                       |
 | `pipes/`        | pipes                                                  | `.pipe.ts`                                            |
 
-A piece only has the folders it needs. Examples:
+A piece only has the folders it needs. For example, a piece of a library:
 
 ```
 projects/antoniocorraliza/foundry-core/storage/
@@ -217,67 +233,38 @@ projects/antoniocorraliza/foundry-core/storage/
   src/public-api.ts
   src/functions/define-foundry-storage-key.function.ts
   src/functions/define-foundry-storage-key.function.spec.ts
-  src/functions/create-foundry-memory-storage-backend.function.ts
-  src/interfaces/foundry-storage-area.type.ts
   src/interfaces/foundry-storage-backend.interface.ts
   src/interfaces/foundry-storage-key.interface.ts
+  src/types/foundry-storage-area.type.ts
   src/providers/foundry-storage.provider.ts
   src/services/foundry-storage.service.ts
   src/services/foundry-storage.service.spec.ts
   src/tokens/foundry-storage-options.token.ts
 ```
 
-A piece with an interceptor adds, for example, `src/interceptors/foundry-session.interceptor.ts` and its spec.
-
-```
-projects/antoniocorraliza/foundry-ui/select/
-  ng-package.json
-  src/public-api.ts
-  src/components/foundry-select/foundry-select.component.ts
-  src/components/foundry-select/foundry-select.component.html
-  src/components/foundry-select/foundry-select.component.scss
-  src/components/foundry-select/foundry-select.component.spec.ts
-  src/constants/foundry-select-defaults.constant.ts
-  src/directives/foundry-select-value.directive.ts
-  src/directives/foundry-select-value.directive.spec.ts
-  src/interfaces/foundry-select-value-context.interface.ts
-  src/services/foundry-select-panel.service.ts
-  src/tokens/foundry-select-labels.token.ts
-```
-
-```
-projects/antoniocorraliza/foundry-utils/date/
-  ng-package.json
-  src/public-api.ts
-  src/constants/date-limits.constant.ts
-  src/functions/add-calendar-days.function.ts
-  src/functions/add-calendar-days.function.spec.ts
-  src/functions/parse-date.function.ts
-  src/functions/parse-date.function.spec.ts
-  src/interfaces/foundry-calendar-day.type.ts
-  src/interfaces/foundry-calendar-day-range.interface.ts
-```
-
-In `tools/`, the scripts that Node runs stay at the root of their folder, with a `main()` function, and their definitions go in `constants/` and `interfaces/`:
+In `tools/`, the scripts that Node runs stay at the root of their folder, with a `main()` function; their definitions go in `constants/`, `interfaces/` and `types/`, and the logic that can be tested without the file system goes in `functions/`:
 
 ```
 tools/vitest/
   projects.ts
   constants/angular-optimized-dependencies.constant.ts
-  constants/foundry-test-browsers.constant.ts
   constants/paths.constant.ts
+  constants/test-browsers.constant.ts
   interfaces/angular-node-project-options.interface.ts
   interfaces/browser-project-options.interface.ts
-  interfaces/foundry-test-browser.type.ts
   interfaces/project-options.interface.ts
+  interfaces/test-environment.interface.ts
   interfaces/typescript-node-project-options.interface.ts
+  types/change-detection.type.ts
+  types/test-browser.type.ts
 ```
 
 More rules of the structure:
 
-- No values computed when a module loads: what depends on the environment or a file is a function (`isCoverageRun()`), not a top-level constant.
+- No values computed when a module loads: what depends on the environment or a file is read once, in `main()` or in the function that the tool calls first (`readTestEnvironment()`), and passed on as a parameter.
 - Functional interceptors, guards and resolvers keep the type that Angular expects: `export const foundrySessionInterceptor: HttpInterceptorFn = (request, next) => ...`. A top-level constant whose value is a function is code, not a definition.
-- Types written inside a signature become a named interface (`AngularNodeProjectOptions extends ProjectOptions`).
+- Every object type written inline (`{ ... }`) becomes a named interface: in signatures, in annotations and inside other interfaces (`readonly repository?: PackageRepository`, not `{ readonly url?: string }`). Common generics (`Record`, `Partial`, `Readonly`, `ReadonlyArray`...) are fine.
+- What a library exports (signatures, interfaces, types and constants of its public API) is written as its design fixes it, inline object types and typed constants included: the named object types of this rule and the `as const` lists of rule 6 are for the internal code of the libraries and for `tools/`. ESLint does not ask for names in exported declarations of `projects/`, except inside function bodies and in private members.
 - Tests are exempt: the data and the fixture components of a test stay in its spec, where they are read.
 
 ```ts
@@ -289,7 +276,7 @@ export interface ProjectOptions {
 // No: an interface declared in projects.ts, next to the functions that use it
 ```
 
-Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `constants/` and `tokens/`; `tools/lint/check-text.ts` checks that each file has the suffix of its folder. Spec and `.d.ts` files are exempt.
+Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/` and `tokens/`, and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder. Spec and `.d.ts` files are exempt.
 
 ### 14. Commits and pull requests
 

@@ -1,25 +1,7 @@
 import { execFileSync } from 'node:child_process';
-import { ATTRIBUTION, COMMIT_SCOPES, COMMIT_TITLE, MAXIMUM_TITLE_LENGTH } from './constants/commit-rules.constant.ts';
+import { messageProblems } from './functions/message-problems.function.ts';
+import { titleProblems } from './functions/title-problems.function.ts';
 import type { Commit } from './interfaces/commit.interface.ts';
-
-function titleProblems(title: string): Array<string> {
-  const problems: Array<string> = [];
-  if (title.length > MAXIMUM_TITLE_LENGTH) {
-    problems.push(`title is ${title.length} characters long, the maximum is ${MAXIMUM_TITLE_LENGTH}`);
-  }
-  if (!COMMIT_TITLE.test(title)) {
-    problems.push(`title must be "type(scope): lowercase description" without a final period; scopes: ${COMMIT_SCOPES.join(', ')}`);
-  }
-  return problems;
-}
-
-function messageProblems(message: string): Array<string> {
-  const [title = '', lineAfterTitle]: Array<string> = message.trimEnd().split('\n');
-  const problems: Array<string> = titleProblems(title);
-  if (lineAfterTitle !== undefined && lineAfterTitle !== '') problems.push('the body must be separated from the title by a blank line');
-  if (ATTRIBUTION.test(message)) problems.push('the message credits a tool or an assistant');
-  return problems;
-}
 
 function commitsInRange(range: string): Array<Commit> {
   const output: string = execFileSync('git', ['log', '--no-merges', '--format=%H%x00%B%x1e', range], { encoding: 'utf8' });
@@ -33,7 +15,6 @@ function commitsInRange(range: string): Array<Commit> {
     });
 }
 
-// Usage: node tools/ci/check-commits.ts <git range>   or   node tools/ci/check-commits.ts --title "<pull request title>"
 function main(): number {
   const [firstArgument, secondArgument]: Array<string> = process.argv.slice(2);
   if (firstArgument === undefined) {

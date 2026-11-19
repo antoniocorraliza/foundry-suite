@@ -13,10 +13,10 @@ out-tsc/
 coverage/
 .vitest-attachments/
 __screenshots__/
+.vitest/
 
 # Logs and local files
 npm-debug.log*
-changes_history.diff
 .env
 .env.*
 
@@ -27,7 +27,3 @@ changes_history.diff
 !.vscode/settings.json
 .DS_Store
 Thumbs.db
-
-# Custom
-/tools/ci/angular-22/node_modules/
-.vitest/
