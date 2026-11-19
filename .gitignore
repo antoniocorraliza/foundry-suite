@@ -24,6 +24,7 @@ changes_history.diff
 .idea/
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .DS_Store
 Thumbs.db
 
