@@ -20,6 +20,31 @@ describe('textProblems', () => {
     expect(textProblems('a.ts', `first line\n${line}`)).toEqual([`a.ts:2: ${rule}: ${line}`]);
   });
 
+  it.each([
+    ['a sales word', ' * Parses a day in a simple way.', 'sales word in JSDoc'],
+    ['a phrase that says nothing', ' * Returns the day, as expected.', 'sales word in JSDoc'],
+    ['a "This function" opening', '/** This function parses a day. */', 'filler in JSDoc'],
+    ['a "Helper to" opening', ' * Helper to parse a day.', 'filler in JSDoc'],
+    ['a "note that"', ' * Returns null. Note that the day is local.', 'filler in JSDoc'],
+  ])('reports %s in a JSDoc line', (_description, line, rule) => {
+    expect(textProblems('a.ts', line)).toEqual([`a.ts:1: ${rule}: ${line.trim()}`]);
+  });
+
+  it('leaves the same words alone outside JSDoc', () => {
+    expect(textProblems('a.ts', "const simple: string = 'easy';\n// Helper to read a file.")).toEqual([]);
+  });
+
+  it('reports comments in the templates and styles of the libraries', () => {
+    expect(textProblems('projects/a/b.component.html', '<!-- a note -->\n<p></p>')).toEqual([
+      'projects/a/b.component.html:1: comment in a library: <!-- a note -->',
+    ]);
+    expect(textProblems('projects/a/b.component.scss', '/* a note */\n// another\n.a { color: red; }')).toEqual([
+      'projects/a/b.component.scss:1: comment in a library: /* a note */',
+      'projects/a/b.component.scss:2: comment in a library: // another',
+    ]);
+    expect(textProblems('tools/a.scss', '/* a note */')).toEqual([]);
+  });
+
   it('checks bold list items and sales words only in Markdown', () => {
     const text: string = '- **Robust** parsing\n- a seamless API';
     expect(textProblems('a.ts', text)).toEqual([]);

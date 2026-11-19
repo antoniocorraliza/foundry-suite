@@ -30,7 +30,7 @@ Write a comment only if, without it, someone could change the code and break it:
 
 Test: delete it. If nobody could break anything for lack of it, leave it deleted.
 
-The public API of the libraries is documented with JSDoc, also in English. That is documentation for the users of the package, not a comment, and it is required.
+This applies to `tools/` and the configuration:
 
 ```ts
 // Yes
@@ -41,7 +41,44 @@ The public API of the libraries is documented with JSDoc, also in English. That 
 // The rules are described in tools/packages/README.md.
 ```
 
-Checked by: review.
+In the libraries (`projects/`, spec files included) there are no comments other than JSDoc. The reason for a decision that the code does not show is protected by a test that fails if someone changes it, and it is explained in the pull request. Templates and style sheets have no comments either. Only these are allowed, because they are not explanations:
+
+- the class section markers (`// ACTIONS`...);
+- `/* @__PURE__ */`;
+- `// eslint-disable-next-line` and `// @ts-expect-error`, only when they are needed, with the reason in the directive itself: `// eslint-disable-next-line no-console -- the warning is the output`, `// @ts-expect-error the second argument is missing on purpose`.
+
+Checked by: review in `tools/`; in `projects/`, `tools/lint/check-text.ts` rejects any other comment, in TypeScript, templates and styles.
+
+### 2b. JSDoc of the public API
+
+The public API of the libraries is documented with JSDoc. It is documentation for the users of the package, not a comment, and it is required. It is as plain as the code:
+
+- It starts with a verb in the third person and goes to the point: "Parses...", "Returns...", "Closes...". Never "This function...", "A utility that..." or "Helper to...".
+- One sentence, two at most: what it does, and what it returns in the cases that are not obvious (`null`, empty, errors).
+- No adjectives or sales words (robust, powerful, seamless, simple, easy, efficient...) and no phrases that say nothing ("for convenience", "as expected", "note that").
+- Only what the types do not say: no `@param` or `@returns` that repeat the name or the type.
+- `@throws` when the function throws.
+- `@example` only when the use is not obvious, on one line.
+- In English, without process references.
+
+```ts
+// Yes
+/**
+ * Parses a day written as `YYYY-MM-DD`, or returns `null` when the text is not a valid day.
+ * @throws {RangeError} When the time zone skips the whole day.
+ */
+export function parseCalendarDay(text: string): FoundryCalendarDay | null {}
+
+// No
+/**
+ * This function is a simple and robust helper that parses a calendar day.
+ * @param text The text.
+ * @returns The calendar day.
+ */
+export function parseCalendarDay(text: string): FoundryCalendarDay | null {}
+```
+
+Checked by: ESLint `eslint-plugin-jsdoc` in `projects/`: JSDoc required on everything exported (functions, classes, interfaces, types, constants, and the public methods and properties of exported classes; not on `private` or `protected` members), a function description that starts with a verb ending in "s" and not with "This", "A" or "Helper" (`match-description`), no types in tags (`no-types`), no tag that only repeats its name (`informative-docs`), `@param` names that exist, descriptions in `@param` and `@returns`, `@throws` when the body throws (`require-throws`) and a one-line `@example`. `tools/lint/check-text.ts` rejects the sales words and the filler openings in any JSDoc line. Review: the number of sentences, that nothing repeats the types, `@throws` for errors thrown by the functions it calls, whether an `@example` is needed, English and other filler that the lists do not catch.
 
 ### 3. No process references
 
