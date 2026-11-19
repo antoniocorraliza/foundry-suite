@@ -3,8 +3,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import ts from 'typescript';
 import { CHECKED_FILE, LOCKFILE, SKIPPED_FILES, SPEC_FILE, TYPESCRIPT_FILE } from './constants/file-patterns.constant.ts';
 import { FOLDER_SUFFIXES } from './constants/folder-suffixes.constant.ts';
-import { REVIEW_CODE, TEST_FUNCTIONS } from './constants/test-titles.constant.ts';
+import { TEST_FUNCTIONS } from './constants/test-titles.constant.ts';
 import { TEXT_RULES } from './constants/text-rules.constant.ts';
+import { hasReviewCode } from './functions/has-review-code.function.ts';
 import type { ArrowFunctionDeclaration } from './interfaces/arrow-function-declaration.interface.ts';
 import type { TextRule } from './interfaces/text-rule.interface.ts';
 
@@ -31,7 +32,7 @@ function testTitleProblems(path: string, text: string): Array<string> {
     if (ts.isCallExpression(node)) {
       const name: string | undefined = testFunctionName(node.expression);
       const title: string | undefined = name && TEST_FUNCTIONS.has(name) ? testTitleText(node.arguments[0]) : undefined;
-      if (title !== undefined && REVIEW_CODE.test(title)) {
+      if (title !== undefined && hasReviewCode(title)) {
         const { line } = source.getLineAndCharacterOfPosition(node.getStart(source));
         problems.push(`${path}:${line + 1}: review code in a test title: ${title.slice(0, 100)}`);
       }
@@ -111,6 +112,7 @@ function main(): number {
       for (const rule of rules) {
         if (rule.pattern.test(line)) problems.push(`${path}:${index + 1}: ${rule.name}: ${line.trim().slice(0, 100)}`);
       }
+      if (hasReviewCode(line)) problems.push(`${path}:${index + 1}: review code: ${line.trim().slice(0, 100)}`);
     });
     const folderProblem: string | undefined = folderSuffixProblem(path);
     if (folderProblem !== undefined) problems.push(folderProblem);

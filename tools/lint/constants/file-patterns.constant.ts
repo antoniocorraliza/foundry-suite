@@ -4,8 +4,4 @@ export const MARKDOWN_FILE: RegExp = /\.md$/;
 export const SPEC_FILE: RegExp = /\.spec\.ts$/;
 export const TYPESCRIPT_FILE: RegExp = /\.ts$/;
 // The style guide and the patterns of this script have to name what they forbid.
-export const SKIPPED_FILES: ReadonlySet<string> = new Set([
-  'CONTRIBUTING.md',
-  'tools/lint/constants/test-titles.constant.ts',
-  'tools/lint/constants/text-rules.constant.ts',
-]);
+export const SKIPPED_FILES: ReadonlySet<string> = new Set(['CONTRIBUTING.md', 'tools/lint/constants/text-rules.constant.ts']);

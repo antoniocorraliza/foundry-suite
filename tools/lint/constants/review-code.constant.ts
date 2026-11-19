@@ -1,0 +1,32 @@
+// Capitals and digits joined by hyphens and ending in a digit, or one to four capitals followed by one to three digits.
+export const REVIEW_CODE: RegExp = /\b[A-Z]+\d*(?:-[A-Z]+\d*)*-[A-Z]*\d+\b|\b[A-Z]{1,4}\d{1,3}\b/;
+// Names that look like a code and are not one.
+export const REVIEW_CODE_EXCEPTIONS: ReadonlyArray<string> = [
+  'UTF-8',
+  'UTF-16',
+  'ISO-8601',
+  'ES2022',
+  'IPv4',
+  'IPv6',
+  'MD5',
+  'SHA-1',
+  'SHA-256',
+  'SHA-384',
+  'SHA-512',
+  'U+2212',
+  'V8',
+  'OFL-1.1',
+  'A1',
+  'F1',
+  'F2',
+  'F3',
+  'F4',
+  'F5',
+  'F6',
+  'F7',
+  'F8',
+  'F9',
+  'F10',
+  'F11',
+  'F12',
+];
