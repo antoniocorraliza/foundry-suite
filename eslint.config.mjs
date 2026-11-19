@@ -25,6 +25,7 @@ const TOP_LEVEL = ['Program > ', 'Program > ExportNamedDeclaration > '];
 const TOKEN_CLASSES = '/^(?:InjectionToken|HttpContextToken)$/';
 const EXEMPT_FILES = ['**/*.spec.ts', '**/*.d.ts'];
 const forbid = (selectors, message) => selectors.map((selector) => ({ selector, message }));
+const NAMED_OBJECT_TYPES = forbid(['TSTypeLiteral'], 'Object types get a name: declare an interface in interfaces/.');
 const CODE_FILE_SELECTORS = [
   ...forbid(['TSInterfaceDeclaration', 'TSTypeAliasDeclaration', 'TSEnumDeclaration'], 'Interfaces and types go in interfaces/.'),
   ...forbid(
@@ -113,7 +114,7 @@ export default defineConfig([
         'tmp',
         'val',
       ],
-      'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...CODE_FILE_SELECTORS],
+      'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...CODE_FILE_SELECTORS],
       '@typescript-eslint/consistent-type-imports': 'error',
       // One inner list: the groups keep their order but are not separated by blank lines.
       'simple-import-sort/imports': ['error', { groups: [['^\\u0000', '^node:', '^@?\\w', '^@antoniocorraliza(?:/|$)', '^\\.']] }],
@@ -129,7 +130,7 @@ export default defineConfig([
   {
     files: ['**/interfaces/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...INTERFACE_FILE_SELECTORS] },
+    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...INTERFACE_FILE_SELECTORS] },
   },
   {
     files: ['**/constants/**/*.ts'],
@@ -137,13 +138,13 @@ export default defineConfig([
     rules: {
       // A closed list is `as const`, and its type is derived from it in interfaces/.
       '@typescript-eslint/typedef': ['error', { ...TYPEDEF_OPTIONS, variableDeclaration: false }],
-      'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...CONSTANT_FILE_SELECTORS],
+      'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...CONSTANT_FILE_SELECTORS],
     },
   },
   {
     files: ['**/tokens/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...TOKEN_FILE_SELECTORS] },
+    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...TOKEN_FILE_SELECTORS] },
   },
   {
     files: EXEMPT_FILES,

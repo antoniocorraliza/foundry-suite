@@ -1,11 +1,7 @@
-import type { AuditSeverity } from './audit-severity.type.ts';
-
-export interface AuditVulnerability {
-  readonly severity: AuditSeverity;
-  readonly isDirect: boolean;
-}
+import type { AuditMetadata } from './audit-metadata.interface.ts';
+import type { AuditVulnerability } from './audit-vulnerability.interface.ts';
 
 export interface AuditReport {
-  readonly metadata?: { readonly vulnerabilities?: Partial<Record<AuditSeverity | 'total', number>> };
+  readonly metadata?: AuditMetadata;
   readonly vulnerabilities?: Record<string, AuditVulnerability>;
 }

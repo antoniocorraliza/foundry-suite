@@ -5,6 +5,7 @@ import { CHECKED_FILE, LOCKFILE, SKIPPED_FILES, SPEC_FILE, TYPESCRIPT_FILE } fro
 import { FOLDER_SUFFIXES } from './constants/folder-suffixes.constant.ts';
 import { REVIEW_CODE, TEST_FUNCTIONS } from './constants/test-titles.constant.ts';
 import { TEXT_RULES } from './constants/text-rules.constant.ts';
+import type { ArrowFunctionDeclaration } from './interfaces/arrow-function-declaration.interface.ts';
 import type { TextRule } from './interfaces/text-rule.interface.ts';
 
 // describe('...'), it.each(...)('...') and the like: the name of the call, without modifiers.
@@ -53,7 +54,7 @@ function multilineSignature(source: ts.SourceFile, node: ts.Node): ts.Node | und
   if (!isFunction && !isArrowConstant) return undefined;
   const start: ts.Node = isArrowConstant ? node : ((node as ts.SignatureDeclaration).name ?? node);
   const end: ts.Node | undefined = isArrowConstant
-    ? (node as ts.VariableDeclaration & { initializer: ts.ArrowFunction }).initializer.equalsGreaterThanToken
+    ? (node as ArrowFunctionDeclaration).initializer.equalsGreaterThanToken
     : (node as ts.FunctionLikeDeclaration).body;
   if (end === undefined) return undefined;
   const startLine: number = source.getLineAndCharacterOfPosition(start.getStart(source)).line;
