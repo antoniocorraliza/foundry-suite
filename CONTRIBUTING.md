@@ -231,9 +231,20 @@ readonly open: WritableSignal<boolean> = signal(false);
 const items$: Observable<Array<Item>> = this.itemsSE.load();
 ```
 
+A Subject ends in `Subject` and is always private; it is exposed with `asObservable()` as `xObservable`.
+
+```ts
+// Yes
+private readonly itemsSubject: BehaviorSubject<Array<Item>> = new BehaviorSubject<Array<Item>>([]);
+readonly itemsObservable: Observable<Array<Item>> = this.itemsSubject.asObservable();
+
+// No
+readonly items: BehaviorSubject<Array<Item>> = new BehaviorSubject<Array<Item>>([]);
+```
+
 In the libraries, the public names that their designs fix stay as they are (`disabled`, `required`, `events`, `outcome`...): the rule is for the internal code. A field whose name comes from an outside format (`optional` in `package.json`) keeps it, with an `eslint-disable-next-line` that says so.
 
-Checked by: ESLint `id-length` and `id-denylist`; `no-restricted-syntax` on the name of every variable, parameter and property declared as `boolean`, `boolean | null`, `Signal<boolean>`, `WritableSignal<boolean>` or `Observable<T>`, and on any name that ends in `$`. In `projects/`, only declarations that are not exported, function bodies, and private and protected members. The `SE` suffix: review.
+Checked by: ESLint `id-length` and `id-denylist`; `no-restricted-syntax` on the name of every variable, parameter and property declared as `boolean`, `boolean | null`, `Signal<boolean>`, `WritableSignal<boolean>`, `Observable<T>` or a Subject, and on any name that ends in `$`. In `projects/`, only declarations that are not exported, function bodies, and private and protected members. A Subject property that is not private is rejected everywhere, also in the public API. The `SE` suffix: review.
 
 ### 8. Early returns
 
@@ -302,9 +313,9 @@ export function browserProjects(
 ): Array<TestProjectInlineConfiguration> {}
 ```
 
-The public API of the libraries is the exception: an exported function, an exported arrow constant and the non-private members of an exported class keep the signature that their design fixes, so when it does not fit, it is split as Prettier writes it. Internal code and `tools/` keep the rule.
+The public API of the libraries is the exception: an exported function, an exported arrow constant and the public members of an exported class keep the signature that their design fixes, so when it does not fit, it is split as Prettier writes it. Internal code (private and protected members included) and `tools/` keep the rule.
 
-Checked by: Prettier joins a signature that fits; `tools/lint/check-text.ts` rejects one split over several lines, except in the exported declarations of `projects/` (not in their function bodies or private members).
+Checked by: Prettier joins a signature that fits; `tools/lint/check-text.ts` rejects one split over several lines, except in the exported declarations of `projects/` (not in their function bodies or private and protected members).
 
 ### 13. Folder structure: definitions apart from the code
 
@@ -384,7 +395,7 @@ More rules of the structure:
 - No values computed when a module loads: what depends on the environment or a file is read once, in `main()` or in the function that the tool calls first (`readTestEnvironment()`), and passed on as a parameter.
 - Functional interceptors, guards and resolvers keep the type that Angular expects: `export const foundrySessionInterceptor: HttpInterceptorFn = (request, next) => ...`. A top-level constant whose value is a function is code, not a definition.
 - Every object type written inline (`{ ... }`) becomes a named interface: in signatures, in annotations and inside other interfaces (`readonly repository?: PackageRepository`, not `{ readonly url?: string }`). Common generics (`Record`, `Partial`, `Readonly`, `ReadonlyArray`...) are fine.
-- What a library exports (signatures, interfaces, types and constants of its public API) is written as its design fixes it, inline object types and typed constants included: the named object types of this rule and the `as const` lists of rule 6 are for the internal code of the libraries and for `tools/`. ESLint does not ask for names in exported declarations of `projects/`, except inside function bodies and in private members.
+- What a library exports (signatures, interfaces, types and constants of its public API) is written as its design fixes it, inline object types and typed constants included: the named object types of this rule and the `as const` lists of rule 6 are for the internal code of the libraries and for `tools/`. ESLint does not ask for names in exported declarations of `projects/`, except inside function bodies and in private and protected members.
 - Tests are exempt: the data and the fixture components of a test stay in its spec, where they are read.
 
 ```ts
@@ -454,7 +465,7 @@ Classes:
 - Dependencies come from `inject()` in properties, under `// INJECTORS`; never from constructor parameters.
 - What only the template uses is `protected`.
 - Each file ends in its kind: `.component.ts`, `.directive.ts`, `.service.ts`, `.pipe.ts` (rule 13).
-- Inputs and outputs are declared with `input()`, `model()` and `output()`, never with decorators.
+- Inputs and outputs are declared with `input()`, `model()` and `output()`, never with decorators or `outputFromObservable()`.
 - An output is named after what happened (`selectionChange`, `closed`), without `on`.
 - An event handler of the template starts with `on` (`onSave`) and goes in `// HANDLERS`.
 - Events, classes and attributes of the host element go in the `host` property of the decorator. Angular keeps `@HostListener` and `@HostBinding` only for backwards compatibility.
@@ -495,27 +506,28 @@ export class FoundryPanelComponent {
 
 Data and subscriptions:
 
-- A service returns the Observable and does not subscribe to it: no `subscribe()` and no `toSignal()` in a service.
-- A component subscribes in a method and keeps the result in a signal: no `toSignal()` and no `async` pipe.
-- A subscription ends with `takeUntilDestroyed(this.destroyRef)`. What is not an Observable (a DOM listener, a timer) is cleaned up with `this.destroyRef.onDestroy(...)`.
+- To have the data of an Observable as a signal, `toSignal()`, in components and in services. It cleans up by itself.
+- To do something with an Observable (save, delete, send, react), `subscribe()` inside a named method, with `takeUntilDestroyed(this.destroyRef)` when the Observable does not complete by itself.
+- A service does not call `subscribe()`: it returns the Observable, or exposes its state with `toSignal()`.
+- No `async` pipe in the templates.
+- What is not an Observable (a DOM listener, a timer) is cleaned up with `this.destroyRef.onDestroy(...)`.
 - The errors of an Observable are handled with `catchError` inside `pipe()`, not with an error callback in `subscribe()`.
 
 ```ts
 // Yes
-// ACTIONS
-private loadItems(): void {
+// CONTROL VARIABLES
+protected readonly items: Signal<Array<Item>> = toSignal(this.itemsSE.load(), { initialValue: [] });
+
+// HANDLERS
+protected onSave(item: Item): void {
   this.itemsSE
-    .load()
-    .pipe(
-      catchError(() => of([])),
-      takeUntilDestroyed(this.destroyRef),
-    )
-    .subscribe((items) => this.items.set(items));
+    .save(item)
+    .pipe(catchError(() => of(null)))
+    .subscribe((saved) => this.lastSaved.set(saved));
 }
 
 // No
-protected readonly items: Signal<Array<Item>> = toSignal(this.itemsSE.load(), { initialValue: [] });
-this.itemsSE.load().pipe(takeUntil(this.destroyed)).subscribe({ next: (items) => this.items.set(items), error: () => this.items.set([]) });
+this.itemsSE.changes().pipe(takeUntil(this.destroyed)).subscribe({ next: (items) => this.items.set(items), error: () => this.items.set([]) });
 ```
 
 Templates and styles:
@@ -534,4 +546,4 @@ Templates and styles:
 <li class="option" [ngClass]="{ 'option--selected': isSelected(item) }" *ngIf="items$ | async">{{ item.label }}</li>
 ```
 
-Checked by: ESLint in `projects/`, spec files aside: `@angular-eslint/prefer-inject`, `no-output-on-prefix`, `prefer-host-metadata-property`, `component-max-inline-declarations` (no inline template or styles), `consistent-component-styles` (`styleUrl`), `template/prefer-control-flow`, and `no-restricted-syntax` (`@Input()` and `@Output()`; `subscribe()` and `toSignal()` in a `.service.ts`; `toSignal()` in a component or directive; `takeUntil()` and `takeUntilDestroyed()` without the `DestroyRef`; an error callback in `subscribe()`). `tools/lint/check-text.ts`: a class with `@Component`, `@Directive`, `@Injectable` or `@Pipe` in a file without its suffix (in the whole repository); `ngClass`, `ngStyle` and the `async` pipe in the templates of `projects/`; CSS classes that are not camelCase in templates (`class="..."` and `[class.name]`) and in the style sheets of the components. Review: the `// INJECTORS` and `// HANDLERS` sections, `protected` for what only the template uses, the `on` prefix of the handlers, the subscription inside a method, `DestroyRef.onDestroy` for what is not an Observable, the element class plus state classes, and the keys of `[class]="{ ... }"`.
+Checked by: ESLint in `projects/`, spec files aside: `@angular-eslint/prefer-inject`, `no-output-on-prefix`, `prefer-host-metadata-property`, `component-max-inline-declarations` (no inline template or styles), `consistent-component-styles` (`styleUrl`), `template/prefer-control-flow`, and `no-restricted-syntax` (`@Input()`, `@Output()` and `outputFromObservable()`; `subscribe()` in a `.service.ts`; `takeUntil()` and `takeUntilDestroyed()` without the `DestroyRef`; an error callback in `subscribe()`). `tools/lint/check-text.ts`: a class with `@Component`, `@Directive`, `@Injectable` or `@Pipe` in a file without its suffix (in the whole repository); `ngClass`, `ngStyle` and the `async` pipe in the templates of `projects/`; CSS classes that are not camelCase in templates (`class="..."` and `[class.name]`) and in the style sheets of the components. Review: the `// INJECTORS` and `// HANDLERS` sections, `protected` for what only the template uses, the `on` prefix of the handlers, the subscription inside a named method, `takeUntilDestroyed` when the Observable does not complete, `DestroyRef.onDestroy` for what is not an Observable, the element class plus state classes, and the keys of `[class]="{ ... }"`.

@@ -73,6 +73,7 @@ function namingSelectors(namePattern, types, subject, message) {
     types.map((type) => ({ selector: `${declaration.replace('NAME', namePattern)} > TSTypeAnnotation > ${type}`, subject, message })),
   );
 }
+const SUBJECT_TYPE = 'TSTypeReference[typeName.name=/^(?:Subject|BehaviorSubject|ReplaySubject|AsyncSubject)$/]';
 const NAMING_RULES = [
   ...namingSelectors(
     '/^(?:is|has|can)[A-Z]|^(?:IS|HAS|CAN)_/',
@@ -90,7 +91,13 @@ const NAMING_RULES = [
     'TSTypeReference',
     'Observables end in `Observable` (itemsObservable).',
   ),
+  ...namingSelectors('/Subject$/', [SUBJECT_TYPE], 'TSTypeReference', 'Subjects end in `Subject` (itemsSubject).'),
 ];
+// A Subject is never public, not even in the libraries: it is exposed with asObservable() as xObservable.
+const SUBJECT_SELECTORS = forbid(
+  [`PropertyDefinition:not([accessibility='private']) > TSTypeAnnotation > ${SUBJECT_TYPE}`],
+  'Subjects are private: expose them with asObservable() as xObservable.',
+);
 const NAMING_SELECTORS = NAMING_RULES.map(({ selector, message }) => ({ selector, message }));
 const LIBRARY_NAMING_SELECTORS = NAMING_RULES.flatMap(({ selector, subject, message }) =>
   internalOnly(selector, subject).map((internalSelector) => ({ selector: internalSelector, message })),
@@ -107,7 +114,7 @@ const NULL_SELECTORS = NULL_RULES.map(({ selector }) => ({ selector, message: NU
 const LIBRARY_NULL_SELECTORS = NULL_RULES.flatMap(({ selector, subject }) =>
   internalOnly(selector, subject).map((internalSelector) => ({ selector: internalSelector, message: NULL_MESSAGE })),
 );
-const GENERAL_SELECTORS = [...COMMON_SELECTORS, ...NAMING_SELECTORS, ...NULL_SELECTORS];
+const GENERAL_SELECTORS = [...COMMON_SELECTORS, ...NAMING_SELECTORS, ...NULL_SELECTORS, ...SUBJECT_SELECTORS];
 const ANGULAR_SELECTORS = [
   ...forbid(
     ['Decorator[expression.callee.name=/^(?:Input|Output)$/]'],
@@ -118,6 +125,7 @@ const ANGULAR_SELECTORS = [
     'Pass the DestroyRef: takeUntilDestroyed(this.destroyRef).',
   ),
   ...forbid(["CallExpression[callee.name='takeUntil']"], 'Subscriptions end with takeUntilDestroyed(this.destroyRef).'),
+  ...forbid(["CallExpression[callee.name='outputFromObservable']"], 'Outputs are declared with output().'),
   ...forbid(
     [
       "CallExpression[callee.property.name='subscribe'][arguments.length>1]",
@@ -126,15 +134,18 @@ const ANGULAR_SELECTORS = [
     'The errors of an Observable are handled with catchError inside pipe().',
   ),
 ];
+// The one service that keeps a subscription alive on purpose disables the rule with its reason.
 const SERVICE_SELECTORS = forbid(
-  ["CallExpression[callee.property.name='subscribe']", "CallExpression[callee.name='toSignal']"],
-  'Services return the Observable and do not subscribe: the component does.',
+  ["CallExpression[callee.property.name='subscribe']"],
+  'Services do not subscribe: they expose state with toSignal() and return the Observable for the rest.',
 );
-const VIEW_SELECTORS = forbid(
-  ["CallExpression[callee.name='toSignal']"],
-  'Components and directives subscribe in a method and keep the result in a signal.',
-);
-const LIBRARY_GENERAL_SELECTORS = [...COMMON_SELECTORS, ...LIBRARY_NAMING_SELECTORS, ...LIBRARY_NULL_SELECTORS, ...ANGULAR_SELECTORS];
+const LIBRARY_GENERAL_SELECTORS = [
+  ...COMMON_SELECTORS,
+  ...LIBRARY_NAMING_SELECTORS,
+  ...LIBRARY_NULL_SELECTORS,
+  ...SUBJECT_SELECTORS,
+  ...ANGULAR_SELECTORS,
+];
 // Tests compare with undefined when the code under test returns it.
 const TEST_SELECTORS = [...COMMON_SELECTORS, ...NAMING_SELECTORS];
 const TOKEN_CLASSES = '/^(?:InjectionToken|HttpContextToken)$/';
@@ -146,12 +157,12 @@ const NAMED_OBJECT_TYPES_MESSAGE = 'Object types get a name: declare an interfac
 const NAMED_OBJECT_TYPES = forbid(['TSTypeLiteral'], NAMED_OBJECT_TYPES_MESSAGE);
 // The public API of the libraries is written as its design fixes it, inline object types included, so only what is
 // not exported has to name them: declarations that are not exported, function bodies and private members.
-const PRIVATE_MEMBER = ":matches(PropertyDefinition, MethodDefinition)[accessibility='private']";
+const INTERNAL_MEMBER = ":matches(PropertyDefinition, MethodDefinition):matches([accessibility='private'], [accessibility='protected'])";
 const LIBRARY_NAMED_OBJECT_TYPES = forbid(
   [
     'TSTypeLiteral:not(ExportNamedDeclaration TSTypeLiteral)',
     'ExportNamedDeclaration BlockStatement TSTypeLiteral',
-    `ExportNamedDeclaration ${PRIVATE_MEMBER} TSTypeLiteral`,
+    `ExportNamedDeclaration ${INTERNAL_MEMBER} TSTypeLiteral`,
   ],
   NAMED_OBJECT_TYPES_MESSAGE,
 );
@@ -337,7 +348,6 @@ export default defineConfig([
   ...[
     ['*.ts', CODE_FILE_SELECTORS],
     ['*.service.ts', [...CODE_FILE_SELECTORS, ...SERVICE_SELECTORS]],
-    ['*.{component,directive}.ts', [...CODE_FILE_SELECTORS, ...VIEW_SELECTORS]],
     ['interfaces/**/*.ts', INTERFACE_FILE_SELECTORS],
     ['types/**/*.ts', TYPE_FILE_SELECTORS],
     ['constants/**/*.ts', CONSTANT_FILE_SELECTORS],

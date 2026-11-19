@@ -6,9 +6,10 @@ function isExported(node: ts.Node): boolean {
   return ts.canHaveModifiers(node) && (ts.getModifiers(node) ?? []).some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword);
 }
 
-function isPrivateMember(node: ts.ClassElement): boolean {
+function isInternalMember(node: ts.ClassElement): boolean {
   if (node.name !== undefined && ts.isPrivateIdentifier(node.name)) return true;
-  return ts.canHaveModifiers(node) && (ts.getModifiers(node) ?? []).some((modifier) => modifier.kind === ts.SyntaxKind.PrivateKeyword);
+  const internalModifiers: ReadonlyArray<ts.SyntaxKind> = [ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword];
+  return ts.canHaveModifiers(node) && (ts.getModifiers(node) ?? []).some((modifier) => internalModifiers.includes(modifier.kind));
 }
 
 function isPublicApiSignature(node: ts.Node): boolean {
@@ -19,7 +20,7 @@ function isPublicApiSignature(node: ts.Node): boolean {
   }
   const owner: ts.Node = node.parent;
   return (
-    ts.isClassElement(node) && ts.isClassDeclaration(owner) && ts.isSourceFile(owner.parent) && isExported(owner) && !isPrivateMember(node)
+    ts.isClassElement(node) && ts.isClassDeclaration(owner) && ts.isSourceFile(owner.parent) && isExported(owner) && !isInternalMember(node)
   );
 }
 

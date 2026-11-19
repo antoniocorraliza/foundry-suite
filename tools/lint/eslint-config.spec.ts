@@ -372,8 +372,8 @@ const ANGULAR_MESSAGES: ReadonlyArray<string> = [
   'Pass the DestroyRef',
   'Subscriptions end with',
   'The errors of an Observable',
-  'Services return the Observable',
-  'Components and directives subscribe',
+  'Services do not subscribe',
+  'Outputs are declared with output()',
 ];
 
 async function angularLines(code: string, filePath: string): Promise<Array<string>> {
@@ -457,7 +457,6 @@ describe.skipIf(IS_ESLINT_MISSING)('angular in the libraries', () => {
       '8 Inputs',
       '9 @angular-eslint/prefer-host-metadata-property',
       '10 @angular-eslint/prefer-host-metadata-property',
-      '13 Components',
       '17 Subscriptions',
       '17 Pass',
       '18 The',
@@ -465,21 +464,49 @@ describe.skipIf(IS_ESLINT_MISSING)('angular in the libraries', () => {
     ]);
   });
 
-  it('rejects subscriptions and toSignal in a service, which returns the Observable', async () => {
-    const code: string = [
-      "@Injectable({ providedIn: 'root' })",
-      'export class FoundryPanelService {',
-      '  load(): Observable<Array<string>> {',
-      "    return this.httpClientSE.get<Array<string>>('/items');",
-      '  }',
-      '  private start(): void {',
-      '    this.load().subscribe((items) => this.items.set(items));',
-      '  }',
-      '  private readonly items: Signal<Array<string>> = toSignal(this.load(), { initialValue: [] });',
+  it('accepts toSignal in components and services', async () => {
+    const component: string = [
+      'export class FoundryPanelComponent {',
+      '  protected readonly items: Signal<Array<string>> = toSignal(this.foundryPanelSE.load(), { initialValue: [] });',
       '}',
       '',
     ].join('\n');
-    expect(await angularLines(code, servicePath)).toEqual(['7 Services', '9 Services']);
+    const service: string = [
+      "@Injectable({ providedIn: 'root' })",
+      'export class FoundryPanelService {',
+      '  readonly items: Signal<Array<string>> = toSignal(this.load(), { initialValue: [] });',
+      '}',
+      '',
+    ].join('\n');
+    expect(await angularLines(component, componentPath)).toEqual([]);
+    expect(await angularLines(service, servicePath)).toEqual([]);
+  });
+
+  it('rejects subscribe in a service unless a directive gives the reason', async () => {
+    const code: string = [
+      "@Injectable({ providedIn: 'root' })",
+      'export class FoundryPanelService {',
+      '  private start(): void {',
+      '    this.load().subscribe((items) => this.items.set(items));',
+      '  }',
+      '  private keepRefreshing(): void {',
+      '    // eslint-disable-next-line no-restricted-syntax -- the refresh must finish even when nobody waits for it',
+      '    this.refreshObservable.subscribe();',
+      '  }',
+      '}',
+      '',
+    ].join('\n');
+    expect(await angularLines(code, servicePath)).toEqual(['4 Services']);
+  });
+
+  it('rejects outputFromObservable', async () => {
+    const code: string = [
+      'export class FoundryPanelComponent {',
+      '  readonly closed: OutputRef<void> = outputFromObservable(this.closedSubject);',
+      '}',
+      '',
+    ].join('\n');
+    expect(await angularLines(code, componentPath)).toEqual(['2 Outputs']);
   });
 
   it('lets the tests of the libraries declare inline fixture components', async () => {
@@ -490,5 +517,45 @@ describe.skipIf(IS_ESLINT_MISSING)('angular in the libraries', () => {
       '',
     ].join('\n');
     expect(await angularLines(code, componentPath.replace('.component.ts', '.component.spec.ts'))).toEqual([]);
+  });
+});
+
+describe.skipIf(IS_ESLINT_MISSING)('subjects', () => {
+  it('accepts a private subject that ends in Subject, exposed with asObservable()', async () => {
+    const code: string = [
+      'export class ItemStore {',
+      '  private readonly itemsSubject: BehaviorSubject<Array<string>> = new BehaviorSubject<Array<string>>([]);',
+      '  readonly itemsObservable: Observable<Array<string>> = this.itemsSubject.asObservable();',
+      '}',
+      '',
+    ].join('\n');
+    expect(await messageLines(code, 'tools/probe/probe.ts', 'Subjects')).toEqual([]);
+  });
+
+  it('rejects other names and subjects that are not private, also in the libraries', async () => {
+    const code: string = [
+      'export class FoundryItemStore {',
+      '  private readonly items: Subject<string> = new Subject<string>();',
+      '  readonly changesSubject: ReplaySubject<string> = new ReplaySubject<string>(1);',
+      '}',
+      '',
+    ].join('\n');
+    const path: string = 'projects/antoniocorraliza/foundry-core/broadcast/src/services/foundry-item-store.service.ts';
+    expect(await messageLines(code, 'tools/probe/probe.ts', 'Subjects')).toEqual([2, 3]);
+    expect(await messageLines(code, path, 'Subjects')).toEqual([2, 3]);
+  });
+});
+
+describe.skipIf(IS_ESLINT_MISSING)('protected members of the libraries', () => {
+  it('ask for named object types like private members', async () => {
+    const code: string = [
+      'export class FoundryPanelComponent {',
+      '  readonly position: { readonly top: number } = { top: 0 };',
+      '  protected readonly size: { readonly width: number } = { width: 0 };',
+      '}',
+      '',
+    ].join('\n');
+    const path: string = 'projects/antoniocorraliza/foundry-ui/panel/src/components/foundry-panel/foundry-panel.component.ts';
+    expect(await messageLines(code, path, 'Object types get a name')).toEqual([3]);
   });
 });
