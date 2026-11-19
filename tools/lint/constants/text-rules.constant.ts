@@ -4,8 +4,9 @@ import { LIBRARY_STYLE_FILE, LIBRARY_TEMPLATE_FILE, MARKDOWN_FILE, TYPESCRIPT_FI
 export const TEXT_RULES: ReadonlyArray<TextRule> = [
   {
     name: 'typographic character',
-    // Arrows, ellipsis, middle dot, multiplication sign, check marks, long dashes, curly quotes and box drawing.
-    pattern: /[←-⇿…·×✓-✘–—‘’“”─-╿]/u,
+    // Arrows, ellipsis, middle dot, multiplication sign, check marks, long dashes, curly quotes and box drawing; and the
+    // Angular private prefix anywhere but at the start of a name.
+    pattern: /[←-⇿…·×✓-✘–—‘’“”─-╿]|(?<=[\p{L}\p{N}_$])ɵ|ɵ(?![\p{L}\p{N}_$])/u,
   },
   // The copyright and registered signs are pictographic too, but they are allowed.
   { name: 'emoji', pattern: /(?![\u00a9\u00ae])\p{Extended_Pictographic}/u },

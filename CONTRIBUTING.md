@@ -106,7 +106,7 @@ Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `desc
 
 ### 4. Only characters you can type
 
-No typographic arrows, ellipses, middle dots, multiplication signs, check marks, long dashes, curly quotes or emoji in code, comments, test names, job names or READMEs. Accented letters in proper names and the copyright sign are fine.
+No typographic arrows, ellipses, middle dots, multiplication signs, check marks, long dashes, curly quotes or emoji in code, comments, test names, job names or READMEs. Accented letters in proper names and the copyright sign are fine. Angular's `ɵ` prefix (exported but private) is allowed at the start of a name, and nowhere else.
 
 ```yaml
 # Yes

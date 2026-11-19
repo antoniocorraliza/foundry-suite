@@ -12,6 +12,8 @@ describe('textProblems', () => {
     ['a middle dot', 'Unit · Angular 21', 'typographic character'],
     ['a long dash', 'one — two', 'typographic character'],
     ['curly quotes', '“quoted”', 'typographic character'],
+    ['the Angular private prefix inside a name', 'const formatɵDate: string = name;', 'typographic character'],
+    ['the Angular private prefix alone', "const prefix: string = 'ɵ';", 'typographic character'],
     ['an emoji', 'done ✅', 'emoji'],
     ['a decision number', 'see decision 26', 'process reference'],
     ['a review code', 'see CORE2-R1', 'review code'],
@@ -28,6 +30,11 @@ describe('textProblems', () => {
     ['a "note that"', ' * Returns null. Note that the day is local.', 'filler in JSDoc'],
   ])('reports %s in a JSDoc line', (_description, line, rule) => {
     expect(textProblems('a.ts', line)).toEqual([`a.ts:1: ${rule}: ${line.trim()}`]);
+  });
+
+  it('accepts the Angular private prefix at the start of a name', () => {
+    const text: string = "export function ɵforEachOwnKey(): void {}\nimport { ɵforEachOwnKey } from '@antoniocorraliza/foundry-utils';";
+    expect(textProblems('projects/a/src/functions/for-each-own-key.function.ts', text)).toEqual([]);
   });
 
   it('leaves the same words alone outside JSDoc', () => {
