@@ -10,7 +10,7 @@ export async function bundleWithEsbuild(request: BundleRequest): Promise<string>
     setup: (pluginBuild) => {
       pluginBuild.onResolve({ filter: /^[^./]/ }, (arguments_) => {
         const resolution: ModuleResolution | undefined = foundryResolution(arguments_.path, request.entryFiles);
-        return resolution === undefined ? undefined : { path: resolution.path, external: resolution.external };
+        return resolution === undefined ? undefined : { path: resolution.path, external: resolution.isExternal };
       });
     },
   };

@@ -13,7 +13,7 @@ export async function bundleWithRollup(request: BundleRequest): Promise<string> 
     resolveId: (specifier) => {
       if (specifier === PROBE_MODULE) return specifier;
       const resolution: ModuleResolution | undefined = foundryResolution(specifier, request.entryFiles);
-      return resolution === undefined ? null : { id: resolution.path, external: resolution.external };
+      return resolution === undefined ? null : { id: resolution.path, external: resolution.isExternal };
     },
     load: (id) => (id === PROBE_MODULE ? request.source : null),
     renderChunk: async (code) => {

@@ -10,7 +10,7 @@ export function textProblems(path: string, text: string): Array<string> {
   const linesWithoutTestData: Array<string> = (SPEC_FILE.test(path) ? maskTestData(path, text) : text).split('\n');
   text.split('\n').forEach((line, index) => {
     for (const rule of rules) {
-      const checkedLine: string = rule.allowedInTestData ? (linesWithoutTestData[index] ?? line) : line;
+      const checkedLine: string = rule.isAllowedInTestData ? (linesWithoutTestData[index] ?? line) : line;
       if (rule.pattern.test(checkedLine)) problems.push(`${path}:${index + 1}: ${rule.name}: ${line.trim().slice(0, 100)}`);
     }
     if (hasReviewCode(line)) problems.push(`${path}:${index + 1}: review code: ${line.trim().slice(0, 100)}`);

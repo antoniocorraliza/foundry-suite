@@ -174,7 +174,7 @@ function printProblems(title: string, problems: ReadonlyArray<string>): void {
 }
 
 async function main(): Promise<number> {
-  const update: boolean = process.argv.includes('--update');
+  const isUpdate: boolean = process.argv.includes('--update');
   const builtEntries: Array<BuiltEntry> = await listBuiltEntries(resolve(PACKAGES_DIST_DIRECTORY), FOUNDRY_PACKAGES);
   const measurements: Array<SizeMeasurement> = [...SIZE_MEASUREMENTS, ...wholeEntryMeasurements(builtEntries, SIZE_MEASUREMENTS)];
   const builtFiles: Set<string> = listBuiltFiles(PACKAGES_DIST_DIRECTORY);
@@ -201,7 +201,7 @@ async function main(): Promise<number> {
     );
     const errorNames: Array<string> = await errorNameProblems(builtEntries, context);
     let reference: Array<string> = [];
-    if (update) {
+    if (isUpdate) {
       writeReference(SIZE_REFERENCE_PATH, measured);
       console.log(`[size]: ${SIZE_REFERENCE_PATH} updated; commit it with the change that moved the sizes`);
     } else {

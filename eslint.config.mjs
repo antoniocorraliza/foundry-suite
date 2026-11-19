@@ -41,7 +41,57 @@ const CODE_SHAPE_SELECTORS = [
   })),
   { selector: 'PrivateIdentifier', message: 'Private members use the TypeScript `private` modifier, not `#`.' },
 ];
-const COMMON_SELECTORS = [...MESSAGE_SELECTORS, ...LIFECYCLE_HOOK_SELECTORS, ...CODE_SHAPE_SELECTORS];
+const COMMON_SELECTORS = [
+  ...MESSAGE_SELECTORS,
+  ...LIFECYCLE_HOOK_SELECTORS,
+  ...CODE_SHAPE_SELECTORS,
+  { selector: 'Identifier[name=/\\$$/]', message: 'Observables end in `Observable`, not `$` (itemsObservable).' },
+];
+
+// The libraries export what their designs fix, so these rules only look at their internal code there: declarations
+// that are not exported, function bodies, and private and protected members.
+const INTERNAL_ACCESS = ":matches([accessibility='private'], [accessibility='protected'])";
+function internalOnly(selector, subject) {
+  const selectors = [
+    `${selector}:not(ExportNamedDeclaration ${subject})`,
+    `ExportNamedDeclaration BlockStatement ${selector}`,
+    `ExportNamedDeclaration :matches(PropertyDefinition, MethodDefinition)${INTERNAL_ACCESS} ${selector}`,
+  ];
+  if (selector.startsWith('PropertyDefinition')) {
+    selectors.push(`ExportNamedDeclaration ${selector.replace('PropertyDefinition', `PropertyDefinition${INTERNAL_ACCESS}`)}`);
+  }
+  return selectors;
+}
+const NAMED_DECLARATIONS = ['Identifier[name!=NAME]', 'PropertyDefinition[key.name!=NAME]', 'TSPropertySignature[key.name!=NAME]'];
+function namingSelectors(namePattern, types, subject, message) {
+  return NAMED_DECLARATIONS.flatMap((declaration) =>
+    types.map((type) => ({ selector: `${declaration.replace('NAME', namePattern)} > TSTypeAnnotation > ${type}`, subject, message })),
+  );
+}
+const NAMING_RULES = [
+  ...namingSelectors(
+    '/^(?:is|has|can)[A-Z]|^(?:IS|HAS|CAN)_/',
+    [
+      'TSBooleanKeyword',
+      'TSUnionType > TSBooleanKeyword',
+      'TSTypeReference[typeName.name=/^(?:Signal|WritableSignal)$/] > TSTypeParameterInstantiation > TSBooleanKeyword',
+    ],
+    'TSBooleanKeyword',
+    'Booleans start with is, has or can (isOpen, hasError, canSubmit).',
+  ),
+  ...namingSelectors(
+    '/Observable$/',
+    ["TSTypeReference[typeName.name='Observable']", "TSUnionType > TSTypeReference[typeName.name='Observable']"],
+    'TSTypeReference',
+    'Observables end in `Observable` (itemsObservable).',
+  ),
+];
+const NAMING_SELECTORS = NAMING_RULES.map(({ selector, message }) => ({ selector, message }));
+const LIBRARY_NAMING_SELECTORS = NAMING_RULES.flatMap(({ selector, subject, message }) =>
+  internalOnly(selector, subject).map((internalSelector) => ({ selector: internalSelector, message })),
+);
+const GENERAL_SELECTORS = [...COMMON_SELECTORS, ...NAMING_SELECTORS];
+const LIBRARY_GENERAL_SELECTORS = [...COMMON_SELECTORS, ...LIBRARY_NAMING_SELECTORS];
 const TOKEN_CLASSES = '/^(?:InjectionToken|HttpContextToken)$/';
 const EXEMPT_FILES = ['**/*.spec.ts', '**/*.d.ts'];
 function forbid(selectors, message) {
@@ -193,7 +243,7 @@ export default defineConfig([
         'tmp',
         'val',
       ],
-      'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...NAMED_OBJECT_TYPES, ...CODE_FILE_SELECTORS],
+      'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...CODE_FILE_SELECTORS],
       '@typescript-eslint/consistent-type-imports': 'error',
       // One inner list: the groups keep their order but are not separated by blank lines.
       'simple-import-sort/imports': ['error', { groups: [['^\\u0000', '^node:', '^@?\\w', '^@antoniocorraliza(?:/|$)', '^\\.']] }],
@@ -208,12 +258,12 @@ export default defineConfig([
   {
     files: ['**/interfaces/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...NAMED_OBJECT_TYPES, ...INTERFACE_FILE_SELECTORS] },
+    rules: { 'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...INTERFACE_FILE_SELECTORS] },
   },
   {
     files: ['**/types/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...NAMED_OBJECT_TYPES, ...TYPE_FILE_SELECTORS] },
+    rules: { 'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...TYPE_FILE_SELECTORS] },
   },
   {
     files: ['**/constants/**/*.ts'],
@@ -221,13 +271,13 @@ export default defineConfig([
     rules: {
       // A closed list is `as const`, and its type is derived from it in types/.
       '@typescript-eslint/typedef': ['error', { ...TYPEDEF_OPTIONS, variableDeclaration: false }],
-      'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...NAMED_OBJECT_TYPES, ...CONSTANT_FILE_SELECTORS],
+      'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...CONSTANT_FILE_SELECTORS],
     },
   },
   {
     files: ['**/tokens/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...NAMED_OBJECT_TYPES, ...TOKEN_FILE_SELECTORS] },
+    rules: { 'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...TOKEN_FILE_SELECTORS] },
   },
   {
     files: ['**/errors/**/*.ts'],
@@ -236,7 +286,7 @@ export default defineConfig([
       // The name of an error class is a literal type with its type annotation, as typedef asks.
       '@typescript-eslint/prefer-as-const': 'off',
       'max-classes-per-file': ['error', 1],
-      'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...NAMED_OBJECT_TYPES, ...ERROR_FILE_SELECTORS],
+      'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...ERROR_FILE_SELECTORS],
     },
   },
   ...[
@@ -249,11 +299,11 @@ export default defineConfig([
   ].map(([pattern, selectors]) => ({
     files: [`${LIBRARY_FILES}${pattern}`],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...COMMON_SELECTORS, ...LIBRARY_NAMED_OBJECT_TYPES, ...selectors] },
+    rules: { 'no-restricted-syntax': ['error', ...LIBRARY_GENERAL_SELECTORS, ...LIBRARY_NAMED_OBJECT_TYPES, ...selectors] },
   })),
   {
     files: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...COMMON_SELECTORS] },
+    rules: { 'no-restricted-syntax': ['error', ...GENERAL_SELECTORS] },
   },
   {
     files: ['projects/**/*.ts'],

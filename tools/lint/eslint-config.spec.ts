@@ -2,11 +2,11 @@ import type { ESLint } from 'eslint';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 // The Angular 22 install of CI has no ESLint: the lint, and this configuration, only run with Angular 21.
-const WITHOUT_ESLINT: boolean = process.env['FOUNDRY_EXPECTED_ANGULAR_MAJOR'] === '22';
+const IS_ESLINT_MISSING: boolean = process.env['FOUNDRY_EXPECTED_ANGULAR_MAJOR'] === '22';
 let ESLINT: ESLint;
 
 beforeAll(async () => {
-  if (WITHOUT_ESLINT) return;
+  if (IS_ESLINT_MISSING) return;
   const { ESLint: ESLintClass } = await import('eslint');
   ESLINT = new ESLintClass();
 });
@@ -16,7 +16,7 @@ async function missingJsdocLines(code: string, filePath: string): Promise<Array<
   return (result?.messages ?? []).filter((message) => message.ruleId === 'jsdoc/require-jsdoc').map((message) => message.line);
 }
 
-describe.skipIf(WITHOUT_ESLINT)('jsdoc on the name of error classes', () => {
+describe.skipIf(IS_ESLINT_MISSING)('jsdoc on the name of error classes', () => {
   const errorClass: string = [
     '/**',
     ' * Reports a failure inside Utils.',
@@ -67,7 +67,7 @@ async function lifecycleHookLines(code: string): Promise<Array<number>> {
     .map((message) => message.line);
 }
 
-describe.skipIf(WITHOUT_ESLINT)('code in lifecycle hooks', () => {
+describe.skipIf(IS_ESLINT_MISSING)('code in lifecycle hooks', () => {
   it('accepts hooks that only call methods of the class', async () => {
     const code: string = [
       'export class ProbeComponent {',
@@ -116,7 +116,7 @@ async function ruleLines(code: string, filePath: string, ruleId: string): Promis
   return (result?.messages ?? []).filter((message) => message.ruleId === ruleId).map((message) => message.line);
 }
 
-describe.skipIf(WITHOUT_ESLINT)('top-level functions', () => {
+describe.skipIf(IS_ESLINT_MISSING)('top-level functions', () => {
   const message: string = 'Top-level functions are declared with';
 
   it('accepts function declarations, inner arrow functions and typed functional interceptors', async () => {
@@ -145,7 +145,7 @@ describe.skipIf(WITHOUT_ESLINT)('top-level functions', () => {
   });
 });
 
-describe.skipIf(WITHOUT_ESLINT)('interfaces and types', () => {
+describe.skipIf(IS_ESLINT_MISSING)('interfaces and types', () => {
   it('accepts a union and a computed type', async () => {
     const code: string = [
       "import type { Circle } from '../interfaces/circle.interface.ts';",
@@ -163,7 +163,7 @@ describe.skipIf(WITHOUT_ESLINT)('interfaces and types', () => {
   });
 });
 
-describe.skipIf(WITHOUT_ESLINT)('private members', () => {
+describe.skipIf(IS_ESLINT_MISSING)('private members', () => {
   const message: string = 'Private members use the TypeScript';
 
   it('accepts the private modifier', async () => {
@@ -182,5 +182,99 @@ describe.skipIf(WITHOUT_ESLINT)('private members', () => {
       '',
     ].join('\n');
     expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([2, 3, 4]);
+  });
+});
+
+describe.skipIf(IS_ESLINT_MISSING)('names of booleans', () => {
+  const message: string = 'Booleans start with is, has or can';
+
+  it('accepts booleans that start with is, has or can', async () => {
+    const code: string = [
+      'export const IS_READY: boolean = true;',
+      'export function toggle(isVisible: boolean, hasError: boolean | null): boolean {',
+      '  const canSubmit: boolean = isVisible && hasError !== true;',
+      '  return canSubmit;',
+      '}',
+      'export class PanelState {',
+      '  readonly isOpen: WritableSignal<boolean> = signal(false);',
+      '}',
+      '',
+    ].join('\n');
+    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
+  });
+
+  it('rejects any other name for variables, parameters, properties and boolean signals', async () => {
+    const code: string = [
+      'export const READY: boolean = true;',
+      'export function toggle(visible: boolean, error: boolean | null): boolean {',
+      '  const submit: boolean = visible && error !== true;',
+      '  return submit;',
+      '}',
+      'export class PanelState {',
+      '  readonly open: WritableSignal<boolean> = signal(false);',
+      '}',
+      '',
+    ].join('\n');
+    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([1, 2, 2, 3, 7]);
+  });
+
+  it('rejects them in interfaces', async () => {
+    const code: string = ['export interface PanelOptions {', '  readonly modal: boolean;', '  readonly isOpen: boolean;', '}', ''].join(
+      '\n',
+    );
+    expect(await messageLines(code, 'tools/probe/interfaces/panel-options.interface.ts', message)).toEqual([2]);
+  });
+
+  it('leaves the public API of the libraries to their designs and checks the internal code', async () => {
+    const code: string = [
+      'export class FoundryPanelComponent {',
+      '  readonly disabled: Signal<boolean> = computed(() => false);',
+      '  protected readonly open: WritableSignal<boolean> = signal(false);',
+      '  private visible: boolean = false;',
+      '  toggle(force: boolean): void {',
+      '    const expanded: boolean = force || this.open();',
+      '    this.visible = expanded;',
+      '  }',
+      '}',
+      '',
+    ].join('\n');
+    const path: string = 'projects/antoniocorraliza/foundry-ui/panel/src/components/foundry-panel/foundry-panel.component.ts';
+    expect(await messageLines(code, path, message)).toEqual([3, 4, 6]);
+  });
+});
+
+describe.skipIf(IS_ESLINT_MISSING)('names of observables', () => {
+  it('accepts observables that end in Observable', async () => {
+    const code: string = [
+      'export function changes(sourceObservable: Observable<string>): Observable<string> {',
+      '  const trimmedObservable: Observable<string> = sourceObservable.pipe(map((value) => value.trim()));',
+      '  return trimmedObservable;',
+      '}',
+      '',
+    ].join('\n');
+    expect(await messageLines(code, 'tools/probe/probe.ts', 'Observables end in')).toEqual([]);
+  });
+
+  it('rejects other names and the $ suffix', async () => {
+    const code: string = [
+      'export function changes(source: Observable<string>): Observable<string> {',
+      '  const trimmed$: Observable<string> | null = source.pipe(map((value) => value.trim()));',
+      '  return trimmed$ ?? source;',
+      '}',
+      '',
+    ].join('\n');
+    expect(await messageLines(code, 'tools/probe/probe.ts', 'Observables end in')).toEqual([1, 2, 2, 3]);
+  });
+
+  it('leaves public observables of the libraries to their designs', async () => {
+    const code: string = [
+      'export class FoundrySessionService {',
+      '  readonly events: Observable<string> = EMPTY;',
+      '  private readonly refreshes: Observable<string> = EMPTY;',
+      '}',
+      '',
+    ].join('\n');
+    const path: string = 'projects/antoniocorraliza/foundry-core/security/src/services/foundry-session.service.ts';
+    expect(await messageLines(code, path, 'Observables end in')).toEqual([3]);
   });
 });

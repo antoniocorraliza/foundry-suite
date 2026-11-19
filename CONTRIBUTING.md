@@ -201,7 +201,22 @@ names.reduce((total, name) => total + name.length, 0);
 names.reduce((acc, n) => acc + n.length, 0);
 ```
 
-Checked by: ESLint `id-length` and `id-denylist`. The `SE` suffix: review.
+Booleans start with `is`, `has` or `can` (`IS_`, `HAS_` or `CAN_` in a constant), also boolean signals. Observables end in `Observable`, never in `$`.
+
+```ts
+// Yes
+readonly isOpen: WritableSignal<boolean> = signal(false);
+const hasError: boolean = errors.length > 0;
+const itemsObservable: Observable<Array<Item>> = this.itemsService.load();
+
+// No
+readonly open: WritableSignal<boolean> = signal(false);
+const items$: Observable<Array<Item>> = this.itemsService.load();
+```
+
+In the libraries, the public names that their designs fix stay as they are (`disabled`, `required`, `events`, `outcome`...): the rule is for the internal code. A field whose name comes from an outside format (`optional` in `package.json`) keeps it, with an `eslint-disable-next-line` that says so.
+
+Checked by: ESLint `id-length` and `id-denylist`; `no-restricted-syntax` on the name of every variable, parameter and property declared as `boolean`, `boolean | null`, `Signal<boolean>`, `WritableSignal<boolean>` or `Observable<T>`, and on any name that ends in `$`. In `projects/`, only declarations that are not exported, function bodies, and private and protected members. The `SE` suffix: review.
 
 ### 8. Early returns
 
@@ -258,7 +273,7 @@ Name, parameters and return type of a function or method go on one line. When th
 ```ts
 // Yes
 export interface BrowserProjectOptions extends ProjectOptions {
-  readonly angular: boolean;
+  readonly isAngular: boolean;
   readonly timeZones?: ReadonlyArray<string>;
 }
 
@@ -266,7 +281,7 @@ export function browserProjects(options: BrowserProjectOptions): Array<TestProje
 
 // No
 export function browserProjects(
-  options: ProjectOptions & { readonly angular: boolean; readonly timeZones?: ReadonlyArray<string> },
+  options: ProjectOptions & { readonly isAngular: boolean; readonly timeZones?: ReadonlyArray<string> },
 ): Array<TestProjectInlineConfiguration> {}
 ```
 

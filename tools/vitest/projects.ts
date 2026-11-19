@@ -44,7 +44,7 @@ function expectedAngularMajor(variable: string | undefined, manifestText: string
 export function readTestEnvironment(): TestEnvironment {
   return {
     browsers: selectedBrowsers(process.env['FOUNDRY_TEST_BROWSERS']),
-    coverage: process.env['FOUNDRY_TEST_COVERAGE'] === 'true',
+    isCoverageEnabled: process.env['FOUNDRY_TEST_COVERAGE'] === 'true',
     expectedAngularMajor: expectedAngularMajor(
       process.env['FOUNDRY_EXPECTED_ANGULAR_MAJOR'],
       readFileSync(new URL('../../package.json', import.meta.url), 'utf8'),
@@ -63,7 +63,7 @@ function angularPlugin(): Array<Plugin> {
 
 function browsersToRun(browsers: ReadonlyArray<TestBrowser>, environment: TestEnvironment): ReadonlyArray<TestBrowser> {
   // V8 coverage only works with Chromium in browser mode, so a coverage run drops the other browsers.
-  return browsers.filter((browser) => environment.browsers.includes(browser) && (!environment.coverage || browser === 'chromium'));
+  return browsers.filter((browser) => environment.browsers.includes(browser) && (!environment.isCoverageEnabled || browser === 'chromium'));
 }
 
 // The zone.js setup patches the global describe and it, so Angular projects need `globals: true`.
@@ -117,12 +117,12 @@ export function browserProjects(options: BrowserProjectOptions): Array<TestProje
 
   return [
     {
-      plugins: options.angular ? [angularPlugin()] : [],
-      optimizeDeps: options.angular ? { include: [...ANGULAR_OPTIMIZED_DEPENDENCIES] } : {},
+      plugins: options.isAngular ? [angularPlugin()] : [],
+      optimizeDeps: options.isAngular ? { include: [...ANGULAR_OPTIMIZED_DEPENDENCIES] } : {},
       test: {
         name: options.name,
-        globals: options.angular,
-        setupFiles: options.angular ? [`${SETUP_DIRECTORY}/angular-browser.ts`] : [],
+        globals: options.isAngular,
+        setupFiles: options.isAngular ? [`${SETUP_DIRECTORY}/angular-browser.ts`] : [],
         include: [...options.include],
         exclude: [...(options.exclude ?? [])],
         provide: { expectedAngularMajor: options.environment.expectedAngularMajor },

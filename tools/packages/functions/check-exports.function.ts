@@ -41,8 +41,8 @@ export function checkExports(tarball: Tarball, sourceFiles: ReadonlyArray<string
       const matches: Array<string> = files.filter((file) => file.startsWith(prefix) && file.endsWith(suffix));
       console.log(`    - exports: ${subpath} matches ${matches.length} file(s) in the tarball`);
       const sourceFolder: string = prefix.slice(0, prefix.lastIndexOf('/') + 1);
-      const sourceHasFolder: boolean = sourceFiles.some((file) => file.startsWith(sourceFolder));
-      if (matches.length === 0 && declaresCssSideEffects(foundryPackage) && sourceHasFolder) {
+      const hasSourceFolder: boolean = sourceFiles.some((file) => file.startsWith(sourceFolder));
+      if (matches.length === 0 && declaresCssSideEffects(foundryPackage) && hasSourceFolder) {
         problems.push(`pattern export "${subpath}" matches no file in the tarball, but the source has ${sourceFolder}`);
       }
       continue;
