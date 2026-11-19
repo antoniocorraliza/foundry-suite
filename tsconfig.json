@@ -1,5 +1,13 @@
 {
   "compileOnSave": false,
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.tools.json" },
+    { "path": "./tsconfig.spec.json" },
+    { "path": "./projects/antoniocorraliza/foundry-core/tsconfig.lib.json" },
+    { "path": "./projects/antoniocorraliza/foundry-ui/tsconfig.lib.json" },
+    { "path": "./projects/antoniocorraliza/foundry-utils/tsconfig.lib.json" }
+  ],
   "compilerOptions": {
     "paths": {
       "@antoniocorraliza/foundry-core": ["./dist/antoniocorraliza/foundry-core"],
