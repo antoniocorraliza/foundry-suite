@@ -25,7 +25,20 @@ const TOP_LEVEL = ['Program > ', 'Program > ExportNamedDeclaration > '];
 const TOKEN_CLASSES = '/^(?:InjectionToken|HttpContextToken)$/';
 const EXEMPT_FILES = ['**/*.spec.ts', '**/*.d.ts'];
 const forbid = (selectors, message) => selectors.map((selector) => ({ selector, message }));
-const NAMED_OBJECT_TYPES = forbid(['TSTypeLiteral'], 'Object types get a name: declare an interface in interfaces/.');
+const NAMED_OBJECT_TYPES_MESSAGE = 'Object types get a name: declare an interface in interfaces/.';
+const NAMED_OBJECT_TYPES = forbid(['TSTypeLiteral'], NAMED_OBJECT_TYPES_MESSAGE);
+// The public API of the libraries is written as its design fixes it, inline object types included, so only what is
+// not exported has to name them: declarations that are not exported, function bodies and private members.
+const PRIVATE_MEMBER = ":matches(PropertyDefinition, MethodDefinition):matches([accessibility='private'], [key.type='PrivateIdentifier'])";
+const LIBRARY_NAMED_OBJECT_TYPES = forbid(
+  [
+    'TSTypeLiteral:not(ExportNamedDeclaration TSTypeLiteral)',
+    'ExportNamedDeclaration BlockStatement TSTypeLiteral',
+    `ExportNamedDeclaration ${PRIVATE_MEMBER} TSTypeLiteral`,
+  ],
+  NAMED_OBJECT_TYPES_MESSAGE,
+);
+const LIBRARY_FILES = 'projects/**/';
 const CODE_FILE_SELECTORS = [
   ...forbid(['TSInterfaceDeclaration', 'TSTypeAliasDeclaration', 'TSEnumDeclaration'], 'Interfaces and types go in interfaces/.'),
   ...forbid(
@@ -146,6 +159,16 @@ export default defineConfig([
     ignores: EXEMPT_FILES,
     rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...NAMED_OBJECT_TYPES, ...TOKEN_FILE_SELECTORS] },
   },
+  ...[
+    ['*.ts', CODE_FILE_SELECTORS],
+    ['interfaces/**/*.ts', INTERFACE_FILE_SELECTORS],
+    ['constants/**/*.ts', CONSTANT_FILE_SELECTORS],
+    ['tokens/**/*.ts', TOKEN_FILE_SELECTORS],
+  ].map(([pattern, selectors]) => ({
+    files: [`${LIBRARY_FILES}${pattern}`],
+    ignores: EXEMPT_FILES,
+    rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS, ...LIBRARY_NAMED_OBJECT_TYPES, ...selectors] },
+  })),
   {
     files: EXEMPT_FILES,
     rules: { 'no-restricted-syntax': ['error', ...MESSAGE_SELECTORS] },
