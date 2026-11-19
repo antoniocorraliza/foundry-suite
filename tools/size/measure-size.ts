@@ -5,6 +5,7 @@ import { FOUNDRY_PACKAGES } from '../packages/constants/foundry-packages.constan
 import { PACKAGES_DIST_DIRECTORY } from '../packages/constants/paths.constant.ts';
 import { BASE_APP_COMPONENT, BASE_FORMS_APP_COMPONENT } from './constants/base-components.constant.ts';
 import { BUNDLERS } from './constants/bundlers.constant.ts';
+import { PUBLIC_ERROR_CLASSES } from './constants/public-error-classes.constant.ts';
 import { SIZE_MEASUREMENTS } from './constants/size-measurements.constant.ts';
 import { SIZE_REFERENCE_PATH } from './constants/size-settings.constant.ts';
 import { SIZE_TOOLS } from './constants/size-tools.constant.ts';
@@ -13,14 +14,18 @@ import { budgetProblems } from './functions/budget-problems.function.ts';
 import { buildAngularProbe } from './functions/build-angular-probe.function.ts';
 import { bundleWithEsbuild } from './functions/bundle-with-esbuild.function.ts';
 import { bundleWithRollup } from './functions/bundle-with-rollup.function.ts';
+import { errorNameProbeSource } from './functions/error-name-probe-source.function.ts';
+import { errorNameProblem } from './functions/error-name-problem.function.ts';
 import { formatKilobytes } from './functions/format-kilobytes.function.ts';
 import { listBuiltEntries } from './functions/list-built-entries.function.ts';
 import { measureContents } from './functions/measure-contents.function.ts';
+import { printedErrorName } from './functions/printed-error-name.function.ts';
 import { probeSource } from './functions/probe-source.function.ts';
 import { referenceProblems } from './functions/reference-problems.function.ts';
 import { resolveMeasurement } from './functions/resolve-measurement.function.ts';
 import { runWithConcurrency } from './functions/run-with-concurrency.function.ts';
 import { sizeDelta } from './functions/size-delta.function.ts';
+import { undeclaredErrorClasses } from './functions/undeclared-error-classes.function.ts';
 import { wholeEntryMeasurements } from './functions/whole-entry-measurements.function.ts';
 import type { BaseComponent } from './interfaces/base-component.interface.ts';
 import type { BuiltEntry } from './interfaces/built-entry.interface.ts';
@@ -120,6 +125,30 @@ async function measureAll(measurable: ReadonlyArray<ResolvedMeasurement>, contex
   return measured;
 }
 
+async function errorNameProblems(builtEntries: ReadonlyArray<BuiltEntry>, context: SizeRunContext): Promise<Array<string>> {
+  const { workDirectory, bundleRequest } = context;
+  const problems: Array<string> = undeclaredErrorClasses(builtEntries, PUBLIC_ERROR_CLASSES);
+  let checked: number = 0;
+  for (const errorClass of PUBLIC_ERROR_CLASSES) {
+    const builtEntry: BuiltEntry | undefined = builtEntries.find(
+      (candidate) => candidate.packageFolder === errorClass.packageFolder && candidate.entry === errorClass.entry,
+    );
+    if (!builtEntry?.exports.includes(errorClass.className)) continue;
+    for (const bundler of BUNDLERS) {
+      const source: string = errorNameProbeSource(builtEntry.specifier, errorClass);
+      const outputFile: string = join(workDirectory, `error-name-${checked}.mjs`);
+      checked += 1;
+      const printed: string = await printedErrorName({ bundle: { ...bundleRequest, source }, bundler, outputFile });
+      const problem: string | undefined = errorNameProblem(builtEntry.specifier, errorClass.className, bundler, printed);
+      if (problem !== undefined) problems.push(problem);
+    }
+  }
+  console.log(
+    `\n[size]: error names checked after minifying: ${checked / BUNDLERS.length} of ${PUBLIC_ERROR_CLASSES.length} declared classes`,
+  );
+  return problems;
+}
+
 function printReport(report: SizeReport): void {
   const { measured, measurements, pending } = report;
   console.log(`\n${'measurement'.padEnd(64)}${'tool'.padEnd(9)}${'raw'.padStart(10)}${'gzip'.padStart(11)}   budget`);
@@ -170,6 +199,7 @@ async function main(): Promise<number> {
     const budget: Array<string> = measurable.flatMap((resolution) =>
       budgetProblems(resolution.measurement.name, measured[resolution.measurement.name] ?? {}, resolution.measurement.budget),
     );
+    const errorNames: Array<string> = await errorNameProblems(builtEntries, context);
     let reference: Array<string> = [];
     if (update) {
       writeReference(SIZE_REFERENCE_PATH, measured);
@@ -178,8 +208,9 @@ async function main(): Promise<number> {
       reference = referenceProblems(measured, readReference(SIZE_REFERENCE_PATH));
     }
     printProblems('Over budget:', budget);
+    printProblems('Error names:', errorNames);
     printProblems(`Different from ${SIZE_REFERENCE_PATH} (run \`npm run size:update\` and commit it):`, reference);
-    const failures: number = budget.length + reference.length;
+    const failures: number = budget.length + errorNames.length + reference.length;
     console.log(failures === 0 ? '\n[size]: ok' : `\n[size]: ${failures} problem(s)`);
     return failures === 0 ? 0 : 1;
   } finally {
