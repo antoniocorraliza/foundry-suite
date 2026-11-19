@@ -240,7 +240,9 @@ export function browserProjects(
 ): Array<TestProjectInlineConfiguration> {}
 ```
 
-Checked by: Prettier joins a signature that fits; `tools/lint/check-text.ts` rejects one split over several lines.
+The public API of the libraries is the exception: an exported function, an exported arrow constant and the non-private members of an exported class keep the signature that their design fixes, so when it does not fit, it is split as Prettier writes it. Internal code and `tools/` keep the rule.
+
+Checked by: Prettier joins a signature that fits; `tools/lint/check-text.ts` rejects one split over several lines, except in the exported declarations of `projects/` (not in their function bodies or private members).
 
 ### 13. Folder structure: definitions apart from the code
 
