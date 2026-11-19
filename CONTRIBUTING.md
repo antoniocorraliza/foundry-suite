@@ -10,6 +10,7 @@ npm run lint             # ESLint, Prettier, text rules and type-check
 npm test
 npm run build
 npm run check:packages
+npm run size             # size of each entry: see tools/size/README.md
 ```
 
 `npm run format` fixes the formatting. CI runs the same checks: see `tools/ci/README.md`.
