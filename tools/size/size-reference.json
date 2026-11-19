@@ -1,0 +1,68 @@
+{
+  "core (root)": {
+    "angular": {
+      "raw": 12,
+      "gzip": 17
+    }
+  },
+  "core/configuration": {
+    "angular": {
+      "raw": 12,
+      "gzip": 17
+    }
+  },
+  "core: every entry": {
+    "angular": {
+      "raw": 25,
+      "gzip": 22
+    }
+  },
+  "ui (root)": {
+    "angular": {
+      "raw": 12,
+      "gzip": 30
+    }
+  },
+  "ui/icon": {
+    "angular": {
+      "raw": 12,
+      "gzip": 30
+    }
+  },
+  "ui: every entry": {
+    "angular": {
+      "raw": 25,
+      "gzip": 25
+    }
+  },
+  "utils (root)": {
+    "esbuild": {
+      "raw": 10,
+      "gzip": 10
+    },
+    "rollup": {
+      "raw": 39,
+      "gzip": 39
+    }
+  },
+  "utils/date": {
+    "esbuild": {
+      "raw": 10,
+      "gzip": 10
+    },
+    "rollup": {
+      "raw": 39,
+      "gzip": 39
+    }
+  },
+  "utils: every entry": {
+    "esbuild": {
+      "raw": 21,
+      "gzip": 18
+    },
+    "rollup": {
+      "raw": 75,
+      "gzip": 45
+    }
+  }
+}
