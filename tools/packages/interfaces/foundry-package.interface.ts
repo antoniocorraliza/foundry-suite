@@ -9,7 +9,6 @@ export interface FoundryPackage {
   readonly optionalPeers: ReadonlyArray<string>;
   readonly foundryPeers: ReadonlyArray<FoundryPackageFolder>;
   readonly sideEffects: false | ReadonlyArray<string>;
-  // Export subpaths that are not ng-packagr entry points.
-  readonly extraExports: ReadonlyArray<string>;
+  readonly nonEntryExports: ReadonlyArray<string>;
   readonly notices: ReadonlyArray<ThirdPartyNotice>;
 }

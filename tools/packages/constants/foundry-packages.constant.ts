@@ -12,13 +12,13 @@ export const FOUNDRY_PACKAGES: ReadonlyArray<FoundryPackage> = [
     optionalPeers: [],
     foundryPeers: [],
     sideEffects: false,
-    extraExports: [],
+    nonEntryExports: [],
     notices: [
       {
         description: 'Unicode license for the table derived from CLDR (getFirstDayOfWeek)',
         // The generated CLDR table must be named *.cldr.ts for this check to see it.
         whenSourceHas: /\.cldr\.ts$/,
-        notice: 'UNICODE-LICENSE.txt',
+        noticePath: 'UNICODE-LICENSE.txt',
       },
     ],
   },
@@ -34,7 +34,7 @@ export const FOUNDRY_PACKAGES: ReadonlyArray<FoundryPackage> = [
     optionalPeers: ['@angular/router'],
     foundryPeers: [],
     sideEffects: false,
-    extraExports: [],
+    nonEntryExports: [],
     notices: [],
   },
   {
@@ -51,12 +51,12 @@ export const FOUNDRY_PACKAGES: ReadonlyArray<FoundryPackage> = [
     foundryPeers: ['foundry-utils'],
     // Style sheets are imported only for their effect: without this a bundler could drop them.
     sideEffects: ['**/*.css'],
-    extraExports: ['./styles/*.css'],
+    nonEntryExports: ['./styles/*.css'],
     notices: [
       {
         description: 'SIL Open Font License of the bundled fonts (Inter and Urbanist)',
         whenTarballHas: /^styles\/fonts\/.+\.woff2$/,
-        notice: 'styles/fonts/OFL.txt',
+        noticePath: 'styles/fonts/OFL.txt',
       },
     ],
   },

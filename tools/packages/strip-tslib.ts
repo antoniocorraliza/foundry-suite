@@ -3,10 +3,10 @@ import { join } from 'node:path';
 import { FOUNDRY_PACKAGES } from './constants/foundry-packages.constant.ts';
 import { PACKAGES_DIST_DIRECTORY, PACKAGES_SOURCE_DIRECTORY } from './constants/paths.constant.ts';
 import type { FoundryPackage } from './interfaces/foundry-package.interface.ts';
-import type { ManifestDependencies } from './interfaces/manifest-dependencies.interface.ts';
+import type { PackageManifest } from './interfaces/package-manifest.interface.ts';
 
-function readManifest(path: string): ManifestDependencies {
-  return JSON.parse(readFileSync(path, 'utf8')) as ManifestDependencies;
+function readManifest(path: string): PackageManifest {
+  return JSON.parse(readFileSync(path, 'utf8')) as PackageManifest;
 }
 
 function main(): number {
@@ -18,7 +18,7 @@ function main(): number {
   }
 
   // If the source manifest ever declares tslib on purpose, removing it from the build would be wrong.
-  const sourceManifest: ManifestDependencies = readManifest(join(PACKAGES_SOURCE_DIRECTORY, foundryPackage.folder, 'package.json'));
+  const sourceManifest: PackageManifest = readManifest(join(PACKAGES_SOURCE_DIRECTORY, foundryPackage.folder, 'package.json'));
   if (sourceManifest.dependencies?.['tslib'] !== undefined) {
     console.error(`[strip-tslib]: ${foundryPackage.name} declares tslib itself, nothing to strip`);
     return 1;
@@ -27,10 +27,10 @@ function main(): number {
   // ng-packagr 21 adds tslib to dependencies whenever the source manifest does not declare it, even if no file
   // imports it. The code is compiled with importHelpers: false, and check-packages proves that nothing imports tslib.
   const distManifestPath: string = join(PACKAGES_DIST_DIRECTORY, foundryPackage.folder, 'package.json');
-  const distManifest: ManifestDependencies = readManifest(distManifestPath);
-  if (distManifest.dependencies?.['tslib'] !== undefined) {
-    delete distManifest.dependencies['tslib'];
-    writeFileSync(distManifestPath, `${JSON.stringify(distManifest, null, 2)}\n`);
+  const distManifest: PackageManifest = readManifest(distManifestPath);
+  const { tslib, ...dependencies } = distManifest.dependencies ?? {};
+  if (tslib !== undefined) {
+    writeFileSync(distManifestPath, `${JSON.stringify({ ...distManifest, dependencies }, null, 2)}\n`);
     console.log(`[strip-tslib]: removed the tslib dependency that ng-packagr added to ${foundryPackage.name}`);
   }
   return 0;

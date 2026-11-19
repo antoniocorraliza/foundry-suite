@@ -49,7 +49,7 @@ Run it after `npm run build`. It packs each package with `npm pack`, unpacks the
 | `manifest`     | `name`, `type`, `engines`, `sideEffects` and `repository`                                                |
 | `notices`      | the third-party notices are in the tarball when the material they cover is in the package                |
 
-The expected values (peers, `sideEffects`, extra exports, notices) are in `constants/foundry-packages.constant.ts`: change them there.
+The expected values (peers, `sideEffects`, non-entry exports, notices) are in `constants/foundry-packages.constant.ts`: change them there.
 
 ## Third-party notices
 

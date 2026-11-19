@@ -5,13 +5,13 @@ import { join, relative, sep } from 'node:path';
 import ts from 'typescript';
 import { FOUNDRY_PACKAGES } from './constants/foundry-packages.constant.ts';
 import { LICENSE_ID, NODE_ENGINE, REPOSITORY_URL } from './constants/manifest.constant.ts';
-import { PACKAGE_RULES } from './constants/package-rules.constant.ts';
 import { PACKAGES_DIST_DIRECTORY, PACKAGES_SOURCE_DIRECTORY } from './constants/paths.constant.ts';
 import { TSLIB_IMPORT } from './constants/tslib-import.constant.ts';
 import type { FoundryPackage } from './interfaces/foundry-package.interface.ts';
 import type { FoundryPackageFolder } from './interfaces/foundry-package-folder.type.ts';
+import type { NpmPackEntry } from './interfaces/npm-pack-entry.interface.ts';
 import type { PackageManifest } from './interfaces/package-manifest.interface.ts';
-import type { PackageRule } from './interfaces/package-rule.type.ts';
+import type { PeerDependencyMeta } from './interfaces/peer-dependency-meta.interface.ts';
 import type { Tarball } from './interfaces/tarball.interface.ts';
 import type { ThirdPartyNotice } from './interfaces/third-party-notice.interface.ts';
 
@@ -36,7 +36,7 @@ function pack(foundryPackage: FoundryPackage, workDirectory: string): Tarball {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
   });
-  const packed: { readonly filename: string } | undefined = (JSON.parse(packOutput) as ReadonlyArray<{ readonly filename: string }>)[0];
+  const packed: NpmPackEntry | undefined = (JSON.parse(packOutput) as ReadonlyArray<NpmPackEntry>)[0];
   if (!packed) throw new Error(`[check-packages]: npm pack returned nothing for ${foundryPackage.name}`);
   const unpackedDirectory: string = join(workDirectory, foundryPackage.folder);
   mkdirSync(unpackedDirectory, { recursive: true });
@@ -49,7 +49,6 @@ function readTarballFile(tarball: Tarball, path: string): string {
   return readFileSync(join(tarball.unpackedDirectory, path), 'utf8');
 }
 
-// 'foundry-utils/date/ng-package.json' gives './date'; the package's own ng-package.json gives '.'.
 function sourceEntrySubpaths(folder: FoundryPackageFolder): Array<string> {
   const packageDirectory: string = join(PACKAGES_SOURCE_DIRECTORY, folder);
   return listFiles(packageDirectory)
@@ -69,12 +68,12 @@ function checkExports(tarball: Tarball): Array<string> {
   if (!exportsMap || typeof exportsMap !== 'object') return ['package.json has no "exports" map'];
 
   const entrySubpaths: Array<string> = sourceEntrySubpaths(foundryPackage.folder);
-  const allowed: Set<string> = new Set(['./package.json', ...entrySubpaths, ...foundryPackage.extraExports]);
+  const allowed: Set<string> = new Set(['./package.json', ...entrySubpaths, ...foundryPackage.nonEntryExports]);
   for (const subpath of ['./package.json', ...entrySubpaths]) {
     if (!(subpath in exportsMap)) problems.push(`entry "${subpath}" is missing from "exports"`);
   }
   for (const subpath of Object.keys(exportsMap)) {
-    if (!allowed.has(subpath)) problems.push(`unexpected export "${subpath}" (no entry point and not in extraExports)`);
+    if (!allowed.has(subpath)) problems.push(`unexpected export "${subpath}" (no entry point and not in nonEntryExports)`);
   }
 
   for (const [subpath, target] of Object.entries(exportsMap)) {
@@ -189,7 +188,7 @@ function checkPeers(tarball: Tarball, versions: ReadonlyMap<FoundryPackageFolder
   for (const name of Object.keys(actual)) {
     if (expected[name] === undefined) problems.push(`unexpected peer ${name}`);
   }
-  const peersMeta: Readonly<Record<string, { readonly optional?: boolean }>> = manifest.peerDependenciesMeta ?? {};
+  const peersMeta: Readonly<Record<string, PeerDependencyMeta>> = manifest.peerDependenciesMeta ?? {};
   const optionalPeers: Array<string> = Object.keys(peersMeta)
     .filter((name) => peersMeta[name]?.optional === true)
     .sort();
@@ -215,8 +214,7 @@ function checkManifest(tarball: Tarball): Array<string> {
   return problems;
 }
 
-// The first file that makes the notice required, or undefined.
-function noticeTrigger(notice: ThirdPartyNotice, tarball: Tarball, sourceFiles: ReadonlyArray<string>): string | undefined {
+function fileRequiringNotice(notice: ThirdPartyNotice, tarball: Tarball, sourceFiles: ReadonlyArray<string>): string | undefined {
   const { whenTarballHas, whenSourceHas } = notice;
   const inTarball: string | undefined = whenTarballHas ? tarball.files.find((file) => whenTarballHas.test(file)) : undefined;
   if (inTarball) return inTarball;
@@ -227,11 +225,11 @@ function checkNotices(tarball: Tarball): Array<string> {
   const problems: Array<string> = [];
   const sourceFiles: Array<string> = listFiles(join(PACKAGES_SOURCE_DIRECTORY, tarball.foundryPackage.folder));
   for (const notice of tarball.foundryPackage.notices) {
-    const trigger: string | undefined = noticeTrigger(notice, tarball, sourceFiles);
+    const trigger: string | undefined = fileRequiringNotice(notice, tarball, sourceFiles);
     if (!trigger) {
-      console.log(`    - notices: ${notice.notice} not required yet (nothing it covers is present)`);
-    } else if (!tarball.files.includes(notice.notice)) {
-      problems.push(`${notice.notice} is missing (${notice.description}); required because of ${trigger}`);
+      console.log(`    - notices: ${notice.noticePath} not required yet (nothing it covers is present)`);
+    } else if (!tarball.files.includes(notice.noticePath)) {
+      problems.push(`${notice.noticePath} is missing (${notice.description}); required because of ${trigger}`);
     }
   }
   return problems;
@@ -247,7 +245,7 @@ function main(): number {
     );
     for (const tarball of tarballs) {
       console.log(`\n${tarball.foundryPackage.name}@${tarball.manifest.version ?? '?'} (${tarball.files.length} files)`);
-      const results: Readonly<Record<PackageRule, Array<string>>> = {
+      const results: Readonly<Record<string, Array<string>>> = {
         exports: checkExports(tarball),
         license: checkLicense(tarball),
         tslib: checkTslib(tarball),
@@ -257,8 +255,7 @@ function main(): number {
         manifest: checkManifest(tarball),
         notices: checkNotices(tarball),
       };
-      for (const rule of PACKAGE_RULES) {
-        const problems: Array<string> = results[rule];
+      for (const [rule, problems] of Object.entries(results)) {
         console.log(`  ${problems.length === 0 ? 'ok  ' : 'FAIL'} ${rule}`);
         for (const problem of problems) console.log(`      ${problem}`);
         failures += problems.length;
@@ -267,7 +264,7 @@ function main(): number {
   } finally {
     rmSync(workDirectory, { recursive: true, force: true });
   }
-  console.log(failures === 0 ? '\ncheck:packages: OK' : `\ncheck:packages: ${failures} problem(s)`);
+  console.log(failures === 0 ? '\n[check-packages]: ok' : `\n[check-packages]: ${failures} problem(s)`);
   return failures === 0 ? 0 : 1;
 }
 
