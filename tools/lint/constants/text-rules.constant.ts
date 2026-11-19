@@ -1,5 +1,5 @@
 import type { TextRule } from '../interfaces/text-rule.interface.ts';
-import { LIBRARY_STYLE_FILE, LIBRARY_TEMPLATE_FILE, MARKDOWN_FILE, TYPESCRIPT_FILE } from './file-patterns.constant.ts';
+import { LIBRARY_CODE_FILE, LIBRARY_STYLE_FILE, LIBRARY_TEMPLATE_FILE, MARKDOWN_FILE, TYPESCRIPT_FILE } from './file-patterns.constant.ts';
 
 export const TEXT_RULES: ReadonlyArray<TextRule> = [
   {
@@ -8,6 +8,11 @@ export const TEXT_RULES: ReadonlyArray<TextRule> = [
     // Angular private prefix anywhere but at the start of a name.
     pattern: /[←-⇿…·×✓-✘–—‘’“”─-╿]|(?<=[\p{L}\p{N}_$])ɵ|ɵ(?![\p{L}\p{N}_$])/u,
     allowedInTestData: true,
+  },
+  {
+    name: 'character that is not plain ASCII in a library (write it as an escape)',
+    pattern: /[^\t\r\u0020-\u007eɵ]|(?<=[\p{L}\p{N}_$])ɵ|ɵ(?![\p{L}\p{N}_$])/u,
+    onlyIn: LIBRARY_CODE_FILE,
   },
   // The copyright and registered signs are pictographic too, but they are allowed.
   { name: 'emoji', pattern: /(?![\u00a9\u00ae])\p{Extended_Pictographic}/u, allowedInTestData: true },

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { textProblems } from './text-problems.function.ts';
 
+const NOT_ASCII: string = 'character that is not plain ASCII in a library (write it as an escape)';
+
 describe('textProblems', () => {
   it('accepts plain text', () => {
     expect(textProblems('a.ts', '// ng-packagr 21 adds tslib to dependencies.\nconst copyright: string = "© 2026";')).toEqual([]);
@@ -62,8 +64,38 @@ describe('textProblems', () => {
     const text: string = "const suffix: string = '…';\nconst fruit: string = '🍎';";
     expect(textProblems('projects/a/src/functions/truncate-text.function.ts', text)).toEqual([
       "projects/a/src/functions/truncate-text.function.ts:1: typographic character: const suffix: string = '…';",
+      `projects/a/src/functions/truncate-text.function.ts:1: ${NOT_ASCII}: const suffix: string = '…';`,
+      `projects/a/src/functions/truncate-text.function.ts:2: ${NOT_ASCII}: const fruit: string = '🍎';`,
       "projects/a/src/functions/truncate-text.function.ts:2: emoji: const fruit: string = '🍎';",
     ]);
+  });
+
+  it('accepts escapes and the Angular private prefix in the library code', () => {
+    const text: string = [
+      "export const SUFFIX: string = '\\u2026';",
+      "const separators: string = '\\u00a0\\u202f\\u2212';",
+      'export function ɵforEachOwnKey(): void {}',
+    ].join('\n');
+    expect(textProblems('projects/a/src/functions/to-slug.function.ts', text)).toEqual([]);
+  });
+
+  it.each([
+    ['a letter of another alphabet', "const sharpS: string = 'ß';"],
+    ['an accented letter', "const name: string = 'Nuñez';"],
+    ['a no-break space', "const space: string = '\u00a0';"],
+    ['a narrow no-break space', "const space: string = '\u202f';"],
+    ['the minus sign', "const minus: string = '\u2212';"],
+    ['a digit that is not Latin', "const one: string = '\u0661';"],
+  ])('reports %s pasted in the library code', (_description, line) => {
+    expect(textProblems('projects/a/src/functions/to-slug.function.ts', line)).toEqual([
+      `projects/a/src/functions/to-slug.function.ts:1: ${NOT_ASCII}: ${line}`,
+    ]);
+  });
+
+  it('leaves characters that are not ASCII alone in the specs and in tools', () => {
+    const line: string = "const name: string = 'Nuñez\u00a0\u202f\u2212';";
+    expect(textProblems('projects/a/src/functions/to-slug.function.spec.ts', line)).toEqual([]);
+    expect(textProblems('tools/a.ts', line)).toEqual([]);
   });
 
   it('leaves the same words alone outside JSDoc', () => {
