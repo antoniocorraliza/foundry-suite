@@ -11,9 +11,9 @@ function commentRanges(source: ts.SourceFile): Array<ts.CommentRange> {
   const text: string = source.getFullText();
   const ranges: Map<number, ts.CommentRange> = new Map();
   const collect = (node: ts.Node): void => {
-    for (const range of ts.getLeadingCommentRanges(text, node.getFullStart()) ?? []) ranges.set(range.pos, range);
-    for (const range of ts.getTrailingCommentRanges(text, node.getEnd()) ?? []) ranges.set(range.pos, range);
-    for (const child of node.getChildren(source)) collect(child);
+    (ts.getLeadingCommentRanges(text, node.getFullStart()) ?? []).forEach((range) => ranges.set(range.pos, range));
+    (ts.getTrailingCommentRanges(text, node.getEnd()) ?? []).forEach((range) => ranges.set(range.pos, range));
+    node.getChildren(source).forEach(collect);
   };
   collect(source);
   return [...ranges.values()].sort((first, second) => first.pos - second.pos);

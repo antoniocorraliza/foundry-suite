@@ -31,7 +31,7 @@ describe.each(BUNDLERS)('error name after minifying with %s', (bundler) => {
   it('keeps a name declared as a literal', async () => {
     const printed: string = await printedName('FixtureNamedError', bundler);
     expect(printed).toBe('FixtureNamedError');
-    expect(errorNameProblem(SPECIFIER, 'FixtureNamedError', bundler, printed)).toBeUndefined();
+    expect(errorNameProblem(SPECIFIER, 'FixtureNamedError', bundler, printed)).toBeNull();
   });
 
   it('catches a name taken from the minified constructor', async () => {

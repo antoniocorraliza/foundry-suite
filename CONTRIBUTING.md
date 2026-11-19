@@ -107,9 +107,9 @@ Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `desc
 
 ### 4. Only characters you can type
 
-No typographic arrows, ellipses, middle dots, multiplication signs, check marks, long dashes, curly quotes or emoji in code, comments, test names, job names or READMEs. Accented letters in proper names and the copyright sign are fine. Angular's `ɵ` prefix (exported but private) is allowed at the start of a name, and nowhere else.
+No typographic arrows, ellipses, middle dots, multiplication signs, check marks, long dashes, curly quotes or emoji in code, comments, test names, job names or READMEs. Accented letters in proper names and the copyright sign are fine. Angular's `ɵ` prefix and the text literals of spec files are exceptions (see Exceptions).
 
-The code of the libraries (`projects/`, spec files aside) only takes ASCII characters, apart from `ɵ` at the start of a name: anything else is written as an escape, `'\u2026'` and not `'…'`, `'\u00a0'` and not a pasted no-break space. The text literals of spec files are test data and take any character (`'Nuñez'`, `'🍎🍌🍒'`, `'١٢٣'`, `'日本語'`); test titles and the rest of the code do not.
+The code of the libraries (`projects/`, spec files aside) only takes ASCII characters: anything else is written as an escape, `'\u2026'` and not `'…'`, `'\u00a0'` and not a pasted no-break space.
 
 ```yaml
 # Yes
@@ -141,7 +141,10 @@ ngOnInit(): void {
 
 // ACTIONS
 private loadItems(): void {
-  this.itemsService.load().subscribe((items) => this.items.set(items));
+  this.itemsSE
+    .load()
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe((items) => this.items.set(items));
 }
 ```
 
@@ -163,7 +166,7 @@ function clear() {}
 const names = rows.map((row: Row): string => row.name.trim());
 ```
 
-A closed list is the one exception: the constant ends in `as const`, without a type, and its type is derived from it in `types/`, so the values are written once.
+A closed list is written the other way round: the constant ends in `as const`, without a type, and its type is derived from it in `types/`, so the values are written once.
 
 ```ts
 // constants/audit-severities.constant.ts
@@ -173,7 +176,34 @@ export const AUDIT_SEVERITIES = ['critical', 'high', 'moderate', 'low', 'info'] 
 export type AuditSeverity = (typeof AUDIT_SEVERITIES)[number];
 ```
 
-Checked by: ESLint `@typescript-eslint/typedef`, `explicit-function-return-type`, `array-type` and `consistent-generic-constructors`; in `constants/`, `no-restricted-syntax` accepts a constant without a type only when it ends in `as const`.
+Object shapes are interfaces. `type` is only for unions and computed types (mapped, conditional, `typeof`, indexed access).
+
+```ts
+// Yes
+export interface Point {
+  readonly x: number;
+}
+export type Shape = Circle | Square;
+
+// No
+export type Point = { readonly x: number };
+```
+
+"No value" is `null`. `undefined` is only what the language or an API gives (an optional property, `array[0]`, `find()`): it is compared, or turned into `null` with `?? null`, but never written as a value or returned by our own functions. The public API of the libraries and the spec files are exceptions (see Exceptions).
+
+```ts
+// Yes
+function findItem(id: string): Item | null {
+  return items.find((item) => item.id === id) ?? null;
+}
+
+// No
+function findItem(id: string): Item | undefined {
+  return undefined;
+}
+```
+
+Checked by: ESLint `@typescript-eslint/typedef`, `explicit-function-return-type`, `array-type`, `consistent-generic-constructors` and `consistent-type-definitions`; `no-restricted-syntax` rejects `undefined` written as a value (outside a comparison) and in the return type of a function, a method or a function type; in `constants/`, `no-restricted-syntax` accepts a constant without a type only when it ends in `as const`.
 
 ### 7. Names
 
@@ -188,7 +218,33 @@ names.reduce((total, name) => total + name.length, 0);
 names.reduce((acc, n) => acc + n.length, 0);
 ```
 
-Checked by: ESLint `id-length` and `id-denylist`. The `SE` suffix: review.
+Booleans start with `is`, `has` or `can` (`IS_`, `HAS_` or `CAN_` in a constant), also boolean signals. Observables end in `Observable`, never in `$`.
+
+```ts
+// Yes
+readonly isOpen: WritableSignal<boolean> = signal(false);
+const hasError: boolean = errors.length > 0;
+const itemsObservable: Observable<Array<Item>> = this.itemsSE.load();
+
+// No
+readonly open: WritableSignal<boolean> = signal(false);
+const items$: Observable<Array<Item>> = this.itemsSE.load();
+```
+
+A Subject ends in `Subject` and is always private; it is exposed with `asObservable()` as `xObservable`.
+
+```ts
+// Yes
+private readonly itemsSubject: BehaviorSubject<Array<Item>> = new BehaviorSubject<Array<Item>>([]);
+readonly itemsObservable: Observable<Array<Item>> = this.itemsSubject.asObservable();
+
+// No
+readonly items: BehaviorSubject<Array<Item>> = new BehaviorSubject<Array<Item>>([]);
+```
+
+The public names of the libraries and the names that an outside format fixes are exceptions (see Exceptions).
+
+Checked by: ESLint `id-length` and `id-denylist`; `no-restricted-syntax` on the name of every variable, parameter and property declared as `boolean`, `boolean | null`, `Signal<boolean>`, `WritableSignal<boolean>`, `Observable<T>` or a Subject, and on any name that ends in `$`. A Subject property that is not private is rejected everywhere, also in the public API. The `SE` suffix: review.
 
 ### 8. Early returns
 
@@ -245,7 +301,7 @@ Name, parameters and return type of a function or method go on one line. When th
 ```ts
 // Yes
 export interface BrowserProjectOptions extends ProjectOptions {
-  readonly angular: boolean;
+  readonly isAngular: boolean;
   readonly timeZones?: ReadonlyArray<string>;
 }
 
@@ -253,13 +309,13 @@ export function browserProjects(options: BrowserProjectOptions): Array<TestProje
 
 // No
 export function browserProjects(
-  options: ProjectOptions & { readonly angular: boolean; readonly timeZones?: ReadonlyArray<string> },
+  options: ProjectOptions & { readonly isAngular: boolean; readonly timeZones?: ReadonlyArray<string> },
 ): Array<TestProjectInlineConfiguration> {}
 ```
 
-The public API of the libraries is the exception: an exported function, an exported arrow constant and the non-private members of an exported class keep the signature that their design fixes, so when it does not fit, it is split as Prettier writes it. Internal code and `tools/` keep the rule.
+The public API of the libraries is an exception (see Exceptions); private and protected members are internal code and keep the rule.
 
-Checked by: Prettier joins a signature that fits; `tools/lint/check-text.ts` rejects one split over several lines, except in the exported declarations of `projects/` (not in their function bodies or private members).
+Checked by: Prettier joins a signature that fits; `tools/lint/check-text.ts` rejects one split over several lines.
 
 ### 13. Folder structure: definitions apart from the code
 
@@ -301,17 +357,10 @@ projects/antoniocorraliza/foundry-core/storage/
 
 A piece with an error class keeps it in `errors/`, like the HTTP client of Core: `src/errors/foundry-api.error.ts`.
 
-An error class always assigns its `name` as a literal, because that value is what survives minification. A class without subclasses also declares it with the literal type; a class with subclasses declares it as `string`, because a literal type there would stop the subclasses from declaring their own.
-
-That `name` takes no JSDoc: its literal already says everything, and a comment there would be filler. `jsdoc/require-jsdoc` skips `override readonly name` in `errors/` and nowhere else.
+An error class always assigns its `name` as a literal, because that value is what survives minification, and declares it with the literal type. A class with subclasses and the JSDoc of that `name` are exceptions (see Exceptions).
 
 ```ts
-// errors/foundry-utils.error.ts: it has subclasses
-export class FoundryUtilsError extends Error {
-  override readonly name: string = 'FoundryUtilsError';
-}
-
-// errors/foundry-csv-parse.error.ts: no subclasses
+// errors/foundry-csv-parse.error.ts
 export class FoundryCsvParseError extends FoundryUtilsError {
   override readonly name: 'FoundryCsvParseError' = 'FoundryCsvParseError';
 }
@@ -337,10 +386,9 @@ tools/vitest/
 More rules of the structure:
 
 - No values computed when a module loads: what depends on the environment or a file is read once, in `main()` or in the function that the tool calls first (`readTestEnvironment()`), and passed on as a parameter.
-- Functional interceptors, guards and resolvers keep the type that Angular expects: `export const foundrySessionInterceptor: HttpInterceptorFn = (request, next) => ...`. A top-level constant whose value is a function is code, not a definition.
+- Functional interceptors, guards and resolvers are constants with the type that Angular expects (see Exceptions).
 - Every object type written inline (`{ ... }`) becomes a named interface: in signatures, in annotations and inside other interfaces (`readonly repository?: PackageRepository`, not `{ readonly url?: string }`). Common generics (`Record`, `Partial`, `Readonly`, `ReadonlyArray`...) are fine.
-- What a library exports (signatures, interfaces, types and constants of its public API) is written as its design fixes it, inline object types and typed constants included: the named object types of this rule and the `as const` lists of rule 6 are for the internal code of the libraries and for `tools/`. ESLint does not ask for names in exported declarations of `projects/`, except inside function bodies and in private members.
-- Tests are exempt: the data and the fixture components of a test stay in its spec, where they are read.
+- The public API of the libraries and the spec files are exceptions (see Exceptions).
 
 ```ts
 // Yes: interfaces/project-options.interface.ts
@@ -351,7 +399,7 @@ export interface ProjectOptions {
 // No: an interface declared in projects.ts, next to the functions that use it
 ```
 
-Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/`, `tokens/` and `errors/` (only classes that extend an error, one per file with `max-classes-per-file`; an error class anywhere else is rejected), and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder. Spec and `.d.ts` files are exempt.
+Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/`, `tokens/` and `errors/` (only classes that extend an error, one per file with `max-classes-per-file`; an error class anywhere else is rejected), and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder.
 
 ### 14. Commits and pull requests
 
@@ -363,3 +411,233 @@ No:  Update CI workflows to improve reliability
 ```
 
 Checked by: `tools/ci/check-commits.ts`, on the commits of the branch (fast level) and on the pull request title (`pr-title.yml`).
+
+### 15. Functions, loops and private members
+
+Top-level functions are declared with `function`, not kept in constants; functional interceptors, guards and resolvers are an exception (see Exceptions). Functions inside other functions can be arrows.
+
+```ts
+// Yes
+export function loadItems(): Array<Item> {}
+
+// No
+export const loadItems = (): Array<Item> => [];
+```
+
+Lists are walked with array methods (`forEach`, `map`, `filter`, `reduce`...). A `for...of` loop only when an array method does not fit: to `await` inside it or to stop early (`break`, `return`).
+
+```ts
+// Yes
+items.forEach((item) => console.log(item));
+for (const file of files) await upload(file);
+
+// No
+for (const item of items) console.log(item);
+```
+
+Private members use the TypeScript `private` modifier, not `#`.
+
+```ts
+// Yes
+private readonly items: Array<Item> = [];
+
+// No
+readonly #items: Array<Item> = [];
+```
+
+Checked by: ESLint `no-restricted-syntax` (top-level constants whose value is a function; `for...of`, `for` and `for...in` loops without `await`, `break` or `return` inside; any `#` name). A `return` or `break` inside a nested callback also lets a loop through: review.
+
+### 16. Angular
+
+These rules are for the Angular code of the libraries (`projects/`). The public API, the spec files and the size probes of `tools/size/app/` are exceptions (see Exceptions).
+
+Classes:
+
+- Dependencies come from `inject()` in properties, under `// INJECTORS`; never from constructor parameters.
+- What only the template uses is `protected`.
+- Each file ends in its kind: `.component.ts`, `.directive.ts`, `.service.ts`, `.pipe.ts` (rule 13).
+- Inputs and outputs are declared with `input()`, `model()` and `output()`, never with decorators or `outputFromObservable()`.
+- An output is named after what happened (`selectionChange`, `closed`), without `on`.
+- An event handler of the template starts with `on` (`onSave`) and goes in `// HANDLERS`.
+- Events, classes and attributes of the host element go in the `host` property of the decorator. Angular keeps `@HostListener` and `@HostBinding` only for backwards compatibility. Listeners that must not run change detection are an exception (see Exceptions).
+
+```ts
+// Yes
+@Component({
+  selector: 'foundry-panel',
+  templateUrl: './foundry-panel.component.html',
+  styleUrl: './foundry-panel.component.scss',
+  host: { '[class.isOpen]': 'isOpen()', '(keydown.escape)': 'onEscape()' },
+})
+export class FoundryPanelComponent {
+  // INJECTORS
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+
+  // DATA BINDING
+  readonly closed: OutputEmitterRef<void> = output();
+
+  // CONTROL VARIABLES
+  protected readonly isOpen: WritableSignal<boolean> = signal(false);
+
+  // HANDLERS
+  protected onEscape(): void {
+    this.closed.emit();
+  }
+}
+
+// No
+@Component({ selector: 'foundry-panel', template: '<ng-content />' })
+export class FoundryPanelComponent {
+  constructor(private readonly destroyRef: DestroyRef) {}
+  @Output() onClose: EventEmitter<void> = new EventEmitter();
+  @HostBinding('class.isOpen') isOpen: boolean = false;
+  @HostListener('keydown.escape') escape(): void {}
+}
+```
+
+Data and subscriptions:
+
+- To have the data of an Observable as a signal, `toSignal()`, in components and in services. It cleans up by itself.
+- To do something with an Observable (save, delete, send, react), `subscribe()` inside a named method, with `takeUntilDestroyed(this.destroyRef)` when the Observable does not complete by itself.
+- A service does not call `subscribe()`: it returns the Observable, or exposes its state with `toSignal()`. The session of Core is an exception (see Exceptions).
+- No `async` pipe in the templates.
+- What is not an Observable (a DOM listener, a timer) is cleaned up with `this.destroyRef.onDestroy(...)`.
+- The errors of an Observable are handled with `catchError` inside `pipe()`, not with an error callback in `subscribe()`.
+
+```ts
+// Yes
+// CONTROL VARIABLES
+protected readonly items: Signal<Array<Item>> = toSignal(this.itemsSE.load(), { initialValue: [] });
+
+// HANDLERS
+protected onSave(item: Item): void {
+  this.itemsSE
+    .save(item)
+    .pipe(catchError(() => of(null)))
+    .subscribe((saved) => this.lastSaved.set(saved));
+}
+
+// No
+this.itemsSE.changes().pipe(takeUntil(this.destroyed)).subscribe({ next: (items) => this.items.set(items), error: () => this.items.set([]) });
+```
+
+Templates and styles:
+
+- The template and the styles live in their own files (`templateUrl`, `styleUrl`), never inline.
+- Only the built-in control flow: `@if`, `@for`, `@switch`. Never `*ngIf` or `*ngFor`.
+- Short expressions are fine in the template (`count.set(count() + 1)`).
+- Dynamic classes and styles are bound with `[class.name]` and `[style.property]`, or with the object form (`[class]="{ isOpen: isOpen() }"`). Never `ngClass` or `ngStyle`.
+- CSS classes: the class of the element plus state classes, all in camelCase (`.option.isSelected`). The public classes of the global style sheets of UI are an exception (see Exceptions).
+
+```html
+<!-- Yes -->
+<li class="option" [class.isSelected]="isSelected(item)" (click)="onSelect(item)">{{ item.label }}</li>
+
+<!-- No -->
+<li class="option" [ngClass]="{ 'option--selected': isSelected(item) }" *ngIf="items$ | async">{{ item.label }}</li>
+```
+
+Checked by: ESLint in `projects/`: `@angular-eslint/prefer-inject`, `no-output-on-prefix`, `prefer-host-metadata-property`, `component-max-inline-declarations` (no inline template or styles), `consistent-component-styles` (`styleUrl`), `template/prefer-control-flow`, and `no-restricted-syntax` (`@Input()`, `@Output()` and `outputFromObservable()`; `subscribe()` in a `.service.ts`; `takeUntil()` and `takeUntilDestroyed()` without the `DestroyRef`; an error callback in `subscribe()`). `tools/lint/check-text.ts`: a class with `@Component`, `@Directive`, `@Injectable` or `@Pipe` in a file without its suffix (in the whole repository); `ngClass`, `ngStyle` and the `async` pipe in the templates of `projects/`; CSS classes that are not camelCase in templates (`class="..."` and `[class.name]`) and in the style sheets of the components. Review: the `// INJECTORS` and `// HANDLERS` sections, `protected` for what only the template uses, the `on` prefix of the handlers, the subscription inside a named method, `takeUntilDestroyed` when the Observable does not complete, `DestroyRef.onDestroy` for what is not an Observable, the element class plus state classes, and the keys of `[class]="{ ... }"`.
+
+## Exceptions
+
+Every rule above applies everywhere except in these cases. Each one says why, and what checks it.
+
+### The public API of the libraries
+
+What a library exports is written as its approved design fixes it: names (`disabled`, `required`, `events`, `outcome`), inline object types in signatures, typed constants instead of `as const` lists, signatures split by Prettier when they do not fit, and `undefined` where the design uses it. The public classes of the global style sheets of UI (`styles/`, such as `foundry-visually-hidden`) are public API too. Why: changing them would change the published `.d.ts` or CSS that the designs have frozen.
+
+```ts
+export function parseDate(text: unknown, options?: { readonly format?: FoundryDateFormat }): Date | null {}
+readonly disabled: InputSignal<boolean> = input(false);
+```
+
+Checked by: ESLint and `tools/lint/check-text.ts` skip the exported declarations of `projects/`, but still check their function bodies and their private and protected members. Something exported only for another internal file, or exported with a separate `export { x }`, is seen as public: review.
+
+### Functional interceptors, guards and resolvers
+
+They stay as a constant with the type that Angular expects, not as a `function`. Why: the type checks the signature, and the `.d.ts` stays as the design writes it.
+
+```ts
+export const foundrySessionInterceptor: HttpInterceptorFn = (request, next) => next(request);
+```
+
+Checked by: ESLint accepts a top-level constant whose value is a function only when its type ends in `Fn`.
+
+### Listeners that must not run change detection
+
+When a design requires that an event runs no change detection (the tooltip of UI), the listener is added with `addEventListener` outside Angular's zone instead of in `host`, and removed with `DestroyRef.onDestroy`. Why: a `host` listener runs change detection on every event.
+
+```ts
+this.ngZone.runOutsideAngular(() => this.host.addEventListener('pointerenter', this.show));
+this.destroyRef.onDestroy(() => this.host.removeEventListener('pointerenter', this.show));
+```
+
+Checked by: review.
+
+### The session of Core
+
+The session service keeps the subscription of the shared refresh alive on purpose (`shareReplay` with `refCount: false`), so it calls `subscribe()` in a service. Why: if the refresh were cancelled when every request stops waiting, the server would have rotated the token and the browser would keep a spent one.
+
+```ts
+// eslint-disable-next-line no-restricted-syntax -- the refresh must finish even when no request waits for it
+this.refreshObservable.subscribe();
+```
+
+Checked by: ESLint rejects `subscribe()` in a `.service.ts` unless an `eslint-disable-next-line` gives the reason; the review checks that it is this case.
+
+### Angular's private prefix
+
+`ɵ` is allowed at the start of a name (exported but private, the Angular convention), and nowhere else.
+
+```ts
+export function ɵforEachOwnKey(): void {}
+```
+
+Checked by: `tools/lint/check-text.ts`.
+
+### Spec files
+
+Spec files are test code, read next to what they test:
+
+- their text literals are test data and take any character (`'Nuñez'`, `'🍎🍌🍒'`, `'١٢٣'`, `'日本語'`); test titles and the rest of the code do not;
+- their data, fixture components and inline templates stay in the spec, outside the folder structure;
+- they use `undefined`, because they compare what the code returns;
+- the Angular rules do not apply to their fixtures.
+
+```ts
+@Component({ selector: 'foundry-host', template: '<foundry-panel />' })
+class HostComponent {}
+```
+
+Checked by: ESLint and `tools/lint/check-text.ts` skip these rules in `*.spec.ts` and `.d.ts` files.
+
+### Error classes
+
+An error class with subclasses declares its `name` as `string`, because a literal type would stop the subclasses from declaring their own; its value is still the literal. The `name` of the classes in `errors/` takes no JSDoc: its literal already says everything.
+
+```ts
+// errors/foundry-utils.error.ts: it has subclasses
+export class FoundryUtilsError extends Error {
+  override readonly name: string = 'FoundryUtilsError';
+}
+```
+
+Checked by: ESLint (`prefer-as-const` off and `jsdoc/require-jsdoc` skips `override readonly name`, only in `errors/`).
+
+### Names fixed by an outside format
+
+A field whose name comes from a format we do not own keeps it, with an `eslint-disable-next-line` that says so.
+
+```ts
+// eslint-disable-next-line no-restricted-syntax -- npm names this field in package.json
+readonly optional?: boolean;
+```
+
+Checked by: the directive and its reason; the review checks the format.
+
+### The size probes
+
+The components in `tools/size/app/` stand for an application that uses `NgClass` and subscribes in the component, and the Angular rules do not check them. Why: the designs fix how the size of an entry is measured, against an application that already uses the router, `HttpClient`, `@for`, `ngClass` and RxJS (with reactive forms for the form entries); a probe written with our rules would no longer be that application. Their files, class sections and template in its own file still follow rules 5 and 13.
+
+Checked by: the Angular rules of ESLint only cover `projects/`.

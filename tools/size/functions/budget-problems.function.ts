@@ -8,15 +8,15 @@ import { formatKilobytes } from './format-kilobytes.function.ts';
 export function budgetProblems(name: string, figures: SizeToolFigures, budget: SizeBudget | null): Array<string> {
   if (budget === null) return [];
   const problems: Array<string> = [];
-  for (const tool of SIZE_TOOLS) {
+  SIZE_TOOLS.forEach((tool) => {
     const toolFigures: SizeFigures | undefined = figures[tool];
-    if (!toolFigures) continue;
+    if (!toolFigures) return;
     if (toolFigures.raw > budget.rawKilobytes * BYTES_PER_KILOBYTE) {
       problems.push(`${name} [${tool}]: ${formatKilobytes(toolFigures.raw)} is over its budget of ${budget.rawKilobytes} kB`);
     }
     if (GZIP_BUDGET_TOOLS.includes(tool) && toolFigures.gzip > budget.gzipKilobytes * BYTES_PER_KILOBYTE) {
       problems.push(`${name} [${tool}]: ${formatKilobytes(toolFigures.gzip)} gzip is over its budget of ${budget.gzipKilobytes} kB`);
     }
-  }
+  });
   return problems;
 }

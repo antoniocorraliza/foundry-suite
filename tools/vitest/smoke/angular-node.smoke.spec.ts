@@ -30,7 +30,7 @@ describe('smoke: Angular on Node (jsdom)', () => {
   });
 
   it('uses the change detection of its project', () => {
-    const runsInsideAngularZone: boolean = TestBed.inject(NgZone).run(() => NgZone.isInAngularZone());
-    expect(runsInsideAngularZone).toBe(inject('changeDetection') === 'zone');
+    const isInsideAngularZone: boolean = TestBed.inject(NgZone).run(() => NgZone.isInAngularZone());
+    expect(isInsideAngularZone).toBe(inject('changeDetection') === 'zone');
   });
 });

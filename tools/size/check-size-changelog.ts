@@ -14,11 +14,11 @@ function git(gitArguments: ReadonlyArray<string>): string {
   return execFileSync('git', gitArguments, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 }
 
-function baseReference(mergeBase: string): SizeReference | undefined {
+function baseReference(mergeBase: string): SizeReference | null {
   try {
     return JSON.parse(git(['show', `${mergeBase}:${SIZE_REFERENCE_PATH}`])) as SizeReference;
   } catch {
-    return undefined;
+    return null;
   }
 }
 
@@ -37,29 +37,29 @@ function addedLines(mergeBase: string, changelogPath: string): Array<string> {
 function main(): number {
   const base: string = process.argv[2] ?? 'origin/main';
   const mergeBase: string = git(['merge-base', base, 'HEAD']).trim();
-  const before: SizeReference | undefined = baseReference(mergeBase);
-  if (before === undefined) {
+  const before: SizeReference | null = baseReference(mergeBase);
+  if (before === null) {
     console.log(`[size-changelog]: ${base} has no ${SIZE_REFERENCE_PATH}; nothing to compare`);
     return 0;
   }
   const after: SizeReference = JSON.parse(readFileSync(SIZE_REFERENCE_PATH, 'utf8')) as SizeReference;
   const grownByChangelog: Map<string, Array<GrownMeasurement>> = new Map();
-  for (const name of grownMeasurements(before, after)) {
-    const subject: MeasurementSubject | undefined = measurementSubject(name);
-    if (subject === undefined) throw new Error(`[size-changelog]: cannot tell the package of the measurement '${name}'`);
+  grownMeasurements(before, after).forEach((name) => {
+    const subject: MeasurementSubject | null = measurementSubject(name);
+    if (subject === null) throw new Error(`[size-changelog]: cannot tell the package of the measurement '${name}'`);
     const changelogPath: string = join(PACKAGES_SOURCE_DIRECTORY, subject.packageFolder, 'CHANGELOG.md');
     grownByChangelog.set(changelogPath, [...(grownByChangelog.get(changelogPath) ?? []), { name, mentions: [subject.specifier] }]);
-  }
+  });
   const problems: Array<string> = [];
-  for (const [changelogPath, grown] of grownByChangelog) {
+  grownByChangelog.forEach((grown, changelogPath) => {
     console.log(`[size-changelog]: grew since ${base}: ${grown.map((measurement) => measurement.name).join(', ')}`);
     if (!existsSync(changelogPath)) {
       console.log(`[size-changelog]: ${changelogPath} does not exist yet, so no line is required`);
-      continue;
+      return;
     }
     problems.push(...changelogProblems({ changelogPath, grown, addedLines: addedLines(mergeBase, changelogPath) }));
-  }
-  for (const problem of problems) console.error(`[size-changelog]: ${problem}`);
+  });
+  problems.forEach((problem) => console.error(`[size-changelog]: ${problem}`));
   if (problems.length === 0) console.log('[size-changelog]: ok');
   return problems.length === 0 ? 0 : 1;
 }

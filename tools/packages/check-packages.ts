@@ -55,7 +55,7 @@ function main(): number {
     const versions: Map<FoundryPackageFolder, string> = new Map(
       tarballs.map((tarball) => [tarball.foundryPackage.folder, tarball.manifest.version ?? '']),
     );
-    for (const tarball of tarballs) {
+    tarballs.forEach((tarball) => {
       console.log(`\n${tarball.foundryPackage.name}@${tarball.manifest.version ?? '?'} (${tarball.files.length} files)`);
       const sourceFiles: Array<string> = listFiles(join(PACKAGES_SOURCE_DIRECTORY, tarball.foundryPackage.folder));
       const results: Readonly<Record<string, Array<string>>> = {
@@ -68,12 +68,12 @@ function main(): number {
         manifest: checkManifest(tarball),
         notices: checkNotices(tarball, sourceFiles),
       };
-      for (const [rule, problems] of Object.entries(results)) {
+      Object.entries(results).forEach(([rule, problems]) => {
         console.log(`  ${problems.length === 0 ? 'ok  ' : 'FAIL'} ${rule}`);
-        for (const problem of problems) console.log(`      ${problem}`);
+        problems.forEach((problem) => console.log(`      ${problem}`));
         failures += problems.length;
-      }
-    }
+      });
+    });
   } finally {
     rmSync(workDirectory, { recursive: true, force: true });
   }

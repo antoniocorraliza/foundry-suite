@@ -9,10 +9,10 @@ export function textProblems(path: string, text: string): Array<string> {
   const rules: Array<TextRule> = TEXT_RULES.filter((rule) => !rule.onlyIn || rule.onlyIn.test(path));
   const linesWithoutTestData: Array<string> = (SPEC_FILE.test(path) ? maskTestData(path, text) : text).split('\n');
   text.split('\n').forEach((line, index) => {
-    for (const rule of rules) {
-      const checkedLine: string = rule.allowedInTestData ? (linesWithoutTestData[index] ?? line) : line;
+    rules.forEach((rule) => {
+      const checkedLine: string = rule.isAllowedInTestData ? (linesWithoutTestData[index] ?? line) : line;
       if (rule.pattern.test(checkedLine)) problems.push(`${path}:${index + 1}: ${rule.name}: ${line.trim().slice(0, 100)}`);
-    }
+    });
     if (hasReviewCode(line)) problems.push(`${path}:${index + 1}: review code: ${line.trim().slice(0, 100)}`);
   });
   return problems;

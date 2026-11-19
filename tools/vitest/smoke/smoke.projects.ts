@@ -24,13 +24,13 @@ export function smokeProjects(environment: TestEnvironment): Array<TestProjectIn
     }),
     ...browserProjects({
       name: 'smoke:ng-browser',
-      angular: true,
+      isAngular: true,
       environment,
       include: [`${SMOKE_DIRECTORY}/angular-browser.smoke.spec.ts`],
     }),
     ...browserProjects({
       name: 'smoke:ts-browser',
-      angular: false,
+      isAngular: false,
       environment,
       timeZones: ['Europe/Madrid', 'America/Santiago'],
       include: [`${SMOKE_DIRECTORY}/timezone-browser.smoke.spec.ts`],

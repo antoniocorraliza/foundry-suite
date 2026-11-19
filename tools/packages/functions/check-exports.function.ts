@@ -24,39 +24,39 @@ export function checkExports(tarball: Tarball, sourceFiles: ReadonlyArray<string
 
   const entrySubpaths: Array<string> = sourceEntrySubpaths(sourceFiles);
   const allowed: Set<string> = new Set(['./package.json', ...entrySubpaths, ...foundryPackage.nonEntryExports]);
-  for (const subpath of ['./package.json', ...entrySubpaths]) {
+  ['./package.json', ...entrySubpaths].forEach((subpath) => {
     if (!(subpath in exportsMap)) problems.push(`entry "${subpath}" is missing from "exports"`);
-  }
-  for (const subpath of Object.keys(exportsMap)) {
+  });
+  Object.keys(exportsMap).forEach((subpath) => {
     if (!allowed.has(subpath)) problems.push(`unexpected export "${subpath}" (no entry point and not in nonEntryExports)`);
-  }
+  });
 
-  for (const [subpath, target] of Object.entries(exportsMap)) {
+  Object.entries(exportsMap).forEach(([subpath, target]) => {
     if (subpath.includes('*')) {
       if (typeof target !== 'string' || !target.includes('*')) {
         problems.push(`pattern export "${subpath}" must map to a pattern string`);
-        continue;
+        return;
       }
       const [prefix = '', suffix = ''] = stripDotSlash(target).split('*');
       const matches: Array<string> = files.filter((file) => file.startsWith(prefix) && file.endsWith(suffix));
       console.log(`    - exports: ${subpath} matches ${matches.length} file(s) in the tarball`);
       const sourceFolder: string = prefix.slice(0, prefix.lastIndexOf('/') + 1);
-      const sourceHasFolder: boolean = sourceFiles.some((file) => file.startsWith(sourceFolder));
-      if (matches.length === 0 && declaresCssSideEffects(foundryPackage) && sourceHasFolder) {
+      const hasSourceFolder: boolean = sourceFiles.some((file) => file.startsWith(sourceFolder));
+      if (matches.length === 0 && declaresCssSideEffects(foundryPackage) && hasSourceFolder) {
         problems.push(`pattern export "${subpath}" matches no file in the tarball, but the source has ${sourceFolder}`);
       }
-      continue;
+      return;
     }
-    if (subpath === './package.json') continue;
+    if (subpath === './package.json') return;
     if (!target || typeof target !== 'object') {
       problems.push(`export "${subpath}" must be an object with "types" and "default"`);
-      continue;
+      return;
     }
     const conditions: Readonly<Record<string, unknown>> = target as Readonly<Record<string, unknown>>;
     const conditionNames: Array<string> = Object.keys(conditions);
     if (conditionNames[0] !== 'types') problems.push(`export "${subpath}": "types" must be the first condition`);
     if (conditionNames.at(-1) !== 'default') problems.push(`export "${subpath}": "default" must be the last condition`);
-    for (const [condition, path] of Object.entries(conditions)) {
+    Object.entries(conditions).forEach(([condition, path]) => {
       if (typeof path !== 'string') {
         problems.push(`export "${subpath}" -> "${condition}" is not a path`);
       } else if (!files.includes(stripDotSlash(path))) {
@@ -64,12 +64,12 @@ export function checkExports(tarball: Tarball, sourceFiles: ReadonlyArray<string
       } else if (condition === 'types' && !path.endsWith('.d.ts')) {
         problems.push(`export "${subpath}" -> "types" is not a .d.ts file`);
       }
-    }
-  }
+    });
+  });
 
-  for (const field of ['module', 'typings'] as const) {
+  (['module', 'typings'] as const).forEach((field) => {
     const path: string | undefined = manifest[field];
     if (!path || !files.includes(stripDotSlash(path))) problems.push(`"${field}" (${path ?? 'missing'}) is not in the tarball`);
-  }
+  });
   return problems;
 }

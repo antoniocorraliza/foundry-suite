@@ -7,6 +7,8 @@ export const LIBRARY_TYPESCRIPT_FILE: RegExp = /^projects\/.*\.ts$/;
 export const LIBRARY_CODE_FILE: RegExp = /^projects\/(?!.*\.spec\.ts$).*\.ts$/;
 export const LIBRARY_TEMPLATE_FILE: RegExp = /^projects\/.*\.html$/;
 export const LIBRARY_STYLE_FILE: RegExp = /^projects\/.*\.s?css$/;
+// The global style sheets of UI are public: their classes are the ones its design fixes.
+export const LIBRARY_COMPONENT_STYLE_FILE: RegExp = /^projects\/(?![^/]+\/[^/]+\/styles\/).*\.s?css$/;
 export const SKIPPED_FILES: ReadonlySet<string> = new Set([
   'CONTRIBUTING.md',
   'tools/lint/constants/text-rules.constant.ts',

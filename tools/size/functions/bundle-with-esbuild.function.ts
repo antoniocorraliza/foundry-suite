@@ -9,8 +9,8 @@ export async function bundleWithEsbuild(request: BundleRequest): Promise<string>
     name: 'foundry-dist',
     setup: (pluginBuild) => {
       pluginBuild.onResolve({ filter: /^[^./]/ }, (arguments_) => {
-        const resolution: ModuleResolution | undefined = foundryResolution(arguments_.path, request.entryFiles);
-        return resolution === undefined ? undefined : { path: resolution.path, external: resolution.external };
+        const resolution: ModuleResolution | null = foundryResolution(arguments_.path, request.entryFiles);
+        return resolution === null ? null : { path: resolution.path, external: resolution.isExternal };
       });
     },
   };

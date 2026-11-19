@@ -17,18 +17,18 @@ describe('measurementSubject', () => {
     });
   });
 
-  it('returns undefined for a name outside the convention', () => {
-    expect(measurementSubject('date picker')).toBeUndefined();
+  it('returns null for a name outside the convention', () => {
+    expect(measurementSubject('date picker')).toBeNull();
   });
 
   it('matches the package and the entry of every budget row', () => {
-    for (const measurement of SIZE_MEASUREMENTS) {
+    SIZE_MEASUREMENTS.forEach((measurement) => {
       expect(measurementSubject(measurement.name)?.packageFolder, measurement.name).toBe(measurement.packageFolder);
       if (measurement.imports !== 'every-entry' && measurement.imports.length === 1) {
         const entry: string = measurement.imports[0]?.entry ?? '';
         expect(measurement.name.split(': ')[0], measurement.name).toBe(entryMeasurementName(measurement.packageFolder, entry));
       }
-    }
+    });
   });
 
   it('gives each budget row its own name', () => {

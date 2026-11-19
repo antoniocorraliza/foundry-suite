@@ -12,8 +12,8 @@ export async function bundleWithRollup(request: BundleRequest): Promise<string> 
     name: 'foundry-size',
     resolveId: (specifier) => {
       if (specifier === PROBE_MODULE) return specifier;
-      const resolution: ModuleResolution | undefined = foundryResolution(specifier, request.entryFiles);
-      return resolution === undefined ? null : { id: resolution.path, external: resolution.external };
+      const resolution: ModuleResolution | null = foundryResolution(specifier, request.entryFiles);
+      return resolution === null ? null : { id: resolution.path, external: resolution.isExternal };
     },
     load: (id) => (id === PROBE_MODULE ? request.source : null),
     renderChunk: async (code) => {
@@ -21,7 +21,7 @@ export async function bundleWithRollup(request: BundleRequest): Promise<string> 
       return minified.code ?? code;
     },
   };
-  const bundle: RollupBuild = await rollup({ input: PROBE_MODULE, plugins: [plugin], onwarn: () => undefined });
+  const bundle: RollupBuild = await rollup({ input: PROBE_MODULE, plugins: [plugin], onwarn: () => null });
   try {
     const output: RollupOutput = await bundle.generate({ format: 'es' });
     return output.output[0].code;

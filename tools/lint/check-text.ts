@@ -2,12 +2,16 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import {
   CHECKED_FILE,
+  LIBRARY_COMPONENT_STYLE_FILE,
+  LIBRARY_TEMPLATE_FILE,
   LIBRARY_TYPESCRIPT_FILE,
   LOCKFILE,
   SKIPPED_FILES,
   SPEC_FILE,
   TYPESCRIPT_FILE,
 } from './constants/file-patterns.constant.ts';
+import { classNameProblems } from './functions/class-name-problems.function.ts';
+import { decoratorSuffixProblems } from './functions/decorator-suffix-problems.function.ts';
 import { folderSuffixProblem } from './functions/folder-suffix-problem.function.ts';
 import { libraryCommentProblems } from './functions/library-comment-problems.function.ts';
 import { signatureProblems } from './functions/signature-problems.function.ts';
@@ -24,16 +28,18 @@ function repositoryFiles(): Array<string> {
 
 function main(): number {
   const problems: Array<string> = [];
-  for (const path of repositoryFiles()) {
+  repositoryFiles().forEach((path) => {
     const text: string = readFileSync(path, 'utf8');
     problems.push(...textProblems(path, text));
-    const folderProblem: string | undefined = folderSuffixProblem(path);
-    if (folderProblem !== undefined) problems.push(folderProblem);
+    const folderProblem: string | null = folderSuffixProblem(path);
+    if (folderProblem !== null) problems.push(folderProblem);
     if (TYPESCRIPT_FILE.test(path)) problems.push(...signatureProblems(path, text));
     if (SPEC_FILE.test(path)) problems.push(...testTitleProblems(path, text));
+    if (TYPESCRIPT_FILE.test(path) && !SPEC_FILE.test(path)) problems.push(...decoratorSuffixProblems(path, text));
+    if (LIBRARY_TEMPLATE_FILE.test(path) || LIBRARY_COMPONENT_STYLE_FILE.test(path)) problems.push(...classNameProblems(path, text));
     if (LIBRARY_TYPESCRIPT_FILE.test(path)) problems.push(...libraryCommentProblems(path, text));
-  }
-  for (const problem of problems) console.error(problem);
+  });
+  problems.forEach((problem) => console.error(problem));
   if (problems.length > 0) console.error(`[check-text]: ${problems.length} problem(s), see CONTRIBUTING.md`);
   return problems.length === 0 ? 0 : 1;
 }

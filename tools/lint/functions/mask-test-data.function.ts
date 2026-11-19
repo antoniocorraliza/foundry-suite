@@ -1,11 +1,11 @@
 import ts from 'typescript';
 import { testTitleArgument } from './test-title-argument.function.ts';
 
-function textLiteralContent(node: ts.Node, source: ts.SourceFile): [number, number] | undefined {
+function textLiteralContent(node: ts.Node, source: ts.SourceFile): [number, number] | null {
   const start: number = node.getStart(source);
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isTemplateTail(node)) return [start + 1, node.end - 1];
   if (ts.isTemplateHead(node) || ts.isTemplateMiddle(node)) return [start + 1, node.end - 2];
-  return undefined;
+  return null;
 }
 
 export function maskTestData(path: string, text: string): string {
@@ -13,13 +13,14 @@ export function maskTestData(path: string, text: string): string {
   const characters: Array<string> = text.split('');
   const titles: Set<ts.Node> = new Set();
   const visit = (node: ts.Node): void => {
-    const title: ts.Expression | undefined = testTitleArgument(node);
-    if (title !== undefined && (ts.isStringLiteralLike(title) || ts.isTemplateExpression(title))) titles.add(title);
-    const content: [number, number] | undefined = titles.has(node) ? undefined : textLiteralContent(node, source);
-    if (content !== undefined) {
-      for (let position: number = content[0]; position < content[1]; position++) {
-        if (characters[position] !== '\n' && characters[position] !== '\r') characters[position] = ' ';
-      }
+    const title: ts.Expression | null = testTitleArgument(node);
+    if (title !== null && (ts.isStringLiteralLike(title) || ts.isTemplateExpression(title))) titles.add(title);
+    const content: [number, number] | null = titles.has(node) ? null : textLiteralContent(node, source);
+    if (content !== null) {
+      const [start, end]: [number, number] = content;
+      characters.slice(start, end).forEach((character, offset) => {
+        if (character !== '\n' && character !== '\r') characters[start + offset] = ' ';
+      });
     }
     if (!titles.has(node)) node.getChildren(source).forEach(visit);
   };

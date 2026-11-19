@@ -1,0 +1,5 @@
+<input [formControl]="search" />
+@for (item of items(); track item) {
+  <p [ngClass]="{ selected: item === search.value }">{{ item }}</p>
+}
+<router-outlet />

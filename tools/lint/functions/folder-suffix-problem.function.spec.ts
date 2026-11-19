@@ -12,7 +12,7 @@ describe('folderSuffixProblem', () => {
     'tools/ci/check-commits.ts',
     'README.md',
   ])('accepts %s', (path) => {
-    expect(folderSuffixProblem(path)).toBeUndefined();
+    expect(folderSuffixProblem(path)).toBeNull();
   });
 
   it('reports a file without the suffix of its folder', () => {
@@ -49,6 +49,6 @@ describe('folderSuffixProblem', () => {
   });
 
   it('uses the nearest folder that has a kind', () => {
-    expect(folderSuffixProblem('ui/src/services/components/x/x.component.ts')).toBeUndefined();
+    expect(folderSuffixProblem('ui/src/services/components/x/x.component.ts')).toBeNull();
   });
 });

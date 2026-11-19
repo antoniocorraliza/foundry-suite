@@ -55,10 +55,12 @@ function readReference(path: string): SizeReference {
 
 function writeReference(path: string, measured: SizeReference): void {
   const ordered: Record<string, SizeToolFigures> = {};
-  for (const name of Object.keys(measured).sort()) {
-    const figures: SizeToolFigures = measured[name] ?? {};
-    ordered[name] = Object.fromEntries(SIZE_TOOLS.filter((tool) => figures[tool]).map((tool) => [tool, figures[tool]]));
-  }
+  Object.keys(measured)
+    .sort()
+    .forEach((name) => {
+      const figures: SizeToolFigures = measured[name] ?? {};
+      ordered[name] = Object.fromEntries(SIZE_TOOLS.filter((tool) => figures[tool]).map((tool) => [tool, figures[tool]]));
+    });
   writeFileSync(path, `${JSON.stringify(ordered, null, 2)}\n`);
 }
 
@@ -86,12 +88,14 @@ async function measureAll(measurable: ReadonlyArray<ResolvedMeasurement>, contex
     }
     measured[resolution.measurement.name] = figures;
   }
-  for (const resolution of measurable.filter((candidate) => candidate.measurement.target === 'stylesheets')) {
-    const files: Array<Buffer> = (resolution.measurement.files ?? []).map((file) =>
-      readFileSync(join(PACKAGES_DIST_DIRECTORY, resolution.measurement.packageFolder, file)),
-    );
-    measured[resolution.measurement.name] = { files: measureContents(files) };
-  }
+  measurable
+    .filter((candidate) => candidate.measurement.target === 'stylesheets')
+    .forEach((resolution) => {
+      const files: Array<Buffer> = (resolution.measurement.files ?? []).map((file) =>
+        readFileSync(join(PACKAGES_DIST_DIRECTORY, resolution.measurement.packageFolder, file)),
+      );
+      measured[resolution.measurement.name] = { files: measureContents(files) };
+    });
   const angularMeasurable: Array<ResolvedMeasurement> = measurable.filter((candidate) =>
     candidate.measurement.target.startsWith('angular'),
   );
@@ -139,8 +143,8 @@ async function errorNameProblems(builtEntries: ReadonlyArray<BuiltEntry>, contex
       const outputFile: string = join(workDirectory, `error-name-${checked}.mjs`);
       checked += 1;
       const printed: string = await printedErrorName({ bundle: { ...bundleRequest, source }, bundler, outputFile });
-      const problem: string | undefined = errorNameProblem(builtEntry.specifier, errorClass.className, bundler, printed);
-      if (problem !== undefined) problems.push(problem);
+      const problem: string | null = errorNameProblem(builtEntry.specifier, errorClass.className, bundler, printed);
+      if (problem !== null) problems.push(problem);
     }
   }
   console.log(
@@ -152,29 +156,29 @@ async function errorNameProblems(builtEntries: ReadonlyArray<BuiltEntry>, contex
 function printReport(report: SizeReport): void {
   const { measured, measurements, pending } = report;
   console.log(`\n${'measurement'.padEnd(64)}${'tool'.padEnd(9)}${'raw'.padStart(10)}${'gzip'.padStart(11)}   budget`);
-  for (const measurement of measurements) {
+  measurements.forEach((measurement) => {
     const figures: SizeToolFigures | undefined = measured[measurement.name];
-    if (!figures) continue;
-    for (const tool of SIZE_TOOLS) {
+    if (!figures) return;
+    SIZE_TOOLS.forEach((tool) => {
       const toolFigures: SizeFigures | undefined = figures[tool];
-      if (!toolFigures) continue;
+      if (!toolFigures) return;
       const budget: string = measurement.budget ? `${measurement.budget.rawKilobytes} / ${measurement.budget.gzipKilobytes} kB` : 'none';
       const raw: string = formatKilobytes(toolFigures.raw).padStart(10);
       console.log(`${measurement.name.padEnd(64)}${tool.padEnd(9)}${raw}${formatKilobytes(toolFigures.gzip).padStart(11)}   ${budget}`);
-    }
-  }
+    });
+  });
   console.log(`\n[size]: ${pending.length} measurements pending (entry not built or symbol not exported yet)`);
-  for (const resolution of pending) console.log(`  - ${resolution.measurement.name}: ${resolution.reason}`);
+  pending.forEach((resolution) => console.log(`  - ${resolution.measurement.name}: ${resolution.reason}`));
 }
 
 function printProblems(title: string, problems: ReadonlyArray<string>): void {
   if (problems.length === 0) return;
   console.log(`\n${title}`);
-  for (const problem of problems) console.log(`  FAIL ${problem}`);
+  problems.forEach((problem) => console.log(`  FAIL ${problem}`));
 }
 
 async function main(): Promise<number> {
-  const update: boolean = process.argv.includes('--update');
+  const isUpdate: boolean = process.argv.includes('--update');
   const builtEntries: Array<BuiltEntry> = await listBuiltEntries(resolve(PACKAGES_DIST_DIRECTORY), FOUNDRY_PACKAGES);
   const measurements: Array<SizeMeasurement> = [...SIZE_MEASUREMENTS, ...wholeEntryMeasurements(builtEntries, SIZE_MEASUREMENTS)];
   const builtFiles: Set<string> = listBuiltFiles(PACKAGES_DIST_DIRECTORY);
@@ -201,7 +205,7 @@ async function main(): Promise<number> {
     );
     const errorNames: Array<string> = await errorNameProblems(builtEntries, context);
     let reference: Array<string> = [];
-    if (update) {
+    if (isUpdate) {
       writeReference(SIZE_REFERENCE_PATH, measured);
       console.log(`[size]: ${SIZE_REFERENCE_PATH} updated; commit it with the change that moved the sizes`);
     } else {
