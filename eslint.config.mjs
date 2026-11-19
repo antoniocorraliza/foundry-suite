@@ -42,6 +42,20 @@ const LIBRARY_NAMED_OBJECT_TYPES = forbid(
 const LIBRARY_FILES = 'projects/**/';
 const PUBLIC_PROPERTY =
   "PropertyDefinition:not([accessibility='private']):not([accessibility='protected']):not([key.type='PrivateIdentifier'])";
+// The name of an error class is its literal value: a JSDoc there would only repeat it.
+const ERROR_CLASS_NAME = "[override=true][readonly=true][key.name='name']";
+const REQUIRE_JSDOC_OPTIONS = (publicProperty) => ({
+  publicOnly: { esm: true },
+  require: { FunctionDeclaration: true, ClassDeclaration: true, MethodDefinition: true },
+  contexts: [
+    'TSInterfaceDeclaration',
+    'TSTypeAliasDeclaration',
+    'TSEnumDeclaration',
+    'ExportNamedDeclaration > VariableDeclaration',
+    publicProperty,
+  ],
+  checkConstructors: false,
+});
 const JSDOC_FUNCTION_DESCRIPTION = '^(?!(?:This|These|That|A|An|The|Helper|Utility|Wrapper)\\b)[A-Z][a-z]*s\\b[\\s\\S]*$';
 const ERROR_CLASS = '/Error$/';
 const CODE_FILE_SELECTORS = [
@@ -225,21 +239,7 @@ export default defineConfig([
     plugins: { jsdoc },
     settings: { jsdoc: { mode: 'typescript' } },
     rules: {
-      'jsdoc/require-jsdoc': [
-        'error',
-        {
-          publicOnly: { esm: true },
-          require: { FunctionDeclaration: true, ClassDeclaration: true, MethodDefinition: true },
-          contexts: [
-            'TSInterfaceDeclaration',
-            'TSTypeAliasDeclaration',
-            'TSEnumDeclaration',
-            'ExportNamedDeclaration > VariableDeclaration',
-            PUBLIC_PROPERTY,
-          ],
-          checkConstructors: false,
-        },
-      ],
+      'jsdoc/require-jsdoc': ['error', REQUIRE_JSDOC_OPTIONS(PUBLIC_PROPERTY)],
       'jsdoc/match-description': [
         'error',
         {
@@ -262,6 +262,11 @@ export default defineConfig([
       'jsdoc/no-multi-asterisks': 'error',
       'jsdoc/check-alignment': 'error',
     },
+  },
+  {
+    files: ['projects/**/errors/**/*.ts'],
+    ignores: EXEMPT_FILES,
+    rules: { 'jsdoc/require-jsdoc': ['error', REQUIRE_JSDOC_OPTIONS(`${PUBLIC_PROPERTY}:not(${ERROR_CLASS_NAME})`)] },
   },
   {
     files: ['**/*.html'],

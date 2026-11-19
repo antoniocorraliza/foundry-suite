@@ -289,6 +289,8 @@ A piece with an error class keeps it in `errors/`, like the HTTP client of Core:
 
 An error class always assigns its `name` as a literal, because that value is what survives minification. A class without subclasses also declares it with the literal type; a class with subclasses declares it as `string`, because a literal type there would stop the subclasses from declaring their own.
 
+That `name` takes no JSDoc: its literal already says everything, and a comment there would be filler. `jsdoc/require-jsdoc` skips `override readonly name` in `errors/` and nowhere else.
+
 ```ts
 // errors/foundry-utils.error.ts: it has subclasses
 export class FoundryUtilsError extends Error {
