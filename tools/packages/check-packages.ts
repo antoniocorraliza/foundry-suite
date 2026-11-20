@@ -3,7 +3,8 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync }
 import { tmpdir } from 'node:os';
 import { join, relative, sep } from 'node:path';
 import { FOUNDRY_PACKAGES } from './constants/foundry-packages.constant.ts';
-import { PACKAGES_DIST_DIRECTORY, PACKAGES_SOURCE_DIRECTORY } from './constants/paths.constant.ts';
+import { PACKAGES_DIST_DIRECTORY } from './constants/packages-dist-directory.constant.ts';
+import { PACKAGES_SOURCE_DIRECTORY } from './constants/packages-source-directory.constant.ts';
 import { checkAny } from './functions/check-any.function.ts';
 import { checkDependencies } from './functions/check-dependencies.function.ts';
 import { checkExports } from './functions/check-exports.function.ts';

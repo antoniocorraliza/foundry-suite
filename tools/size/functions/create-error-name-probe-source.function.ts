@@ -1,4 +1,4 @@
-import { ANGULAR_PACKAGES } from '../constants/size-settings.constant.ts';
+import { ANGULAR_PACKAGES } from '../constants/angular-packages.constant.ts';
 import type { PublicErrorClass } from '../interfaces/public-error-class.interface.ts';
 
 export function createErrorNameProbeSource(specifier: string, errorClass: PublicErrorClass): string {

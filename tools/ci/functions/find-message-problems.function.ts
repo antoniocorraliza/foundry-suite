@@ -1,4 +1,4 @@
-import { ASSISTANT_ATTRIBUTION } from '../constants/commit-rules.constant.ts';
+import { ASSISTANT_ATTRIBUTION } from '../constants/assistant-attribution.constant.ts';
 import { findTitleProblems } from './find-title-problems.function.ts';
 
 export function findMessageProblems(message: string): Array<string> {

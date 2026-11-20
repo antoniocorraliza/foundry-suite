@@ -1,4 +1,4 @@
-import { ERROR_CLASS_NAME } from '../constants/size-settings.constant.ts';
+import { ERROR_CLASS_NAME } from '../constants/error-class-name.constant.ts';
 import type { BuiltEntry } from '../interfaces/built-entry.interface.ts';
 import type { PublicErrorClass } from '../interfaces/public-error-class.interface.ts';
 

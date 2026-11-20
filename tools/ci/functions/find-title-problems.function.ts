@@ -1,4 +1,6 @@
-import { COMMIT_SCOPES, COMMIT_TITLE, MAXIMUM_TITLE_LENGTH } from '../constants/commit-rules.constant.ts';
+import { COMMIT_SCOPES } from '../constants/commit-scopes.constant.ts';
+import { COMMIT_TITLE } from '../constants/commit-title.constant.ts';
+import { MAXIMUM_TITLE_LENGTH } from '../constants/maximum-title-length.constant.ts';
 
 export function findTitleProblems(title: string): Array<string> {
   const problems: Array<string> = [];

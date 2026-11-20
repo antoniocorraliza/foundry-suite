@@ -1,13 +1,11 @@
-import {
-  CAMEL_CASE_CLASS,
-  CLASS_BINDING,
-  INTERPOLATION,
-  STATIC_CLASS_ATTRIBUTE,
-  STYLE_CLASS_SELECTOR,
-  STYLE_DECLARATION,
-  STYLE_STRING_OR_URL,
-} from '../constants/class-names.constant.ts';
-import { LIBRARY_TEMPLATE_FILE } from '../constants/file-patterns.constant.ts';
+import { CAMEL_CASE_CLASS } from '../constants/camel-case-class.constant.ts';
+import { CLASS_BINDING } from '../constants/class-binding.constant.ts';
+import { INTERPOLATION } from '../constants/interpolation.constant.ts';
+import { LIBRARY_TEMPLATE_FILE } from '../constants/library-template-file.constant.ts';
+import { STATIC_CLASS_ATTRIBUTE } from '../constants/static-class-attribute.constant.ts';
+import { STYLE_CLASS_SELECTOR } from '../constants/style-class-selector.constant.ts';
+import { STYLE_DECLARATION } from '../constants/style-declaration.constant.ts';
+import { STYLE_STRING_OR_URL } from '../constants/style-string-or-url.constant.ts';
 
 function readTemplateClassNames(line: string): Array<string> {
   const staticNames: Array<string> = [...line.matchAll(STATIC_CLASS_ATTRIBUTE)].flatMap((match) =>

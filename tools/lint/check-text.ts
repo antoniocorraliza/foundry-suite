@@ -1,15 +1,13 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import {
-  CHECKED_FILE,
-  LIBRARY_COMPONENT_STYLE_FILE,
-  LIBRARY_TEMPLATE_FILE,
-  LIBRARY_TYPESCRIPT_FILE,
-  LOCKFILE,
-  SKIPPED_FILES,
-  SPEC_FILE,
-  TYPESCRIPT_FILE,
-} from './constants/file-patterns.constant.ts';
+import { CHECKED_FILE } from './constants/checked-file.constant.ts';
+import { LIBRARY_COMPONENT_STYLE_FILE } from './constants/library-component-style-file.constant.ts';
+import { LIBRARY_TEMPLATE_FILE } from './constants/library-template-file.constant.ts';
+import { LIBRARY_TYPESCRIPT_FILE } from './constants/library-typescript-file.constant.ts';
+import { LOCKFILE } from './constants/lockfile.constant.ts';
+import { SKIPPED_FILES } from './constants/skipped-files.constant.ts';
+import { SPEC_FILE } from './constants/spec-file.constant.ts';
+import { TYPESCRIPT_FILE } from './constants/typescript-file.constant.ts';
 import { findClassNameProblems } from './functions/find-class-name-problems.function.ts';
 import { findDecoratorSuffixProblems } from './functions/find-decorator-suffix-problems.function.ts';
 import { findFolderSuffixProblem } from './functions/find-folder-suffix-problem.function.ts';

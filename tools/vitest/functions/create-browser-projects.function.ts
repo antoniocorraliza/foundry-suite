@@ -2,7 +2,7 @@ import { playwright } from '@vitest/browser-playwright';
 import type { TestProjectInlineConfiguration } from 'vitest/config';
 import type { BrowserInstanceOption } from 'vitest/node';
 import { ANGULAR_OPTIMIZED_DEPENDENCIES } from '../constants/angular-optimized-dependencies.constant.ts';
-import { SETUP_DIRECTORY } from '../constants/paths.constant.ts';
+import { SETUP_DIRECTORY } from '../constants/setup-directory.constant.ts';
 import { TEST_BROWSERS } from '../constants/test-browsers.constant.ts';
 import type { BrowserProjectOptions } from '../interfaces/browser-project-options.interface.ts';
 import type { TestEnvironment } from '../interfaces/test-environment.interface.ts';

@@ -1,8 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { PACKAGES_SOURCE_DIRECTORY } from '../packages/constants/paths.constant.ts';
-import { SIZE_REFERENCE_PATH } from './constants/size-settings.constant.ts';
+import { PACKAGES_SOURCE_DIRECTORY } from '../packages/constants/packages-source-directory.constant.ts';
+import { SIZE_REFERENCE_PATH } from './constants/size-reference-path.constant.ts';
 import { findChangelogProblems } from './functions/find-changelog-problems.function.ts';
 import { findGrownMeasurements } from './functions/find-grown-measurements.function.ts';
 import { parseMeasurementSubject } from './functions/parse-measurement-subject.function.ts';

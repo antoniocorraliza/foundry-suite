@@ -1,5 +1,5 @@
 import { DEFAULT_SIZE_TARGETS } from '../constants/default-size-targets.constant.ts';
-import { NOT_MEASURED_ENTRIES } from '../constants/size-settings.constant.ts';
+import { NOT_MEASURED_ENTRIES } from '../constants/not-measured-entries.constant.ts';
 import type { SizeMeasurement } from '../interfaces/size-measurement.interface.ts';
 import type { WholeEntryMeasurementRequest } from '../interfaces/whole-entry-measurement-request.interface.ts';
 import { getEntryMeasurementName } from './get-entry-measurement-name.function.ts';

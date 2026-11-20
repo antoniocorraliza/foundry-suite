@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { TEST_FUNCTIONS } from '../constants/test-titles.constant.ts';
+import { TEST_FUNCTIONS } from '../constants/test-functions.constant.ts';
 
 function getTestFunctionName(expression: ts.Expression): string | null {
   if (ts.isIdentifier(expression)) return expression.text;

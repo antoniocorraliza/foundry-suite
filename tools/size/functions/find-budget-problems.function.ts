@@ -1,4 +1,5 @@
-import { BYTES_PER_KILOBYTE, GZIP_BUDGET_TOOLS } from '../constants/size-settings.constant.ts';
+import { BYTES_PER_KILOBYTE } from '../constants/bytes-per-kilobyte.constant.ts';
+import { GZIP_BUDGET_TOOLS } from '../constants/gzip-budget-tools.constant.ts';
 import { SIZE_TOOLS } from '../constants/size-tools.constant.ts';
 import type { SizeBudget } from '../interfaces/size-budget.interface.ts';
 import type { SizeFigures } from '../interfaces/size-figures.interface.ts';

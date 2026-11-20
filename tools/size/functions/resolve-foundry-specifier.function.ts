@@ -1,4 +1,5 @@
-import { EXTERNAL_PACKAGE, FOUNDRY_SPECIFIER } from '../constants/size-settings.constant.ts';
+import { EXTERNAL_PACKAGE } from '../constants/external-package.constant.ts';
+import { FOUNDRY_SPECIFIER } from '../constants/foundry-specifier.constant.ts';
 import type { ModuleResolution } from '../interfaces/module-resolution.interface.ts';
 
 export function resolveFoundrySpecifier(specifier: string, entryFiles: ReadonlyMap<string, string>): ModuleResolution | null {

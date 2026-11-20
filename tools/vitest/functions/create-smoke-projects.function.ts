@@ -1,5 +1,5 @@
 import type { TestProjectInlineConfiguration } from 'vitest/config';
-import { SMOKE_DIRECTORY } from '../constants/paths.constant.ts';
+import { SMOKE_DIRECTORY } from '../constants/smoke-directory.constant.ts';
 import type { TestEnvironment } from '../interfaces/test-environment.interface.ts';
 import { createAngularNodeProject } from './create-angular-node-project.function.ts';
 import { createBrowserProjects } from './create-browser-projects.function.ts';
