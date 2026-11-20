@@ -2,6 +2,13 @@ import type { SizeMeasurement } from '../interfaces/size-measurement.interface.t
 
 export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
   {
+    name: 'utils (root)',
+    packageFolder: 'foundry-utils',
+    target: 'bundle',
+    imports: [{ entry: '', symbols: 'whole-entry' }],
+    budget: { rawKilobytes: 3.2, gzipKilobytes: 1.3 },
+  },
+  {
     name: 'utils/number: clampNumber',
     packageFolder: 'foundry-utils',
     target: 'bundle',
@@ -69,28 +76,28 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'object', symbols: ['isDeepEqual'] }],
-    budget: { rawKilobytes: 0.9, gzipKilobytes: 0.5 },
+    budget: { rawKilobytes: 3.8, gzipKilobytes: 1.4 },
   },
   {
     name: 'utils/object',
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'object', symbols: 'whole-entry' }],
-    budget: { rawKilobytes: 3.5, gzipKilobytes: 1.4 },
+    budget: { rawKilobytes: 12.7, gzipKilobytes: 4.2 },
   },
   {
     name: 'utils/case: toCamelCaseKeys',
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'case', symbols: ['toCamelCaseKeys'] }],
-    budget: { rawKilobytes: 0.8, gzipKilobytes: 0.45 },
+    budget: { rawKilobytes: 3.2, gzipKilobytes: 1.4 },
   },
   {
     name: 'utils/case',
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'case', symbols: 'whole-entry' }],
-    budget: { rawKilobytes: 1.4, gzipKilobytes: 0.7 },
+    budget: { rawKilobytes: 3.9, gzipKilobytes: 1.7 },
   },
   {
     name: 'utils/csv: toCsv',

@@ -5,11 +5,13 @@ import { beforeAll, describe, expect, it } from 'vitest';
 const IS_ESLINT_MISSING: boolean = process.env['FOUNDRY_EXPECTED_ANGULAR_MAJOR'] === '22';
 let ESLINT: ESLint;
 
+// Loading the configuration and its plugins takes seconds on a busy machine: it happens here, not in the first test.
 beforeAll(async () => {
   if (IS_ESLINT_MISSING) return;
   const { ESLint: ESLintClass } = await import('eslint');
   ESLINT = new ESLintClass();
-});
+  await ESLINT.lintText('', { filePath: 'projects/antoniocorraliza/foundry-utils/src/public-api.ts' });
+}, 60_000);
 
 async function missingJsdocLines(code: string, filePath: string): Promise<Array<number>> {
   const [result] = await ESLINT.lintText(code, { filePath });

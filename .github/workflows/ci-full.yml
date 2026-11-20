@@ -158,11 +158,44 @@ jobs:
       - name: Check the packages
         run: npm run check:packages
 
+  smoke-consumers:
+    name: Smoke - Utils consumers
+    needs: gate
+    if: ${{ !cancelled() && needs.gate.outputs.run != 'false' && !github.event.pull_request.draft }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up the workspace
+        uses: ./.github/actions/setup-workspace
+        with:
+          node-version: '22'
+          angular: '21'
+          browsers: none
+
+      - name: Install the consumer apps (own lockfiles)
+        run: |
+          npm ci --strict-allow-scripts --no-fund --no-audit --prefix tools/jest-smoke
+          npm ci --strict-allow-scripts --no-fund --no-audit --prefix tools/typescript-smoke
+
+      - name: Build Utils
+        run: npm run build:utils
+
+      - name: Run Utils from its tarball under Jest 30 with jsdom
+        run: npm run test:jest
+
+      - name: Compile against Utils with TypeScript 5.5, 6.0 and 7
+        run: npm run test:typescript
+
   # Required check of main: "Full level". Do not rename it without changing the rule.
   # A new job joins the level by adding its id to needs, without touching the rule.
   result:
     name: Full level
-    needs: [gate, unit-node, unit-browsers, smoke-node-26]
+    needs: [gate, unit-node, unit-browsers, smoke-node-26, smoke-consumers]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 5

@@ -2,7 +2,7 @@ import { FOLDER_SUFFIXES } from '../constants/folder-suffixes.constant.ts';
 
 export function folderSuffixProblem(path: string): string | null {
   const segments: Array<string> = path.split('/');
-  const fileName: string = (segments.pop() ?? '').replace(/\.spec\.ts$/, '.ts');
+  const fileName: string = (segments.pop() ?? '').replace(/\.(?:spec|test-d)\.ts$/, '.ts');
   const nearestKindFolder: string | undefined = segments.reverse().find((segment) => segment in FOLDER_SUFFIXES);
   if (nearestKindFolder !== undefined) {
     const suffixes: ReadonlyArray<string> = FOLDER_SUFFIXES[nearestKindFolder] ?? [];

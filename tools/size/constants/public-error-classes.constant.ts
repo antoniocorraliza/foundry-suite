@@ -8,6 +8,30 @@ export const PUBLIC_ERROR_CLASSES: ReadonlyArray<PublicErrorClass> = [
     constructorArguments: "'size check'",
   },
   {
+    packageFolder: 'foundry-utils',
+    entry: '',
+    className: 'FoundryCircularReferenceError',
+    constructorArguments: "{ path: ['size', 0] }",
+  },
+  {
+    packageFolder: 'foundry-utils',
+    entry: '',
+    className: 'FoundryCryptoUnavailableError',
+    constructorArguments: "{ missingApi: 'crypto' }",
+  },
+  {
+    packageFolder: 'foundry-utils',
+    entry: 'case',
+    className: 'FoundryKeyCollisionError',
+    constructorArguments: "{ path: [], originalKeys: ['size_check', 'sizeCheck'], convertedKey: 'sizeCheck' }",
+  },
+  {
+    packageFolder: 'foundry-utils',
+    entry: 'object',
+    className: 'FoundryCloneError',
+    constructorArguments: "{ path: [], valueDescription: 'function' }",
+  },
+  {
     packageFolder: 'foundry-core',
     entry: 'network',
     className: 'FoundrySessionRefreshError',
