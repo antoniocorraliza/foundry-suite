@@ -1,0 +1,20 @@
+{
+  "name": "@antoniocorraliza/foundry-suite-jest-smoke",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Consumer app that runs Foundry Utils under Jest 30 with jsdom, with the recipe of the Utils README. Only the full CI level installs it.",
+  "license": "MIT",
+  "type": "commonjs",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@babel/core": "7.29.13",
+    "@babel/preset-env": "7.29.14",
+    "jest": "30.5.2",
+    "jest-environment-jsdom": "30.5.2"
+  },
+  "allowScripts": {
+    "@parcel/watcher": false
+  }
+}

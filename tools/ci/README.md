@@ -24,6 +24,7 @@ Angular 21, Node 24, one job: `npm ci`, commit messages of the branch (`tools/ci
 | `Unit - Angular 22 - Node 22`                                    |   22    |  22  | none                                                |      no      |     yes      |
 | `Unit - Angular 22 - Node 24 - browsers`                         |   22    |  24  | Chromium, Firefox, WebKit (in the Playwright image) |      no      |     yes      |
 | `Smoke - Node 26` (smoke tests, build and `check:packages`)      |   21    |  26  | none                                                |      no      |     yes      |
+| `Smoke - Jest 30 with jsdom` (Utils from its tarball)            |   21    |  22  | none                                                |     yes      |     yes      |
 
 Every unit job runs the zone.js and the zoneless projects.
 
@@ -54,6 +55,22 @@ cd - && git worktree remove --force ../foundry-ng22
 
 To change a version, edit `tools/ci/angular-22/package.json`, run `npm install --prefix tools/ci/angular-22` and commit both files.
 
+## Jest smoke
+
+`tools/jest-smoke/` is a small consumer app with its own manifest and lockfile: Jest 30, `jest-environment-jsdom` and Babel 7 with `@babel/preset-env`, configured with the Jest recipe of the Utils README. It is kept apart so that Jest and Babel stay out of the development lockfile and the Jest globals never meet the Vitest ones.
+
+`npm run test:jest` packs `dist/antoniocorraliza/foundry-utils` with `npm pack`, unpacks the tarball into `tools/jest-smoke/node_modules/@antoniocorraliza/foundry-utils` and runs Jest there, so it tests what npm would publish. It runs in the full level only.
+
+To run it locally:
+
+```bash
+npm ci --strict-allow-scripts --prefix tools/jest-smoke
+npm run build:utils
+npm run test:jest
+```
+
+To change a version, edit `tools/jest-smoke/package.json`, run `npm install --strict-allow-scripts --prefix tools/jest-smoke` with npm 11 and commit both files. Keep `@babel/core` on the version that the Angular build already uses, so that the app has a single Babel.
+
 ## Test environment variables
 
 | Variable                         | Values                                           | Default                                                 |
@@ -77,7 +94,7 @@ When a browser test fails, the job uploads `.vitest/attachments` (the failure sc
 
 npm reads the `allowScripts` field from version 11.16. Node 22 ships npm 10, which ignores it, so every CI job pins npm 11.21.3 and installs with `--strict-allow-scripts`: a new dependency with an install script that is not in the list fails the install until someone reviews it. Locally, use the Node 24 of `.nvmrc`.
 
-No package may run install scripts. The four that have one are denied (`false`) in both manifests, because lint, tests, build and `check:packages` work without them:
+No package may run install scripts. The four that have one are denied (`false`) in both manifests of the workspace, because lint, tests, build and `check:packages` work without them. `tools/jest-smoke/package.json` denies the only one it installs, `@parcel/watcher` (from `jest-haste-map`, which works without it):
 
 | Package            | Comes from                               | Script                                       | Why it is not needed                                                                                                       |
 | :----------------- | :--------------------------------------- | :------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
