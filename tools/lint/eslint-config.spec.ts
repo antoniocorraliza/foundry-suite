@@ -13,7 +13,7 @@ beforeAll(async () => {
   await ESLINT.lintText('', { filePath: 'projects/antoniocorraliza/foundry-utils/src/public-api.ts' });
 }, 60_000);
 
-async function missingJsdocLines(code: string, filePath: string): Promise<Array<number>> {
+async function findMissingJsdocLines(code: string, filePath: string): Promise<Array<number>> {
   const [result] = await ESLINT.lintText(code, { filePath });
   return (result?.messages ?? []).filter((message) => message.ruleId === 'jsdoc/require-jsdoc').map((message) => message.line);
 }
@@ -31,7 +31,7 @@ describe.skipIf(IS_ESLINT_MISSING)('jsdoc on the name of error classes', () => {
   ].join('\n');
 
   it('does not ask for a JSDoc on override readonly name in errors/', async () => {
-    const lines: Array<number> = await missingJsdocLines(
+    const lines: Array<number> = await findMissingJsdocLines(
       errorClass,
       'projects/antoniocorraliza/foundry-utils/src/errors/foundry-utils.error.ts',
     );
@@ -39,7 +39,7 @@ describe.skipIf(IS_ESLINT_MISSING)('jsdoc on the name of error classes', () => {
   });
 
   it('still asks for it on the other public members of an error class', async () => {
-    const lines: Array<number> = await missingJsdocLines(
+    const lines: Array<number> = await findMissingJsdocLines(
       errorClass,
       'projects/antoniocorraliza/foundry-utils/src/errors/foundry-utils.error.ts',
     );
@@ -56,13 +56,13 @@ describe.skipIf(IS_ESLINT_MISSING)('jsdoc on the name of error classes', () => {
       '}',
       '',
     ].join('\n');
-    expect(await missingJsdocLines(code, 'projects/antoniocorraliza/foundry-utils/src/functions/foundry-named-value.function.ts')).toEqual([
-      5,
-    ]);
+    expect(
+      await findMissingJsdocLines(code, 'projects/antoniocorraliza/foundry-utils/src/functions/foundry-named-value.function.ts'),
+    ).toEqual([5]);
   });
 });
 
-async function lifecycleHookLines(code: string): Promise<Array<number>> {
+async function findLifecycleHookLines(code: string): Promise<Array<number>> {
   const [result] = await ESLINT.lintText(code, { filePath: 'tools/size/app/components/probe/probe.component.ts' });
   return (result?.messages ?? [])
     .filter((message) => message.message.startsWith('Lifecycle hooks only call'))
@@ -87,7 +87,7 @@ describe.skipIf(IS_ESLINT_MISSING)('code in lifecycle hooks', () => {
       '}',
       '',
     ].join('\n');
-    expect(await lifecycleHookLines(code)).toEqual([]);
+    expect(await findLifecycleHookLines(code)).toEqual([]);
   });
 
   it('rejects any other statement in a hook', async () => {
@@ -104,16 +104,16 @@ describe.skipIf(IS_ESLINT_MISSING)('code in lifecycle hooks', () => {
       '}',
       '',
     ].join('\n');
-    expect(await lifecycleHookLines(code)).toEqual([3, 4, 5, 8]);
+    expect(await findLifecycleHookLines(code)).toEqual([3, 4, 5, 8]);
   });
 });
 
-async function messageLines(code: string, filePath: string, messageStart: string): Promise<Array<number>> {
+async function findMessageLines(code: string, filePath: string, messageStart: string): Promise<Array<number>> {
   const [result] = await ESLINT.lintText(code, { filePath });
   return (result?.messages ?? []).filter((message) => message.message.startsWith(messageStart)).map((message) => message.line);
 }
 
-async function ruleLines(code: string, filePath: string, ruleId: string): Promise<Array<number>> {
+async function findRuleLines(code: string, filePath: string, ruleId: string): Promise<Array<number>> {
   const [result] = await ESLINT.lintText(code, { filePath });
   return (result?.messages ?? []).filter((message) => message.ruleId === ruleId).map((message) => message.line);
 }
@@ -131,7 +131,7 @@ describe.skipIf(IS_ESLINT_MISSING)('top-level functions', () => {
       'export const foundryProbeInterceptor: HttpInterceptorFn = (request, next) => next(request);',
       '',
     ].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
   });
 
   it('rejects arrow functions and function expressions kept in top-level constants', async () => {
@@ -143,7 +143,7 @@ describe.skipIf(IS_ESLINT_MISSING)('top-level functions', () => {
       'saveItems();',
       '',
     ].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([1, 2]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([1, 2]);
   });
 });
 
@@ -156,12 +156,12 @@ describe.skipIf(IS_ESLINT_MISSING)('interfaces and types', () => {
       'export type ShapeKind = Shape["kind"];',
       '',
     ].join('\n');
-    expect(await ruleLines(code, 'tools/probe/types/shape.type.ts', '@typescript-eslint/consistent-type-definitions')).toEqual([]);
+    expect(await findRuleLines(code, 'tools/probe/types/shape.type.ts', '@typescript-eslint/consistent-type-definitions')).toEqual([]);
   });
 
   it('rejects an object shape declared with type', async () => {
     const code: string = ['export type Point = {', '  readonly x: number;', '};', ''].join('\n');
-    expect(await ruleLines(code, 'tools/probe/types/point.type.ts', '@typescript-eslint/consistent-type-definitions')).toEqual([1]);
+    expect(await findRuleLines(code, 'tools/probe/types/point.type.ts', '@typescript-eslint/consistent-type-definitions')).toEqual([1]);
   });
 });
 
@@ -170,7 +170,7 @@ describe.skipIf(IS_ESLINT_MISSING)('private members', () => {
 
   it('accepts the private modifier', async () => {
     const code: string = ['export class ItemStore {', '  private readonly items: Array<string> = [];', '}', ''].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
   });
 
   it('rejects private names with #', async () => {
@@ -183,7 +183,7 @@ describe.skipIf(IS_ESLINT_MISSING)('private members', () => {
       '}',
       '',
     ].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([2, 3, 4]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([2, 3, 4]);
   });
 });
 
@@ -202,7 +202,7 @@ describe.skipIf(IS_ESLINT_MISSING)('names of booleans', () => {
       '}',
       '',
     ].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
   });
 
   it('rejects any other name for variables, parameters, properties and boolean signals', async () => {
@@ -217,14 +217,14 @@ describe.skipIf(IS_ESLINT_MISSING)('names of booleans', () => {
       '}',
       '',
     ].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([1, 2, 2, 3, 7]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([1, 2, 2, 3, 7]);
   });
 
   it('rejects them in interfaces', async () => {
     const code: string = ['export interface PanelOptions {', '  readonly modal: boolean;', '  readonly isOpen: boolean;', '}', ''].join(
       '\n',
     );
-    expect(await messageLines(code, 'tools/probe/interfaces/panel-options.interface.ts', message)).toEqual([2]);
+    expect(await findMessageLines(code, 'tools/probe/interfaces/panel-options.interface.ts', message)).toEqual([2]);
   });
 
   it('leaves the public API of the libraries to their designs and checks the internal code', async () => {
@@ -241,7 +241,7 @@ describe.skipIf(IS_ESLINT_MISSING)('names of booleans', () => {
       '',
     ].join('\n');
     const path: string = 'projects/antoniocorraliza/foundry-ui/panel/src/components/foundry-panel/foundry-panel.component.ts';
-    expect(await messageLines(code, path, message)).toEqual([3, 4, 6]);
+    expect(await findMessageLines(code, path, message)).toEqual([3, 4, 6]);
   });
 });
 
@@ -254,7 +254,7 @@ describe.skipIf(IS_ESLINT_MISSING)('names of observables', () => {
       '}',
       '',
     ].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.ts', 'Observables end in')).toEqual([]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', 'Observables end in')).toEqual([]);
   });
 
   it('rejects other names and the $ suffix', async () => {
@@ -265,7 +265,7 @@ describe.skipIf(IS_ESLINT_MISSING)('names of observables', () => {
       '}',
       '',
     ].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.ts', 'Observables end in')).toEqual([1, 2, 2, 3]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', 'Observables end in')).toEqual([1, 2, 2, 3]);
   });
 
   it('leaves public observables of the libraries to their designs', async () => {
@@ -277,7 +277,7 @@ describe.skipIf(IS_ESLINT_MISSING)('names of observables', () => {
       '',
     ].join('\n');
     const path: string = 'projects/antoniocorraliza/foundry-core/security/src/services/foundry-session.service.ts';
-    expect(await messageLines(code, path, 'Observables end in')).toEqual([3]);
+    expect(await findMessageLines(code, path, 'Observables end in')).toEqual([3]);
   });
 });
 
@@ -300,7 +300,7 @@ describe.skipIf(IS_ESLINT_MISSING)('loops over lists', () => {
       '}',
       '',
     ].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
   });
 
   it('rejects for...of, for and for...in loops that only walk the list', async () => {
@@ -314,7 +314,7 @@ describe.skipIf(IS_ESLINT_MISSING)('loops over lists', () => {
       '}',
       '',
     ].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([3, 4, 5]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([3, 4, 5]);
   });
 });
 
@@ -330,7 +330,7 @@ describe.skipIf(IS_ESLINT_MISSING)('null for missing values', () => {
       '}',
       '',
     ].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
   });
 
   it('rejects undefined as a value and in return types', async () => {
@@ -346,7 +346,7 @@ describe.skipIf(IS_ESLINT_MISSING)('null for missing values', () => {
       '}',
       '',
     ].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.ts', message)).toEqual([1, 2, 3, 4, 7, 8]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([1, 2, 3, 4, 7, 8]);
   });
 
   it('leaves undefined in the public API of the libraries to their designs', async () => {
@@ -360,12 +360,12 @@ describe.skipIf(IS_ESLINT_MISSING)('null for missing values', () => {
       '',
     ].join('\n');
     const path: string = 'projects/antoniocorraliza/foundry-core/http-client/src/functions/message.function.ts';
-    expect(await messageLines(code, path, message)).toEqual([2, 4]);
+    expect(await findMessageLines(code, path, message)).toEqual([2, 4]);
   });
 
   it('lets tests use undefined', async () => {
     const code: string = ["it('returns nothing', () => {", '  expect(read()).toBe(undefined);', '});', ''].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.spec.ts', message)).toEqual([]);
+    expect(await findMessageLines(code, 'tools/probe/probe.spec.ts', message)).toEqual([]);
   });
 });
 
@@ -378,7 +378,7 @@ const ANGULAR_MESSAGES: ReadonlyArray<string> = [
   'Outputs are declared with output()',
 ];
 
-async function angularLines(code: string, filePath: string): Promise<Array<string>> {
+async function findAngularLines(code: string, filePath: string): Promise<Array<string>> {
   const [result] = await ESLINT.lintText(code, { filePath });
   return (result?.messages ?? [])
     .filter(
@@ -421,7 +421,7 @@ describe.skipIf(IS_ESLINT_MISSING)('angular in the libraries', () => {
       '}',
       '',
     ].join('\n');
-    expect(await angularLines(code, componentPath)).toEqual([]);
+    expect(await findAngularLines(code, componentPath)).toEqual([]);
   });
 
   it('rejects decorators, inline templates and styles, host decorators, toSignal and the other ways to end or fail', async () => {
@@ -452,7 +452,7 @@ describe.skipIf(IS_ESLINT_MISSING)('angular in the libraries', () => {
       '}',
       '',
     ].join('\n');
-    expect(await angularLines(code, componentPath)).toEqual([
+    expect(await findAngularLines(code, componentPath)).toEqual([
       '3 @angular-eslint/component-max-inline-declarations',
       '4 @angular-eslint/consistent-component-styles',
       '7 Inputs',
@@ -480,8 +480,8 @@ describe.skipIf(IS_ESLINT_MISSING)('angular in the libraries', () => {
       '}',
       '',
     ].join('\n');
-    expect(await angularLines(component, componentPath)).toEqual([]);
-    expect(await angularLines(service, servicePath)).toEqual([]);
+    expect(await findAngularLines(component, componentPath)).toEqual([]);
+    expect(await findAngularLines(service, servicePath)).toEqual([]);
   });
 
   it('rejects subscribe in a service unless a directive gives the reason', async () => {
@@ -498,7 +498,7 @@ describe.skipIf(IS_ESLINT_MISSING)('angular in the libraries', () => {
       '}',
       '',
     ].join('\n');
-    expect(await angularLines(code, servicePath)).toEqual(['4 Services']);
+    expect(await findAngularLines(code, servicePath)).toEqual(['4 Services']);
   });
 
   it('rejects outputFromObservable', async () => {
@@ -508,7 +508,7 @@ describe.skipIf(IS_ESLINT_MISSING)('angular in the libraries', () => {
       '}',
       '',
     ].join('\n');
-    expect(await angularLines(code, componentPath)).toEqual(['2 Outputs']);
+    expect(await findAngularLines(code, componentPath)).toEqual(['2 Outputs']);
   });
 
   it('lets the tests of the libraries declare inline fixture components', async () => {
@@ -518,7 +518,7 @@ describe.skipIf(IS_ESLINT_MISSING)('angular in the libraries', () => {
       "it('renders', () => TestBed.createComponent(HostComponent));",
       '',
     ].join('\n');
-    expect(await angularLines(code, componentPath.replace('.component.ts', '.component.spec.ts'))).toEqual([]);
+    expect(await findAngularLines(code, componentPath.replace('.component.ts', '.component.spec.ts'))).toEqual([]);
   });
 });
 
@@ -531,7 +531,7 @@ describe.skipIf(IS_ESLINT_MISSING)('subjects', () => {
       '}',
       '',
     ].join('\n');
-    expect(await messageLines(code, 'tools/probe/probe.ts', 'Subjects')).toEqual([]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', 'Subjects')).toEqual([]);
   });
 
   it('rejects other names and subjects that are not private, also in the libraries', async () => {
@@ -543,8 +543,8 @@ describe.skipIf(IS_ESLINT_MISSING)('subjects', () => {
       '',
     ].join('\n');
     const path: string = 'projects/antoniocorraliza/foundry-core/broadcast/src/services/foundry-item-store.service.ts';
-    expect(await messageLines(code, 'tools/probe/probe.ts', 'Subjects')).toEqual([2, 3]);
-    expect(await messageLines(code, path, 'Subjects')).toEqual([2, 3]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', 'Subjects')).toEqual([2, 3]);
+    expect(await findMessageLines(code, path, 'Subjects')).toEqual([2, 3]);
   });
 });
 
@@ -558,6 +558,6 @@ describe.skipIf(IS_ESLINT_MISSING)('protected members of the libraries', () => {
       '',
     ].join('\n');
     const path: string = 'projects/antoniocorraliza/foundry-ui/panel/src/components/foundry-panel/foundry-panel.component.ts';
-    expect(await messageLines(code, path, 'Object types get a name')).toEqual([3]);
+    expect(await findMessageLines(code, path, 'Object types get a name')).toEqual([3]);
   });
 });

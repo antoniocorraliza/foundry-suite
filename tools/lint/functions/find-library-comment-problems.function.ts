@@ -7,7 +7,7 @@ function isAllowedComment(comment: string): boolean {
   return PURE_ANNOTATION.test(comment) || DIRECTIVE_WITH_REASON.test(comment);
 }
 
-function commentRanges(source: ts.SourceFile): Array<ts.CommentRange> {
+function getCommentRanges(source: ts.SourceFile): Array<ts.CommentRange> {
   const text: string = source.getFullText();
   const ranges: Map<number, ts.CommentRange> = new Map();
   const collect = (node: ts.Node): void => {
@@ -19,9 +19,9 @@ function commentRanges(source: ts.SourceFile): Array<ts.CommentRange> {
   return [...ranges.values()].sort((first, second) => first.pos - second.pos);
 }
 
-export function libraryCommentProblems(path: string, text: string): Array<string> {
+export function findLibraryCommentProblems(path: string, text: string): Array<string> {
   const source: ts.SourceFile = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
-  return commentRanges(source)
+  return getCommentRanges(source)
     .map((range) => ({ range, comment: text.slice(range.pos, range.end) }))
     .filter(({ comment }) => !isAllowedComment(comment))
     .map(({ range, comment }) => {

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { libraryCommentProblems } from './library-comment-problems.function.ts';
+import { findLibraryCommentProblems } from './find-library-comment-problems.function.ts';
 
-function problemLines(source: string): Array<string> {
-  return libraryCommentProblems('a.ts', source).map((problem) => problem.split(': ')[0] ?? '');
+function findProblemLines(source: string): Array<string> {
+  return findLibraryCommentProblems('a.ts', source).map((problem) => problem.split(': ')[0] ?? '');
 }
 
-describe('libraryCommentProblems', () => {
+describe('findLibraryCommentProblems', () => {
   it('accepts JSDoc, section markers, pure annotations and directives with a reason', () => {
     const source: string = [
       '/** Stores the selected day. */',
@@ -21,7 +21,7 @@ describe('libraryCommentProblems', () => {
       '// @ts-expect-error the second argument is missing on purpose',
       'call(1);',
     ].join('\n');
-    expect(problemLines(source)).toEqual([]);
+    expect(findProblemLines(source)).toEqual([]);
   });
 
   it('reports line and block comments wherever they are', () => {
@@ -34,7 +34,7 @@ describe('libraryCommentProblems', () => {
       '}',
       '// at the end of the file',
     ].join('\n');
-    expect(problemLines(source)).toEqual(['a.ts:1', 'a.ts:3', 'a.ts:4', 'a.ts:5', 'a.ts:7']);
+    expect(findProblemLines(source)).toEqual(['a.ts:1', 'a.ts:3', 'a.ts:4', 'a.ts:5', 'a.ts:7']);
   });
 
   it('reports a section marker that is not in the list and directives without a reason', () => {
@@ -46,10 +46,10 @@ describe('libraryCommentProblems', () => {
       'call(1);',
       '// eslint-disable no-console',
     ].join('\n');
-    expect(problemLines(source)).toEqual(['a.ts:1', 'a.ts:2', 'a.ts:4', 'a.ts:6']);
+    expect(findProblemLines(source)).toEqual(['a.ts:1', 'a.ts:2', 'a.ts:4', 'a.ts:6']);
   });
 
   it('ignores comment-like text inside strings and templates', () => {
-    expect(problemLines("const url: string = 'https://example.com'; const text: string = `/* not a comment */`;")).toEqual([]);
+    expect(findProblemLines("const url: string = 'https://example.com'; const text: string = `/* not a comment */`;")).toEqual([]);
   });
 });

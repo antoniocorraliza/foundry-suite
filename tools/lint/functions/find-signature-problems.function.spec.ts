@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { signatureProblems } from './signature-problems.function.ts';
+import { findSignatureProblems } from './find-signature-problems.function.ts';
 
 const MESSAGE: string = 'signature on several lines: extract a named type for the parameters';
 
-describe('signatureProblems', () => {
+describe('findSignatureProblems', () => {
   it('accepts signatures on one line, with or without a decorator above', () => {
     const source: string = [
       'function clear(): void {}',
@@ -14,7 +14,7 @@ describe('signatureProblems', () => {
       '}',
       'const read = (key: string): string => key;',
     ].join('\n');
-    expect(signatureProblems('a.ts', source)).toEqual([]);
+    expect(findSignatureProblems('a.ts', source)).toEqual([]);
   });
 
   it('reports a function, a method and an arrow constant split over several lines', () => {
@@ -31,7 +31,7 @@ describe('signatureProblems', () => {
       '  key: string,',
       '): string => key;',
     ].join('\n');
-    expect(signatureProblems('a.ts', source)).toEqual([`a.ts:1: ${MESSAGE}`, `a.ts:5: ${MESSAGE}`, `a.ts:9: ${MESSAGE}`]);
+    expect(findSignatureProblems('a.ts', source)).toEqual([`a.ts:1: ${MESSAGE}`, `a.ts:5: ${MESSAGE}`, `a.ts:9: ${MESSAGE}`]);
   });
 
   it('accepts a split signature in the public API of a library', () => {
@@ -51,7 +51,7 @@ describe('signatureProblems', () => {
       '  ): string {}',
       '}',
     ].join('\n');
-    expect(signatureProblems('projects/a/src/functions/format-time.function.ts', source)).toEqual([]);
+    expect(findSignatureProblems('projects/a/src/functions/format-time.function.ts', source)).toEqual([]);
   });
 
   it('reports a split signature that is not public in a library', () => {
@@ -78,7 +78,7 @@ describe('signatureProblems', () => {
       '  ): void {}',
       '}',
     ].join('\n');
-    expect(signatureProblems('projects/a/src/functions/format-time.function.ts', source)).toEqual([
+    expect(findSignatureProblems('projects/a/src/functions/format-time.function.ts', source)).toEqual([
       `projects/a/src/functions/format-time.function.ts:1: ${MESSAGE}`,
       `projects/a/src/functions/format-time.function.ts:5: ${MESSAGE}`,
       `projects/a/src/functions/format-time.function.ts:10: ${MESSAGE}`,
@@ -89,11 +89,11 @@ describe('signatureProblems', () => {
 
   it('reports a split exported signature outside the libraries and in their specs', () => {
     const source: string = ['export function formatTime(', '  value: Date,', '): string {}'].join('\n');
-    expect(signatureProblems('tools/a.ts', source)).toEqual([`tools/a.ts:1: ${MESSAGE}`]);
-    expect(signatureProblems('projects/a/src/b.function.spec.ts', source)).toEqual([`projects/a/src/b.function.spec.ts:1: ${MESSAGE}`]);
+    expect(findSignatureProblems('tools/a.ts', source)).toEqual([`tools/a.ts:1: ${MESSAGE}`]);
+    expect(findSignatureProblems('projects/a/src/b.function.spec.ts', source)).toEqual([`projects/a/src/b.function.spec.ts:1: ${MESSAGE}`]);
   });
 
   it('ignores a body that spans several lines', () => {
-    expect(signatureProblems('a.ts', 'function clear(): void {\n  return;\n}')).toEqual([]);
+    expect(findSignatureProblems('a.ts', 'function clear(): void {\n  return;\n}')).toEqual([]);
   });
 });

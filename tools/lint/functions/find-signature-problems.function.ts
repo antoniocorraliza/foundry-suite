@@ -24,7 +24,7 @@ function isPublicApiSignature(node: ts.Node): boolean {
   );
 }
 
-function signatureSplitAcrossLines(source: ts.SourceFile, node: ts.Node): ts.Node | null {
+function findSplitSignature(source: ts.SourceFile, node: ts.Node): ts.Node | null {
   const isFunction: boolean =
     ts.isFunctionDeclaration(node) ||
     ts.isMethodDeclaration(node) ||
@@ -43,12 +43,12 @@ function signatureSplitAcrossLines(source: ts.SourceFile, node: ts.Node): ts.Nod
   return endLine > startLine ? start : null;
 }
 
-export function signatureProblems(path: string, text: string): Array<string> {
+export function findSignatureProblems(path: string, text: string): Array<string> {
   const problems: Array<string> = [];
   const source: ts.SourceFile = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
   const isLibraryCode: boolean = LIBRARY_TYPESCRIPT_FILE.test(path) && !SPEC_FILE.test(path);
   const visit = (node: ts.Node): void => {
-    const signature: ts.Node | null = signatureSplitAcrossLines(source, node);
+    const signature: ts.Node | null = findSplitSignature(source, node);
     if (signature !== null && !(isLibraryCode && isPublicApiSignature(node))) {
       const { line } = source.getLineAndCharacterOfPosition(signature.getStart(source));
       problems.push(`${path}:${line + 1}: signature on several lines: extract a named type for the parameters`);

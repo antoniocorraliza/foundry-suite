@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { classNameProblems } from './class-name-problems.function.ts';
+import { findClassNameProblems } from './find-class-name-problems.function.ts';
 
 const TEMPLATE: string = 'projects/antoniocorraliza/foundry-ui/select/src/components/foundry-select/foundry-select.component.html';
 const STYLES: string = 'projects/antoniocorraliza/foundry-ui/select/src/components/foundry-select/foundry-select.component.scss';
 
-describe('classNameProblems', () => {
+describe('findClassNameProblems', () => {
   it('accepts camelCase classes in templates, also bound ones and interpolated values', () => {
     const text: string = [
       '<ul class="optionList" role="listbox">',
@@ -12,12 +12,12 @@ describe('classNameProblems', () => {
       '  <li class="option {{ extraClass }}" [class]="{ isActive: isActive() }"></li>',
       '</ul>',
     ].join('\n');
-    expect(classNameProblems(TEMPLATE, text)).toEqual([]);
+    expect(findClassNameProblems(TEMPLATE, text)).toEqual([]);
   });
 
   it('reports classes in templates that are not camelCase', () => {
     const text: string = '<li class="option option--selected" [class.is-active]="isActive()"></li>';
-    expect(classNameProblems(TEMPLATE, text)).toEqual([
+    expect(findClassNameProblems(TEMPLATE, text)).toEqual([
       `${TEMPLATE}:1: CSS class not in camelCase: option--selected`,
       `${TEMPLATE}:1: CSS class not in camelCase: is-active`,
     ]);
@@ -41,12 +41,12 @@ describe('classNameProblems', () => {
       '  }',
       '}',
     ].join('\n');
-    expect(classNameProblems(STYLES, text)).toEqual([]);
+    expect(findClassNameProblems(STYLES, text)).toEqual([]);
   });
 
   it('reports selectors whose classes are not camelCase', () => {
     const text: string = ['.option-list,', '.option.is_selected {', '  color: red;', '}', '.Option {', '}'].join('\n');
-    expect(classNameProblems(STYLES, text)).toEqual([
+    expect(findClassNameProblems(STYLES, text)).toEqual([
       `${STYLES}:1: CSS class not in camelCase: option-list`,
       `${STYLES}:2: CSS class not in camelCase: is_selected`,
       `${STYLES}:5: CSS class not in camelCase: Option`,

@@ -4,7 +4,7 @@ import type { TextRule } from '../interfaces/text-rule.interface.ts';
 import { hasReviewCode } from './has-review-code.function.ts';
 import { maskTestData } from './mask-test-data.function.ts';
 
-export function textProblems(path: string, text: string): Array<string> {
+export function findTextProblems(path: string, text: string): Array<string> {
   const problems: Array<string> = [];
   const rules: Array<TextRule> = TEXT_RULES.filter((rule) => !rule.onlyIn || rule.onlyIn.test(path));
   const linesWithoutTestData: Array<string> = (SPEC_FILE.test(path) ? maskTestData(path, text) : text).split('\n');

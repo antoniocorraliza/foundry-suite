@@ -9,7 +9,7 @@ import {
 } from '../constants/class-names.constant.ts';
 import { LIBRARY_TEMPLATE_FILE } from '../constants/file-patterns.constant.ts';
 
-function templateClassNames(line: string): Array<string> {
+function readTemplateClassNames(line: string): Array<string> {
   const staticNames: Array<string> = [...line.matchAll(STATIC_CLASS_ATTRIBUTE)].flatMap((match) =>
     (match[1] ?? '')
       .replace(INTERPOLATION, ' ')
@@ -20,19 +20,19 @@ function templateClassNames(line: string): Array<string> {
 }
 
 // Only selectors carry class names: the part before `{`, or a line of a selector list that ends in a comma.
-function styleClassNames(line: string): Array<string> {
+function readStyleClassNames(line: string): Array<string> {
   const code: string = line.replace(STYLE_STRING_OR_URL, '');
   if (code.trimStart().startsWith('@') || STYLE_DECLARATION.test(code)) return [];
   const selector: string | null = code.includes('{') ? (code.split('{')[0] ?? '') : code.trimEnd().endsWith(',') ? code : null;
   return selector === null ? [] : [...selector.matchAll(STYLE_CLASS_SELECTOR)].map((match) => match[1] ?? '');
 }
 
-export function classNameProblems(path: string, text: string): Array<string> {
+export function findClassNameProblems(path: string, text: string): Array<string> {
   const isTemplate: boolean = LIBRARY_TEMPLATE_FILE.test(path);
   return text
     .split('\n')
     .flatMap((line, index) =>
-      (isTemplate ? templateClassNames(line) : styleClassNames(line))
+      (isTemplate ? readTemplateClassNames(line) : readStyleClassNames(line))
         .filter((name) => !CAMEL_CASE_CLASS.test(name))
         .map((name) => `${path}:${index + 1}: CSS class not in camelCase: ${name}`),
     );

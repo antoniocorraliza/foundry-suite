@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { testTitleProblems } from './test-title-problems.function.ts';
+import { findTestTitleProblems } from './find-test-title-problems.function.ts';
 
-describe('testTitleProblems', () => {
+describe('findTestTitleProblems', () => {
   it('accepts titles that describe behavior', () => {
-    expect(testTitleProblems('a.spec.ts', "describe('parseDate', () => { it('reads UTF-8 input', () => {}); });")).toEqual([]);
+    expect(findTestTitleProblems('a.spec.ts', "describe('parseDate', () => { it('reads UTF-8 input', () => {}); });")).toEqual([]);
   });
 
   it('reports a code in describe, it and test titles', () => {
     const source: string = "describe('R2 parsing', () => {\n  it('U17: parseDate', () => {});\n  test('PF-INF3 coverage', () => {});\n});";
-    expect(testTitleProblems('a.spec.ts', source)).toEqual([
+    expect(findTestTitleProblems('a.spec.ts', source)).toEqual([
       'a.spec.ts:1: review code in a test title: R2 parsing',
       'a.spec.ts:2: review code in a test title: U17: parseDate',
       'a.spec.ts:3: review code in a test title: PF-INF3 coverage',
@@ -24,7 +24,7 @@ describe('testTitleProblems', () => {
       '  () => {},',
       ');',
     ].join('\n');
-    expect(testTitleProblems('a.spec.ts', source).map((problem) => problem.split(': ')[0])).toEqual([
+    expect(findTestTitleProblems('a.spec.ts', source).map((problem) => problem.split(': ')[0])).toEqual([
       'a.spec.ts:1',
       'a.spec.ts:2',
       'a.spec.ts:3',
@@ -32,6 +32,6 @@ describe('testTitleProblems', () => {
   });
 
   it('ignores calls that are not tests', () => {
-    expect(testTitleProblems('a.spec.ts', "expect(code('R2')).toBe(true);")).toEqual([]);
+    expect(findTestTitleProblems('a.spec.ts', "expect(code('R2')).toBe(true);")).toEqual([]);
   });
 });
