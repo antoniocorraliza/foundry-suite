@@ -8,6 +8,7 @@ import { SETUP_DIRECTORY, SPEC_TSCONFIG } from './constants/paths.constant.ts';
 import { TEST_BROWSERS } from './constants/test-browsers.constant.ts';
 import type { AngularNodeProjectOptions } from './interfaces/angular-node-project-options.interface.ts';
 import type { BrowserProjectOptions } from './interfaces/browser-project-options.interface.ts';
+import type { ProjectOptions } from './interfaces/project-options.interface.ts';
 import type { TestEnvironment } from './interfaces/test-environment.interface.ts';
 import type { TypescriptNodeProjectOptions } from './interfaces/typescript-node-project-options.interface.ts';
 import type { TestBrowser } from './types/test-browser.type.ts';
@@ -96,6 +97,34 @@ export function typescriptNodeProjects(options: TypescriptNodeProjectOptions): A
       provide: { expectedTimeZone: timeZone },
     },
   }));
+}
+
+export function typescriptJsdomProject(options: ProjectOptions): TestProjectInlineConfiguration {
+  return {
+    test: {
+      name: options.name,
+      environment: 'jsdom',
+      include: [...options.include],
+      exclude: [...(options.exclude ?? [])],
+    },
+  };
+}
+
+// Type tests only run the compiler, so one project is enough for every time zone.
+export function typescriptTypesProject(options: ProjectOptions): TestProjectInlineConfiguration {
+  return {
+    test: {
+      name: options.name,
+      include: [],
+      typecheck: {
+        enabled: true,
+        only: true,
+        include: [...options.include],
+        exclude: [...(options.exclude ?? [])],
+        tsconfig: SPEC_TSCONFIG,
+      },
+    },
+  };
 }
 
 // Returns an empty list when none of its browsers is selected: Vitest rejects a browser project without instances.

@@ -46,8 +46,8 @@ jobs:
       - name: Warm up Vite
         run: npm run test:warmup
 
-      - name: Unit tests (Node and Chromium)
-        run: npm test
+      - name: Unit tests with coverage (Node and Chromium)
+        run: npm run test:coverage
 
       - name: Keep the failure screenshots
         if: failure()

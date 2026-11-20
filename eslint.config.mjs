@@ -149,7 +149,7 @@ const LIBRARY_GENERAL_SELECTORS = [
 // Tests compare with undefined when the code under test returns it.
 const TEST_SELECTORS = [...COMMON_SELECTORS, ...NAMING_SELECTORS];
 const TOKEN_CLASSES = '/^(?:InjectionToken|HttpContextToken)$/';
-const EXEMPT_FILES = ['**/*.spec.ts', '**/*.d.ts'];
+const EXEMPT_FILES = ['**/*.spec.ts', '**/*.test-d.ts', '**/*.d.ts'];
 function forbid(selectors, message) {
   return selectors.map((selector) => ({ selector, message }));
 }

@@ -92,9 +92,10 @@ describe('textProblems', () => {
     ]);
   });
 
-  it('leaves characters that are not ASCII alone in the specs and in tools', () => {
+  it('leaves characters that are not ASCII alone in the specs, the type tests and tools', () => {
     const line: string = "const name: string = 'Nuñez\u00a0\u202f\u2212';";
     expect(textProblems('projects/a/src/functions/to-slug.function.spec.ts', line)).toEqual([]);
+    expect(textProblems('projects/a/src/types/foundry-slug.type.test-d.ts', line)).toEqual([]);
     expect(textProblems('tools/a.ts', line)).toEqual([]);
   });
 

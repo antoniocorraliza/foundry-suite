@@ -8,6 +8,8 @@ describe('folderSuffixProblem', () => {
     'core/storage/src/services/foundry-storage.service.spec.ts',
     'utils/src/errors/foundry-utils.error.ts',
     'utils/csv/src/errors/foundry-csv-parse.error.spec.ts',
+    'utils/case/src/types/foundry-camel-case.type.test-d.ts',
+    'utils/object/src/functions/deep-clone.jsdom.function.spec.ts',
     'ui/select/src/components/foundry-select/foundry-select.component.html',
     'tools/ci/check-commits.ts',
     'README.md',
