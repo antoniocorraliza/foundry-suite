@@ -62,6 +62,7 @@
     "eslint": "10.15.0",
     "eslint-plugin-jsdoc": "65.5.0",
     "eslint-plugin-simple-import-sort": "14.0.0",
+    "fast-check": "4.10.3",
     "jsdom": "31.0.1",
     "ng-packagr": "21.2.7",
     "playwright": "1.65.1",
