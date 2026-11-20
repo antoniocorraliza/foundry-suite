@@ -3,6 +3,7 @@ import type { FoundryCloneError, FoundryObjectDifference, FoundryWithoutEmptyVal
 import {
   deepClone,
   getObjectDifferences,
+  hasEmptyValue,
   isPlainObject,
   moveArrayItem,
   omitProperties,
@@ -57,6 +58,11 @@ describe('types of the object entry', () => {
   it('does not compile as a callback of map, which would pass the index as options', () => {
     // @ts-expect-error the index of map is not an options object
     [{ a: null }].map(removeEmptyValues);
+  });
+
+  it('does not compile hasEmptyValue as a callback of filter, which would pass the index as options', () => {
+    // @ts-expect-error the index of filter is not an options object
+    [{ a: '' }].filter(hasEmptyValue);
   });
 
   it('declares the name of the clone error as its literal', () => {
