@@ -9,7 +9,7 @@ function isLower(character: string): boolean {
   return character !== character.toUpperCase();
 }
 
-function startsWord(previous: string | undefined, character: string, next: string | undefined): boolean {
+function isWordStart(previous: string | undefined, character: string, next: string | undefined): boolean {
   if (previous === undefined || !isUpper(character)) return false;
   return !isUpper(previous) || (next !== undefined && isLower(next));
 }
@@ -18,7 +18,7 @@ function toSnakeWord(word: string): string {
   const characters: Array<string> = word.split('');
   return characters
     .map(
-      (character, index) => `${startsWord(characters[index - 1], character, characters[index + 1]) ? '_' : ''}${character.toLowerCase()}`,
+      (character, index) => `${isWordStart(characters[index - 1], character, characters[index + 1]) ? '_' : ''}${character.toLowerCase()}`,
     )
     .join('');
 }

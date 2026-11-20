@@ -21,13 +21,13 @@ const BUILT_ENTRIES: ReadonlyArray<BuiltEntry> = [
   },
 ];
 
-function measurementOf(overrides: Partial<SizeMeasurement>): SizeMeasurement {
+function createMeasurement(overrides: Partial<SizeMeasurement>): SizeMeasurement {
   return { name: 'probe', packageFolder: 'foundry-utils', target: 'bundle', imports: [], budget: null, ...overrides };
 }
 
 describe('resolveMeasurement', () => {
   it('measures named symbols that the built entry exports', () => {
-    const measurement: SizeMeasurement = measurementOf({ imports: [{ entry: 'date', symbols: ['parseDate', 'formatDate'] }] });
+    const measurement: SizeMeasurement = createMeasurement({ imports: [{ entry: 'date', symbols: ['parseDate', 'formatDate'] }] });
     expect(resolveMeasurement(measurement, { entries: BUILT_ENTRIES, files: new Set() })).toEqual({
       status: 'measurable',
       measurement,
@@ -36,7 +36,7 @@ describe('resolveMeasurement', () => {
   });
 
   it('leaves pending, without failing, an entry that is not built yet', () => {
-    const measurement: SizeMeasurement = measurementOf({ imports: [{ entry: 'csv', symbols: 'whole-entry' }] });
+    const measurement: SizeMeasurement = createMeasurement({ imports: [{ entry: 'csv', symbols: 'whole-entry' }] });
     expect(resolveMeasurement(measurement, { entries: BUILT_ENTRIES, files: new Set() })).toEqual({
       status: 'pending',
       measurement,
@@ -45,7 +45,7 @@ describe('resolveMeasurement', () => {
   });
 
   it('leaves pending a symbol that the entry does not export yet', () => {
-    const measurement: SizeMeasurement = measurementOf({ imports: [{ entry: 'date', symbols: ['parseDate', 'parseCalendarDay'] }] });
+    const measurement: SizeMeasurement = createMeasurement({ imports: [{ entry: 'date', symbols: ['parseDate', 'parseCalendarDay'] }] });
     expect(resolveMeasurement(measurement, { entries: BUILT_ENTRIES, files: new Set() })).toEqual({
       status: 'pending',
       measurement,
@@ -54,7 +54,7 @@ describe('resolveMeasurement', () => {
   });
 
   it('measures every built entry of the package except testing', () => {
-    expect(resolveMeasurement(measurementOf({ imports: 'every-entry' }), { entries: BUILT_ENTRIES, files: new Set() })).toMatchObject({
+    expect(resolveMeasurement(createMeasurement({ imports: 'every-entry' }), { entries: BUILT_ENTRIES, files: new Set() })).toMatchObject({
       status: 'measurable',
       imports: [
         { specifier: '@antoniocorraliza/foundry-utils', symbols: 'whole-entry' },
@@ -62,7 +62,7 @@ describe('resolveMeasurement', () => {
       ],
     });
     expect(
-      resolveMeasurement(measurementOf({ packageFolder: 'foundry-core', imports: 'every-entry' }), {
+      resolveMeasurement(createMeasurement({ packageFolder: 'foundry-core', imports: 'every-entry' }), {
         entries: BUILT_ENTRIES,
         files: new Set(),
       }),
@@ -73,7 +73,7 @@ describe('resolveMeasurement', () => {
   });
 
   it('measures stylesheets only when every file is built', () => {
-    const measurement: SizeMeasurement = measurementOf({
+    const measurement: SizeMeasurement = createMeasurement({
       packageFolder: 'foundry-ui',
       target: 'stylesheets',
       files: ['styles/a.css', 'styles/b.css'],

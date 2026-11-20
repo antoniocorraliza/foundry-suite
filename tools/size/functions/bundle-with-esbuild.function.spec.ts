@@ -5,7 +5,7 @@ import { bundleWithRollup } from './bundle-with-rollup.function.ts';
 
 const FIXTURE: string = fileURLToPath(new URL('../fixtures/two-functions.mjs', import.meta.url));
 const ENTRY_FILES: ReadonlyMap<string, string> = new Map([['@antoniocorraliza/foundry-utils/date', FIXTURE]]);
-const SOURCE: string = "import { keptFixtureFunction } from '@antoniocorraliza/foundry-utils/date';\nconsole.log([keptFixtureFunction]);\n";
+const SOURCE: string = "import { getKeptFixtureValue } from '@antoniocorraliza/foundry-utils/date';\nconsole.log([getKeptFixtureValue]);\n";
 
 describe.each([
   ['esbuild', bundleWithEsbuild],
@@ -19,7 +19,7 @@ describe.each([
 
   it('minifies the output', async () => {
     const code: string = await bundle({ source: SOURCE, resolveDirectory: process.cwd(), entryFiles: ENTRY_FILES });
-    expect(code).not.toContain('keptFixtureFunction');
+    expect(code).not.toContain('getKeptFixtureValue');
   });
 
   it('stops on a Foundry entry that is not built', async () => {

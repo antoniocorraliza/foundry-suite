@@ -15,7 +15,7 @@ class FakeDate {
 
 class Unrelated {}
 
-function fakeTag(tag: string): object {
+function createObjectWithTag(tag: string): object {
   return Object.defineProperty(new Unrelated(), Symbol.toStringTag, { value: tag });
 }
 
@@ -86,7 +86,7 @@ describe('isDeepEqual', () => {
     const first: FrozenSnapshot<object> = freezeAndSnapshot({ due: new Date(2026, 0, 1), tags: new Set([1]), map: new Map([['k', 1]]) });
     const second: FrozenSnapshot<object> = freezeAndSnapshot({ due: new Date(2026, 0, 1), tags: new Set([1]), map: new Map([['k', 1]]) });
     isDeepEqual(first.value, second.value);
-    expect([...first.changes(), ...second.changes()]).toEqual([]);
+    expect([...first.listChanges(), ...second.listChanges()]).toEqual([]);
   });
 
   it('asks customEquality first for every pair, and uses the default rule when it returns undefined', () => {
@@ -132,7 +132,7 @@ describe('isDeepEqual', () => {
   it.each(['Map', 'Set', 'RegExp', 'ArrayBuffer'])(
     'takes an object that fakes the tag of a %s for another object, without throwing',
     (tag) => {
-      expect(isDeepEqual(fakeTag(tag), fakeTag(tag))).toBe(false);
+      expect(isDeepEqual(createObjectWithTag(tag), createObjectWithTag(tag))).toBe(false);
     },
   );
 

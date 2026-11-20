@@ -23,7 +23,7 @@ describe('toSnakeCaseKeys', () => {
       home_address: { street_name: 'Mayor' },
       order_lines: [{ unit_price: 2 }],
     });
-    expect(input.changes()).toEqual([]);
+    expect(input.listChanges()).toEqual([]);
   });
 
   it('keeps a date by reference', () => {

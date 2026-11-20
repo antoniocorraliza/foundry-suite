@@ -58,7 +58,7 @@ The public API of the libraries is documented with JSDoc. It is documentation fo
 - One sentence, two at most: what it does, and what it returns in the cases that are not obvious (`null`, empty, errors).
 - No adjectives or sales words (robust, powerful, seamless, simple, easy, efficient...) and no phrases that say nothing ("for convenience", "as expected", "note that").
 - Only what the types do not say: no `@param` or `@returns` that repeat the name or the type.
-- `@throws` when the function throws.
+- `@throws` for each error the function can throw, also for invalid arguments. A function that never throws has none, and an `is...` or `has...` function never throws. An error that a callback of the application lets through (`customEquality`) takes no `@throws`: it comes from the application's code.
 - `@example` only when the use is not obvious, on one line.
 - In English, without process references.
 
@@ -79,7 +79,7 @@ export function parseCalendarDay(text: string): FoundryCalendarDay | null {}
 export function parseCalendarDay(text: string): FoundryCalendarDay | null {}
 ```
 
-Checked by: ESLint `eslint-plugin-jsdoc` in `projects/`: JSDoc required on everything exported (functions, classes, interfaces, types, constants, and the public methods and properties of exported classes; not on `private` or `protected` members), a function description that starts with a verb ending in "s" and not with "This", "A" or "Helper" (`match-description`), no types in tags (`no-types`), no tag that only repeats its name (`informative-docs`), `@param` names that exist, descriptions in `@param` and `@returns`, `@throws` when the body throws (`require-throws`) and a one-line `@example`. `tools/lint/check-text.ts` rejects the sales words and the filler openings in any JSDoc line. Review: the number of sentences, that nothing repeats the types, `@throws` for errors thrown by the functions it calls, whether an `@example` is needed, English and other filler that the lists do not catch.
+Checked by: ESLint `eslint-plugin-jsdoc` in `projects/`: JSDoc required on everything exported (functions, classes, interfaces, types, constants, and the public methods and properties of exported classes; not on `private` or `protected` members), a function description that starts with a verb ending in "s" and not with "This", "A" or "Helper" (`match-description`), no types in tags (`no-types`), no tag that only repeats its name (`informative-docs`), `@param` names that exist, descriptions in `@param` and `@returns`, `@throws` when the body throws (`require-throws`) and a one-line `@example`. `tools/lint/check-text.ts` rejects the sales words and the filler openings in any JSDoc line, and a `@throws` on an `is...` or `has...` function or method. Review: the number of sentences, that nothing repeats the types, `@throws` for errors thrown by the functions it calls, whether an `@example` is needed, English and other filler that the lists do not catch.
 
 ### 3. No process references
 
@@ -103,7 +103,7 @@ it('returns the first instant of a day without midnight', () => {});
 it('U17: parseDate in Santiago', () => {});
 ```
 
-Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `describe`, `it` and `test` (read with the TypeScript parser). It looks for anything shaped like a code (capitals and digits joined by hyphens, or one to four capitals followed by one to three digits) and for decision numbers. Names that look like a code are listed as exceptions in `tools/lint/constants/review-code.constant.ts` (`UTF-8`, `ISO-8601`, `ES2022`, `V8`, `F2`...): add one there when a real name is rejected.
+Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `describe`, `it` and `test` (read with the TypeScript parser). It looks for anything shaped like a code (capitals and digits joined by hyphens, or one to four capitals followed by one to three digits) and for decision numbers. Names that look like a code are listed as exceptions in `tools/lint/constants/review-code-exceptions.constant.ts` (`UTF-8`, `ISO-8601`, `ES2022`, `V8`, `F2`...): add one there when a real name is rejected.
 
 ### 4. Only characters you can type
 
@@ -242,9 +242,21 @@ readonly itemsObservable: Observable<Array<Item>> = this.itemsSubject.asObservab
 readonly items: BehaviorSubject<Array<Item>> = new BehaviorSubject<Array<Item>>([]);
 ```
 
+Every function and method starts with a verb, private ones and those of the spec files too: `getEntryFiles`, not `entryFiles`; `findTextProblems`, not `textProblems`. A function that returns a boolean starts with `is`, `has`, `can` or `are`.
+
+```ts
+// Yes
+function getSizeDelta(probe: SizeFigures, base: SizeFigures): SizeFigures {}
+function isWordStart(character: string): boolean {}
+
+// No
+function sizeDelta(probe: SizeFigures, base: SizeFigures): SizeFigures {}
+function startsWord(character: string): boolean {}
+```
+
 The public names of the libraries and the names that an outside format fixes are exceptions (see Exceptions).
 
-Checked by: ESLint `id-length` and `id-denylist`; `no-restricted-syntax` on the name of every variable, parameter and property declared as `boolean`, `boolean | null`, `Signal<boolean>`, `WritableSignal<boolean>`, `Observable<T>` or a Subject, and on any name that ends in `$`. A Subject property that is not private is rejected everywhere, also in the public API. The `SE` suffix: review.
+Checked by: ESLint `id-length` and `id-denylist`; `@typescript-eslint/naming-convention` on functions, class methods and interface methods, with the closed list of verbs `FUNCTION_VERBS` in `eslint.config.mjs` (a name that needs a new verb adds it there, in the same pull request); `no-restricted-syntax` on functions kept in a variable or a class property; `no-restricted-syntax` on the name of every variable, parameter and property declared as `boolean`, `boolean | null`, `Signal<boolean>`, `WritableSignal<boolean>`, `Observable<T>` or a Subject, and on any name that ends in `$`. A Subject property that is not private is rejected everywhere, also in the public API. Review: the `SE` suffix, that the first word is used as a verb, and the prefix of the functions that return a boolean. The keys of an object literal are not checked: whoever receives the object names them (plugin hooks, options).
 
 ### 8. Early returns
 
@@ -305,17 +317,27 @@ export interface BrowserProjectOptions extends ProjectOptions {
   readonly timeZones?: ReadonlyArray<string>;
 }
 
-export function browserProjects(options: BrowserProjectOptions): Array<TestProjectInlineConfiguration> {}
+export function createBrowserProjects(options: BrowserProjectOptions): Array<TestProjectInlineConfiguration> {}
 
 // No
-export function browserProjects(
+export function createBrowserProjects(
   options: ProjectOptions & { readonly isAngular: boolean; readonly timeZones?: ReadonlyArray<string> },
 ): Array<TestProjectInlineConfiguration> {}
 ```
 
 The public API of the libraries is an exception (see Exceptions); private and protected members are internal code and keep the rule.
 
-Checked by: Prettier joins a signature that fits; `tools/lint/check-text.ts` rejects one split over several lines.
+Overloads take one blank line between each signature and before the implementation, with or without JSDoc.
+
+```ts
+export function readValue(value: string): string;
+
+export function readValue(value: number): number;
+
+export function readValue(value: unknown): unknown {}
+```
+
+Checked by: Prettier joins a signature that fits; `tools/lint/check-text.ts` rejects one split over several lines, and overloads without a blank line between them.
 
 ### 13. Folder structure: definitions apart from the code
 
@@ -349,11 +371,13 @@ projects/antoniocorraliza/foundry-core/storage/
   src/interfaces/foundry-storage-backend.interface.ts
   src/interfaces/foundry-storage-key.interface.ts
   src/types/foundry-storage-area.type.ts
-  src/providers/foundry-storage.provider.ts
+  src/providers/provide-foundry-storage.provider.ts
   src/services/foundry-storage.service.ts
   src/services/foundry-storage.service.spec.ts
   src/tokens/foundry-storage-options.token.ts
 ```
+
+Each file is named after the one name it exports, in kebab-case, without the `ɵ` prefix and without the suffix of its folder (`Error`, `Component`, `Directive`, `Service`, `Pipe`, `Guard`, `Interceptor`, `Resolver`): `defineFoundryStorageKey` lives in `define-foundry-storage-key.function.ts`, `provideFoundryStorage` in `provide-foundry-storage.provider.ts`, `FoundryKeyCollisionError` in `foundry-key-collision.error.ts` and `COMMIT_TYPES` in `commit-types.constant.ts`. A file exports one name; the overloads of a function count as one. An internal name with `ɵ` does not take the `Foundry` prefix (`ɵgetValueKind`, not `ɵFoundryGetValueKind`).
 
 A piece with an error class keeps it in `errors/`, like the HTTP client of Core: `src/errors/foundry-api.error.ts`.
 
@@ -366,14 +390,16 @@ export class FoundryCsvParseError extends FoundryUtilsError {
 }
 ```
 
-In `tools/`, the scripts that Node runs stay at the root of their folder, with a `main()` function; their definitions go in `constants/`, `interfaces/` and `types/`, and the logic that can be tested without the file system goes in `functions/`:
+In `tools/`, the scripts that Node runs stay at the root of their folder, with a `main()` function; their definitions go in `constants/`, `interfaces/` and `types/`, and their functions in `functions/`, one per file:
 
 ```
 tools/vitest/
-  projects.ts
   constants/angular-optimized-dependencies.constant.ts
-  constants/paths.constant.ts
+  constants/setup-directory.constant.ts
   constants/test-browsers.constant.ts
+  functions/create-browser-projects.function.ts
+  functions/create-typescript-node-projects.function.ts
+  functions/read-test-environment.function.ts
   interfaces/angular-node-project-options.interface.ts
   interfaces/browser-project-options.interface.ts
   interfaces/project-options.interface.ts
@@ -399,7 +425,7 @@ export interface ProjectOptions {
 // No: an interface declared in projects.ts, next to the functions that use it
 ```
 
-Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/`, `tokens/` and `errors/` (only classes that extend an error, one per file with `max-classes-per-file`; an error class anywhere else is rejected), and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder.
+Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/`, `tokens/` and `errors/` (only classes that extend an error, one per file with `max-classes-per-file`; an error class anywhere else is rejected), and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder, that it exports one name, that its name is that name in kebab-case, and that an internal name with `ɵ` does not take `Foundry`.
 
 ### 14. Commits and pull requests
 
@@ -624,6 +650,16 @@ export class FoundryUtilsError extends Error {
 ```
 
 Checked by: ESLint (`prefer-as-const` off and `jsdoc/require-jsdoc` skips `override readonly name`, only in `errors/`).
+
+### Function names that do not start with a verb
+
+Three kinds of function keep a name that does not start with a verb: `main()` of the scripts of `tools/`, the names of the approved designs (`deepClone`, and the option `customEquality` of `isDeepEqual`), and the lifecycle hooks of Angular (`ngOnInit`...). Why: `main()` is the entry point of every script, the designs have frozen the public names, and Angular fixes the names of its hooks.
+
+```ts
+export function deepClone<T>(value: T): T {}
+```
+
+Checked by: the exception list `FUNCTION_NAME_EXCEPTIONS` in `eslint.config.mjs`. A public name of a later design that does not start with a verb is added there with its block.
 
 ### Names fixed by an outside format
 

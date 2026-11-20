@@ -19,8 +19,8 @@ describe('Foundry Utils under Jest with jsdom', () => {
 
   it('converts keys and throws its named errors', () => {
     expect(toCamelCaseKeys({ user_id: 1, items: [{ created_at: 'x' }] })).toEqual({ userId: 1, items: [{ createdAt: 'x' }] });
-    const action = () => toCamelCaseKeys({ user_id: 1, userId: 2 });
-    expect(action).toThrow(FoundryKeyCollisionError);
-    expect(action).toThrow(FoundryUtilsError);
+    const convertCollidingKeys = () => toCamelCaseKeys({ user_id: 1, userId: 2 });
+    expect(convertCollidingKeys).toThrow(FoundryKeyCollisionError);
+    expect(convertCollidingKeys).toThrow(FoundryUtilsError);
   });
 });

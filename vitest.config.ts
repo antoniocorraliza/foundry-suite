@@ -1,17 +1,18 @@
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
+import { createSmokeProjects } from './tools/vitest/functions/create-smoke-projects.function.ts';
+import { createTypescriptNodeProjects } from './tools/vitest/functions/create-typescript-node-projects.function.ts';
+import { createUtilsProjects } from './tools/vitest/functions/create-utils-projects.function.ts';
+import { readTestEnvironment } from './tools/vitest/functions/read-test-environment.function.ts';
 import type { TestEnvironment } from './tools/vitest/interfaces/test-environment.interface.ts';
-import { readTestEnvironment, typescriptNodeProjects } from './tools/vitest/projects.ts';
-import { smokeProjects } from './tools/vitest/smoke/smoke.projects.ts';
-import { utilsProjects } from './tools/vitest/utils/utils.projects.ts';
 
 export default defineConfig((): ViteUserConfig => {
   const environment: TestEnvironment = readTestEnvironment();
   return {
     test: {
       projects: [
-        ...smokeProjects(environment),
-        ...utilsProjects(environment),
-        ...typescriptNodeProjects({
+        ...createSmokeProjects(environment),
+        ...createUtilsProjects(environment),
+        ...createTypescriptNodeProjects({
           name: 'tools',
           timeZones: ['UTC'],
           include: ['tools/**/*.spec.ts'],

@@ -16,7 +16,7 @@ describe('removeEmptyValues', () => {
   it('removes null and undefined properties in depth without changing the input', () => {
     const input: FrozenSnapshot<object> = freezeAndSnapshot({ a: 1, b: null, c: undefined, d: { e: null, f: 'x' } });
     expect(removeEmptyValues(input.value)).toEqual({ a: 1, d: { f: 'x' } });
-    expect(input.changes()).toEqual([]);
+    expect(input.listChanges()).toEqual([]);
   });
 
   it('keeps empty strings unless asked, and keeps blank strings even then', () => {

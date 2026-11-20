@@ -5,14 +5,14 @@ import { minify } from 'terser';
 import { PROBE_MODULE } from '../constants/probe-module.constant.ts';
 import type { BundleRequest } from '../interfaces/bundle-request.interface.ts';
 import type { ModuleResolution } from '../interfaces/module-resolution.interface.ts';
-import { foundryResolution } from './foundry-resolution.function.ts';
+import { resolveFoundrySpecifier } from './resolve-foundry-specifier.function.ts';
 
 export async function bundleWithRollup(request: BundleRequest): Promise<string> {
   const plugin: Plugin = {
     name: 'foundry-size',
     resolveId: (specifier) => {
       if (specifier === PROBE_MODULE) return specifier;
-      const resolution: ModuleResolution | null = foundryResolution(specifier, request.entryFiles);
+      const resolution: ModuleResolution | null = resolveFoundrySpecifier(specifier, request.entryFiles);
       return resolution === null ? null : { id: resolution.path, external: resolution.isExternal };
     },
     load: (id) => (id === PROBE_MODULE ? request.source : null),

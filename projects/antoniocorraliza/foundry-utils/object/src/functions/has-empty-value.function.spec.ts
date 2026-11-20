@@ -85,6 +85,6 @@ describe('hasEmptyValue', () => {
   it('does not change its input', () => {
     const input: FrozenSnapshot<object> = freezeAndSnapshot({ due: new Date(2026, 0, 1), map: new Map([['k', 1]]) });
     hasEmptyValue(input.value);
-    expect(input.changes()).toEqual([]);
+    expect(input.listChanges()).toEqual([]);
   });
 });

@@ -8,12 +8,12 @@ import { toCamelCaseKeys } from './to-camel-case-keys.function';
 class Ticket {
   constructor(readonly ticket_id: string) {}
 
-  label(): string {
+  getLabel(): string {
     return this.ticket_id;
   }
 }
 
-function catchError(action: () => unknown): unknown {
+function getThrownError(action: () => unknown): unknown {
   try {
     action();
   } catch (error) {
@@ -40,7 +40,7 @@ describe('toCamelCaseKeys', () => {
       order_lines: [{ unit_price: 2 }],
     });
     expect(toCamelCaseKeys(input.value)).toEqual({ userName: 'Ana', homeAddress: { streetName: 'Mayor' }, orderLines: [{ unitPrice: 2 }] });
-    expect(input.changes()).toEqual([]);
+    expect(input.listChanges()).toEqual([]);
   });
 
   it('returns new objects, never the input', () => {
@@ -72,7 +72,7 @@ describe('toCamelCaseKeys', () => {
       ],
     });
     expect(result.dates[0]).toBe(first);
-    expect(input.changes()).toEqual([]);
+    expect(input.listChanges()).toEqual([]);
   });
 
   it('decides by the type of each item of an array, not by the first one', () => {
@@ -101,7 +101,7 @@ describe('toCamelCaseKeys', () => {
   });
 
   it('throws a key collision error by default, with the path, both keys and the converted key', () => {
-    const error: unknown = catchError(() => toCamelCaseKeys({ a: [{ user_id: 1, userId: 2 }] }));
+    const error: unknown = getThrownError(() => toCamelCaseKeys({ a: [{ user_id: 1, userId: 2 }] }));
     expect(error).toBeInstanceOf(FoundryKeyCollisionError);
     expect(error).toMatchObject({ path: ['a', 0], originalKeys: ['user_id', 'userId'], convertedKey: 'userId' });
   });
@@ -118,7 +118,7 @@ describe('toCamelCaseKeys', () => {
   it('throws a circular reference error with the path that points back', () => {
     const value: { a: { b?: unknown } } = { a: {} };
     value.a.b = value;
-    const error: unknown = catchError(() => toCamelCaseKeys(value));
+    const error: unknown = getThrownError(() => toCamelCaseKeys(value));
     expect(error).toBeInstanceOf(FoundryCircularReferenceError);
     expect(error).toMatchObject({ path: ['a', 'b'] });
   });

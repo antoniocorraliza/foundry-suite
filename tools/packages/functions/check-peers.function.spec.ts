@@ -6,7 +6,7 @@ import type { Tarball } from '../interfaces/tarball.interface.ts';
 import type { FoundryPackageFolder } from '../types/foundry-package-folder.type.ts';
 import { checkPeers } from './check-peers.function.ts';
 
-function tarballOf(folder: FoundryPackageFolder, manifest: PackageManifest, contents: Readonly<Record<string, string>> = {}): Tarball {
+function createTarball(folder: FoundryPackageFolder, manifest: PackageManifest, contents: Readonly<Record<string, string>> = {}): Tarball {
   const foundryPackage: FoundryPackage | undefined = FOUNDRY_PACKAGES.find((candidate) => candidate.folder === folder);
   if (foundryPackage === undefined) throw new Error(`[spec]: unknown package folder ${folder}`);
   return { foundryPackage, files: Object.keys(contents).sort(), contents: new Map(Object.entries(contents)), manifest };
@@ -26,7 +26,7 @@ const UI_PEERS: Readonly<Record<string, string>> = {
 describe('checkPeers', () => {
   it('accepts the expected peers, with Foundry peers on the version built with them', () => {
     const manifest: PackageManifest = { peerDependencies: UI_PEERS, peerDependenciesMeta: { '@angular/router': { optional: true } } };
-    expect(checkPeers(tarballOf('foundry-ui', manifest), VERSIONS)).toEqual([]);
+    expect(checkPeers(createTarball('foundry-ui', manifest), VERSIONS)).toEqual([]);
   });
 
   it('reports a missing, a different and an unexpected peer', () => {
@@ -36,7 +36,7 @@ describe('checkPeers', () => {
       lodash: '*',
     };
     const manifest: PackageManifest = { peerDependencies, peerDependenciesMeta: { '@angular/router': { optional: true } } };
-    expect(checkPeers(tarballOf('foundry-ui', manifest), VERSIONS)).toEqual([
+    expect(checkPeers(createTarball('foundry-ui', manifest), VERSIONS)).toEqual([
       'peer rxjs is missing (expected "^7.8.0")',
       'peer @antoniocorraliza/foundry-utils is "^2.0.0-rc.2", expected "^2.0.0-rc.3"',
       'unexpected peer lodash',
@@ -44,7 +44,7 @@ describe('checkPeers', () => {
   });
 
   it('reports optional peers that differ from the expected ones', () => {
-    expect(checkPeers(tarballOf('foundry-ui', { peerDependencies: UI_PEERS }), VERSIONS)).toEqual([
+    expect(checkPeers(createTarball('foundry-ui', { peerDependencies: UI_PEERS }), VERSIONS)).toEqual([
       'optional peers are [], expected [@angular/router]',
     ]);
   });

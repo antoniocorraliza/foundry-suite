@@ -1,5 +1,6 @@
-import { NODE_ENGINE, REPOSITORY_URL } from '../constants/manifest.constant.ts';
-import { PACKAGES_SOURCE_DIRECTORY } from '../constants/paths.constant.ts';
+import { NODE_ENGINE } from '../constants/node-engine.constant.ts';
+import { PACKAGES_SOURCE_DIRECTORY } from '../constants/packages-source-directory.constant.ts';
+import { REPOSITORY_URL } from '../constants/repository-url.constant.ts';
 import type { Tarball } from '../interfaces/tarball.interface.ts';
 
 export function checkManifest(tarball: Tarball): Array<string> {

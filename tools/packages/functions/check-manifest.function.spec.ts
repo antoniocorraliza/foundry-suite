@@ -6,7 +6,7 @@ import type { Tarball } from '../interfaces/tarball.interface.ts';
 import type { FoundryPackageFolder } from '../types/foundry-package-folder.type.ts';
 import { checkManifest } from './check-manifest.function.ts';
 
-function tarballOf(folder: FoundryPackageFolder, manifest: PackageManifest, contents: Readonly<Record<string, string>> = {}): Tarball {
+function createTarball(folder: FoundryPackageFolder, manifest: PackageManifest, contents: Readonly<Record<string, string>> = {}): Tarball {
   const foundryPackage: FoundryPackage | undefined = FOUNDRY_PACKAGES.find((candidate) => candidate.folder === folder);
   if (foundryPackage === undefined) throw new Error(`[spec]: unknown package folder ${folder}`);
   return { foundryPackage, files: Object.keys(contents).sort(), contents: new Map(Object.entries(contents)), manifest };
@@ -22,7 +22,7 @@ const UTILS: PackageManifest = {
 
 describe('checkManifest', () => {
   it('accepts the expected manifest', () => {
-    expect(checkManifest(tarballOf('foundry-utils', UTILS))).toEqual([]);
+    expect(checkManifest(createTarball('foundry-utils', UTILS))).toEqual([]);
   });
 
   it('reports each field that differs', () => {
@@ -33,7 +33,7 @@ describe('checkManifest', () => {
       sideEffects: true,
       repository: { url: 'x' },
     };
-    expect(checkManifest(tarballOf('foundry-utils', manifest))).toEqual([
+    expect(checkManifest(createTarball('foundry-utils', manifest))).toEqual([
       '"type" must be "module"',
       '"engines.node" must be ">=22.12.0"',
       '"sideEffects" is true, expected false',

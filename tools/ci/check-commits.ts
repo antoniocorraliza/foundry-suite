@@ -1,9 +1,9 @@
 import { execFileSync } from 'node:child_process';
-import { messageProblems } from './functions/message-problems.function.ts';
-import { titleProblems } from './functions/title-problems.function.ts';
+import { findMessageProblems } from './functions/find-message-problems.function.ts';
+import { findTitleProblems } from './functions/find-title-problems.function.ts';
 import type { Commit } from './interfaces/commit.interface.ts';
 
-function commitsInRange(range: string): Array<Commit> {
+function readCommitsInRange(range: string): Array<Commit> {
   const output: string = execFileSync('git', ['log', '--no-merges', '--format=%H%x00%B%x1e', range], { encoding: 'utf8' });
   return output
     .split('\x1e')
@@ -22,13 +22,13 @@ function main(): number {
     return 1;
   }
   if (firstArgument === '--title') {
-    const problems: Array<string> = titleProblems(secondArgument ?? '');
+    const problems: Array<string> = findTitleProblems(secondArgument ?? '');
     problems.forEach((problem) => console.error(`[check-commits]: pull request ${problem}`));
     return problems.length === 0 ? 0 : 1;
   }
-  const commits: Array<Commit> = commitsInRange(firstArgument);
+  const commits: Array<Commit> = readCommitsInRange(firstArgument);
   const problems: Array<string> = commits.flatMap((commit) =>
-    messageProblems(commit.message).map((problem) => `[check-commits]: ${commit.hash.slice(0, 7)} ${problem}`),
+    findMessageProblems(commit.message).map((problem) => `[check-commits]: ${commit.hash.slice(0, 7)} ${problem}`),
   );
   problems.forEach((problem) => console.error(problem));
   const failures: number = problems.length;
