@@ -22,6 +22,12 @@ function catchError(action: () => unknown): unknown {
   return null;
 }
 
+class Unrelated {}
+
+function createTaggedObject(tag: string): object {
+  return Object.defineProperty(new Unrelated(), Symbol.toStringTag, { value: tag });
+}
+
 describe('toCamelCaseKeys', () => {
   it.each([null, undefined, 5, 'a_b', true])('returns %j as it is', (value) => {
     expect(toCamelCaseKeys(value)).toBe(value);
@@ -163,4 +169,13 @@ describe('toCamelCaseKeys', () => {
   it('throws when map passes the index as its options', () => {
     expect(() => [{ a_b: 1 }].map(toCamelCaseKeys as (value: unknown, index: number) => unknown)).toThrow(TypeError);
   });
+
+  it.each(['Date', 'Map', 'Set', 'RegExp', 'ArrayBuffer', 'Array', 'Object'])(
+    'keeps an object that fakes the tag of %s by reference, without throwing',
+    (tag) => {
+      const fake: object = createTaggedObject(tag);
+      expect(toCamelCaseKeys({ due_at: fake }).dueAt).toBe(fake);
+      expect(toCamelCaseKeys([fake])[0]).toBe(fake);
+    },
+  );
 });

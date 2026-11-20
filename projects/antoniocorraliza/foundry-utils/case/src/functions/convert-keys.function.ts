@@ -1,10 +1,10 @@
-import type { FoundryObjectPath, ɵValueKind } from '@antoniocorraliza/foundry-utils';
+import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
 import {
   FoundryCircularReferenceError,
   ɵdefineOwnProperty,
   ɵgetOwnDataEntries,
-  ɵgetValueKind,
   ɵisOptionsValue,
+  ɵisPlainObject,
 } from '@antoniocorraliza/foundry-utils';
 import { FoundryKeyCollisionError } from '../errors/foundry-key-collision.error';
 import type { KeyConversion } from '../interfaces/key-conversion.interface';
@@ -34,8 +34,7 @@ function convertObject(object: object, path: FoundryObjectPath, ancestors: Reado
 }
 
 function convertValue(value: unknown, path: FoundryObjectPath, ancestors: ReadonlyArray<object>, conversion: KeyConversion): unknown {
-  const kind: ɵValueKind = ɵgetValueKind(value);
-  if (kind !== 'array' && kind !== 'plainObject') return value;
+  if (!Array.isArray(value) && !ɵisPlainObject(value)) return value;
   const object: object = value as object;
   if (ancestors.includes(object)) throw new FoundryCircularReferenceError({ path });
   if (Array.isArray(object)) {

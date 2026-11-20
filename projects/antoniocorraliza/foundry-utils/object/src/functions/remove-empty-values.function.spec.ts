@@ -6,6 +6,12 @@ import { removeEmptyValues } from './remove-empty-values.function';
 
 class Ticket {}
 
+class Unrelated {}
+
+function createTaggedObject(tag: string): object {
+  return Object.defineProperty(new Unrelated(), Symbol.toStringTag, { value: tag });
+}
+
 describe('removeEmptyValues', () => {
   it('removes null and undefined properties in depth without changing the input', () => {
     const input: FrozenSnapshot<object> = freezeAndSnapshot({ a: 1, b: null, c: undefined, d: { e: null, f: 'x' } });
@@ -124,4 +130,16 @@ describe('removeEmptyValues', () => {
   it('throws when map passes the index as its options', () => {
     expect(() => [{ a: { b: null } }, { a: 1 }].map(removeEmptyValues as (value: unknown, index: number) => unknown)).toThrow(TypeError);
   });
+
+  it.each(['Date', 'Map', 'Set', 'RegExp', 'ArrayBuffer', 'Array', 'Object'])(
+    'keeps an object that fakes the tag of %s by reference, with every option',
+    (tag) => {
+      const fake: object = createTaggedObject(tag);
+      const result: Record<string, unknown> = removeEmptyValues(
+        { due: fake },
+        { removeEmptyStrings: true, removeEmptyCollections: true, removeEmptyArrayItems: true },
+      ) as Record<string, unknown>;
+      expect(result['due']).toBe(fake);
+    },
+  );
 });

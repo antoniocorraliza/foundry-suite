@@ -1,5 +1,5 @@
-import type { FoundryObjectPath, ɵValueKind } from '@antoniocorraliza/foundry-utils';
-import { FoundryCircularReferenceError, ɵdefineOwnProperty, ɵgetOwnDataEntries, ɵgetValueKind } from '@antoniocorraliza/foundry-utils';
+import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
+import { FoundryCircularReferenceError, ɵdefineOwnProperty, ɵgetOwnDataEntries, ɵisPlainObject } from '@antoniocorraliza/foundry-utils';
 import type { EmptyValuesCleaning } from '../interfaces/empty-values-cleaning.interface';
 import type { FoundryRemoveEmptyValuesOptions } from '../interfaces/foundry-remove-empty-values-options.interface';
 import type { FoundryWithoutEmptyValues } from '../types/foundry-without-empty-values.type';
@@ -7,7 +7,7 @@ import { readCleaning } from './read-cleaning.function';
 
 function isEmptyCollection(value: unknown): boolean {
   if (Array.isArray(value)) return value.length === 0;
-  return ɵgetValueKind(value) === 'plainObject' && Object.keys(value as object).length === 0;
+  return ɵisPlainObject(value) && Object.keys(value).length === 0;
 }
 
 function isRemovedProperty(original: unknown, cleaned: unknown, cleaning: EmptyValuesCleaning): boolean {
@@ -17,8 +17,7 @@ function isRemovedProperty(original: unknown, cleaned: unknown, cleaning: EmptyV
 }
 
 function clean(value: unknown, path: FoundryObjectPath, ancestors: ReadonlyArray<object>, cleaning: EmptyValuesCleaning): unknown {
-  const kind: ɵValueKind = ɵgetValueKind(value);
-  if (kind !== 'array' && kind !== 'plainObject') return value;
+  if (!Array.isArray(value) && !ɵisPlainObject(value)) return value;
   const object: object = value as object;
   if (ancestors.includes(object)) throw new FoundryCircularReferenceError({ path });
   const inner: ReadonlyArray<object> = [...ancestors, object];

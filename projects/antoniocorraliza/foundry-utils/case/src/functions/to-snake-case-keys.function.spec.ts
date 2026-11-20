@@ -5,6 +5,12 @@ import type { FrozenSnapshot } from '../../../../../../tools/vitest/interfaces/f
 import { FoundryKeyCollisionError } from '../errors/foundry-key-collision.error';
 import { toSnakeCaseKeys } from './to-snake-case-keys.function';
 
+class Unrelated {}
+
+function createTaggedObject(tag: string): object {
+  return Object.defineProperty(new Unrelated(), Symbol.toStringTag, { value: tag });
+}
+
 describe('toSnakeCaseKeys', () => {
   it('converts the keys of nested plain objects and arrays without changing the input', () => {
     const input: FrozenSnapshot<object> = freezeAndSnapshot({
@@ -48,4 +54,12 @@ describe('toSnakeCaseKeys', () => {
   it('rejects an unknown collision option', () => {
     expect(() => toSnakeCaseKeys({ a: 1 }, { onCollision: 'merge' } as never)).toThrow(TypeError);
   });
+
+  it.each(['Date', 'Map', 'Set', 'RegExp', 'ArrayBuffer', 'Array', 'Object'])(
+    'keeps an object that fakes the tag of %s by reference, without throwing',
+    (tag) => {
+      const fake: object = createTaggedObject(tag);
+      expect(toSnakeCaseKeys({ dueAt: fake }).due_at).toBe(fake);
+    },
+  );
 });
