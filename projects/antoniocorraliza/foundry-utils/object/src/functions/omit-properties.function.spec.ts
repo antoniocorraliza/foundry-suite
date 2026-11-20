@@ -10,7 +10,7 @@ class User {
     return this.firstName;
   }
 
-  label(): string {
+  getLabel(): string {
     return this.firstName;
   }
 }

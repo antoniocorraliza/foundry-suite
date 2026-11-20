@@ -2,7 +2,7 @@ import type { ɵValueKind } from '../types/value-kind.type';
 import { ɵgetValueTag } from './get-value-tag.function';
 import { ɵisPlainObject } from './is-plain-object.function';
 
-function passesBrandCheck(check: () => unknown): boolean {
+function isBrandCheckPassed(check: () => unknown): boolean {
   try {
     check();
     return true;
@@ -20,11 +20,11 @@ function readArrayBufferLength(value: object): unknown {
 }
 
 function getTaggedObjectKind(value: object, tag: string): ɵValueKind {
-  if (tag === '[object Date]') return passesBrandCheck(() => Date.prototype.getTime.call(value)) ? 'date' : 'other';
-  if (tag === '[object RegExp]') return passesBrandCheck(() => readRegExpSource(value)) ? 'regExp' : 'other';
-  if (tag === '[object Map]') return passesBrandCheck(() => Map.prototype.has.call(value, null)) ? 'map' : 'other';
-  if (tag === '[object Set]') return passesBrandCheck(() => Set.prototype.has.call(value, null)) ? 'set' : 'other';
-  if (tag === '[object ArrayBuffer]') return passesBrandCheck(() => readArrayBufferLength(value)) ? 'arrayBuffer' : 'other';
+  if (tag === '[object Date]') return isBrandCheckPassed(() => Date.prototype.getTime.call(value)) ? 'date' : 'other';
+  if (tag === '[object RegExp]') return isBrandCheckPassed(() => readRegExpSource(value)) ? 'regExp' : 'other';
+  if (tag === '[object Map]') return isBrandCheckPassed(() => Map.prototype.has.call(value, null)) ? 'map' : 'other';
+  if (tag === '[object Set]') return isBrandCheckPassed(() => Set.prototype.has.call(value, null)) ? 'set' : 'other';
+  if (tag === '[object ArrayBuffer]') return isBrandCheckPassed(() => readArrayBufferLength(value)) ? 'arrayBuffer' : 'other';
   if (tag === '[object Blob]' || tag === '[object File]') return 'blob';
   if (tag === '[object Error]') return 'error';
   if (tag === '[object WeakMap]' || tag === '[object WeakSet]') return 'weakCollection';

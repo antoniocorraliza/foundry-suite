@@ -6,7 +6,7 @@ import type { FoundryCamelCaseKeys } from './foundry-camel-case-keys.type';
 class Owner {
   firstName: string = '';
 
-  label(): string {
+  getLabel(): string {
     return this.firstName;
   }
 }

@@ -38,7 +38,7 @@
   "utils (root)": {
     "esbuild": {
       "raw": 2573,
-      "gzip": 1044
+      "gzip": 1043
     },
     "rollup": {
       "raw": 2413,
