@@ -4,15 +4,7 @@
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vitest/globals", "node"],
-    "paths": {
-      "@antoniocorraliza/foundry-core": ["./dist/antoniocorraliza/foundry-core"],
-      "@antoniocorraliza/foundry-core/*": ["./dist/antoniocorraliza/foundry-core/*"],
-      "@antoniocorraliza/foundry-ui": ["./dist/antoniocorraliza/foundry-ui"],
-      "@antoniocorraliza/foundry-ui/*": ["./dist/antoniocorraliza/foundry-ui/*"],
-      "@antoniocorraliza/foundry-utils": ["./projects/antoniocorraliza/foundry-utils/src/public-api.ts"],
-      "@antoniocorraliza/foundry-utils/*": ["./projects/antoniocorraliza/foundry-utils/*/src/public-api.ts"]
-    }
+    "types": ["vitest/globals", "node"]
   },
   "include": [
     "projects/**/*.spec.ts",

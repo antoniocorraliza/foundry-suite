@@ -1,4 +1,5 @@
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
+import { addSourceAliases } from './tools/vitest/functions/add-source-aliases.function.ts';
 import { createSmokeProjects } from './tools/vitest/functions/create-smoke-projects.function.ts';
 import { createTypescriptNodeProjects } from './tools/vitest/functions/create-typescript-node-projects.function.ts';
 import { createUtilsProjects } from './tools/vitest/functions/create-utils-projects.function.ts';
@@ -18,7 +19,7 @@ export default defineConfig((): ViteUserConfig => {
           include: ['tools/**/*.spec.ts'],
           exclude: ['**/node_modules/**', 'tools/vitest/smoke/**'],
         }),
-      ],
+      ].map(addSourceAliases),
       coverage: {
         // `npm run test:coverage` sets FOUNDRY_TEST_COVERAGE; without it, Firefox and WebKit break the coverage run.
         provider: 'v8',

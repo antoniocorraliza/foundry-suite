@@ -1,7 +1,15 @@
 {
   "extends": "./tsconfig.lib.json",
   "compilerOptions": {
-    "declarationMap": false
+    "declarationMap": false,
+    "paths": {
+      "@antoniocorraliza/foundry-core": ["../../../dist/antoniocorraliza/foundry-core"],
+      "@antoniocorraliza/foundry-core/*": ["../../../dist/antoniocorraliza/foundry-core/*"],
+      "@antoniocorraliza/foundry-ui": ["../../../dist/antoniocorraliza/foundry-ui"],
+      "@antoniocorraliza/foundry-ui/*": ["../../../dist/antoniocorraliza/foundry-ui/*"],
+      "@antoniocorraliza/foundry-utils": ["../../../dist/antoniocorraliza/foundry-utils"],
+      "@antoniocorraliza/foundry-utils/*": ["../../../dist/antoniocorraliza/foundry-utils/*"]
+    }
   },
   "angularCompilerOptions": {
     "compilationMode": "partial"
