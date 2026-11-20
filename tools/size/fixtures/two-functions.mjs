@@ -1,7 +1,7 @@
-export function keptFixtureFunction() {
+export function getKeptFixtureValue() {
   return 'kept fixture function';
 }
 
-export function droppedFixtureFunction() {
+export function getDroppedFixtureValue() {
   return 'dropped fixture function';
 }

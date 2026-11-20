@@ -2,14 +2,14 @@ import type { BuildResult, Plugin } from 'esbuild';
 import { build } from 'esbuild';
 import type { BundleRequest } from '../interfaces/bundle-request.interface.ts';
 import type { ModuleResolution } from '../interfaces/module-resolution.interface.ts';
-import { foundryResolution } from './foundry-resolution.function.ts';
+import { resolveFoundrySpecifier } from './resolve-foundry-specifier.function.ts';
 
 export async function bundleWithEsbuild(request: BundleRequest): Promise<string> {
   const resolver: Plugin = {
     name: 'foundry-dist',
     setup: (pluginBuild) => {
       pluginBuild.onResolve({ filter: /^[^./]/ }, (arguments_) => {
-        const resolution: ModuleResolution | null = foundryResolution(arguments_.path, request.entryFiles);
+        const resolution: ModuleResolution | null = resolveFoundrySpecifier(arguments_.path, request.entryFiles);
         return resolution === null ? null : { path: resolution.path, external: resolution.isExternal };
       });
     },

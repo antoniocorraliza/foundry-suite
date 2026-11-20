@@ -9,24 +9,24 @@ import { PUBLIC_ERROR_CLASSES } from './constants/public-error-classes.constant.
 import { SIZE_MEASUREMENTS } from './constants/size-measurements.constant.ts';
 import { SIZE_REFERENCE_PATH } from './constants/size-settings.constant.ts';
 import { SIZE_TOOLS } from './constants/size-tools.constant.ts';
-import { angularProbeSource } from './functions/angular-probe-source.function.ts';
-import { budgetProblems } from './functions/budget-problems.function.ts';
 import { buildAngularProbe } from './functions/build-angular-probe.function.ts';
 import { bundleWithEsbuild } from './functions/bundle-with-esbuild.function.ts';
 import { bundleWithRollup } from './functions/bundle-with-rollup.function.ts';
-import { errorNameProbeSource } from './functions/error-name-probe-source.function.ts';
-import { errorNameProblem } from './functions/error-name-problem.function.ts';
+import { createAngularProbeSource } from './functions/create-angular-probe-source.function.ts';
+import { createErrorNameProbeSource } from './functions/create-error-name-probe-source.function.ts';
+import { createProbeSource } from './functions/create-probe-source.function.ts';
+import { createWholeEntryMeasurements } from './functions/create-whole-entry-measurements.function.ts';
+import { findBudgetProblems } from './functions/find-budget-problems.function.ts';
+import { findErrorNameProblem } from './functions/find-error-name-problem.function.ts';
+import { findReferenceProblems } from './functions/find-reference-problems.function.ts';
+import { findUndeclaredErrorClasses } from './functions/find-undeclared-error-classes.function.ts';
 import { formatKilobytes } from './functions/format-kilobytes.function.ts';
+import { getSizeDelta } from './functions/get-size-delta.function.ts';
 import { listBuiltEntries } from './functions/list-built-entries.function.ts';
 import { measureContents } from './functions/measure-contents.function.ts';
-import { printedErrorName } from './functions/printed-error-name.function.ts';
-import { probeSource } from './functions/probe-source.function.ts';
-import { referenceProblems } from './functions/reference-problems.function.ts';
+import { readPrintedErrorName } from './functions/read-printed-error-name.function.ts';
 import { resolveMeasurement } from './functions/resolve-measurement.function.ts';
 import { runWithConcurrency } from './functions/run-with-concurrency.function.ts';
-import { sizeDelta } from './functions/size-delta.function.ts';
-import { undeclaredErrorClasses } from './functions/undeclared-error-classes.function.ts';
-import { wholeEntryMeasurements } from './functions/whole-entry-measurements.function.ts';
 import type { BaseComponent } from './interfaces/base-component.interface.ts';
 import type { BuiltEntry } from './interfaces/built-entry.interface.ts';
 import type { BundleRequest } from './interfaces/bundle-request.interface.ts';
@@ -68,7 +68,7 @@ async function bundle(bundler: Bundler, request: BundleRequest): Promise<string>
   return bundler === 'esbuild' ? bundleWithEsbuild(request) : bundleWithRollup(request);
 }
 
-function baseComponentOf(measurement: SizeMeasurement, repositoryRoot: string): BaseComponent {
+function getBaseComponent(measurement: SizeMeasurement, repositoryRoot: string): BaseComponent {
   const component: BaseComponent = measurement.target === 'angular-app-with-forms' ? BASE_FORMS_APP_COMPONENT : BASE_APP_COMPONENT;
   return { path: join(repositoryRoot, component.path), className: component.className };
 }
@@ -78,13 +78,15 @@ async function measureAll(measurable: ReadonlyArray<ResolvedMeasurement>, contex
   const measured: Record<string, SizeToolFigures> = {};
   const bundleBases: Map<Bundler, SizeFigures> = new Map();
   for (const bundler of BUNDLERS) {
-    bundleBases.set(bundler, measureContents([await bundle(bundler, { ...bundleRequest, source: probeSource([]) })]));
+    bundleBases.set(bundler, measureContents([await bundle(bundler, { ...bundleRequest, source: createProbeSource([]) })]));
   }
   for (const resolution of measurable.filter((candidate) => candidate.measurement.target === 'bundle')) {
     const figures: Partial<Record<Bundler, SizeFigures>> = {};
     for (const bundler of BUNDLERS) {
-      const probe: SizeFigures = measureContents([await bundle(bundler, { ...bundleRequest, source: probeSource(resolution.imports) })]);
-      figures[bundler] = sizeDelta(probe, bundleBases.get(bundler) ?? { raw: 0, gzip: 0 });
+      const probe: SizeFigures = measureContents([
+        await bundle(bundler, { ...bundleRequest, source: createProbeSource(resolution.imports) }),
+      ]);
+      figures[bundler] = getSizeDelta(probe, bundleBases.get(bundler) ?? { raw: 0, gzip: 0 });
     }
     measured[resolution.measurement.name] = figures;
   }
@@ -101,14 +103,14 @@ async function measureAll(measurable: ReadonlyArray<ResolvedMeasurement>, contex
   );
   const baseSources: Map<string, string> = new Map(
     angularMeasurable.map((resolution) => {
-      const baseComponent: BaseComponent = baseComponentOf(resolution.measurement, repositoryRoot);
-      return [baseComponent.className, angularProbeSource(baseComponent, [])];
+      const baseComponent: BaseComponent = getBaseComponent(resolution.measurement, repositoryRoot);
+      return [baseComponent.className, createAngularProbeSource(baseComponent, [])];
     }),
   );
   const sources: Array<string> = [
     ...baseSources.values(),
     ...angularMeasurable.map((resolution) =>
-      angularProbeSource(baseComponentOf(resolution.measurement, repositoryRoot), resolution.imports),
+      createAngularProbeSource(getBaseComponent(resolution.measurement, repositoryRoot), resolution.imports),
     ),
   ];
   const concurrency: number = Math.max(1, Math.floor(availableParallelism() / 2));
@@ -123,15 +125,15 @@ async function measureAll(measurable: ReadonlyArray<ResolvedMeasurement>, contex
     [...baseSources.keys()].map((className, index) => [className, outputs[index] ?? { raw: 0, gzip: 0 }]),
   );
   angularMeasurable.forEach((resolution, index) => {
-    const base: SizeFigures = baseFigures.get(baseComponentOf(resolution.measurement, repositoryRoot).className) ?? { raw: 0, gzip: 0 };
-    measured[resolution.measurement.name] = { angular: sizeDelta(outputs[baseSources.size + index] ?? base, base) };
+    const base: SizeFigures = baseFigures.get(getBaseComponent(resolution.measurement, repositoryRoot).className) ?? { raw: 0, gzip: 0 };
+    measured[resolution.measurement.name] = { angular: getSizeDelta(outputs[baseSources.size + index] ?? base, base) };
   });
   return measured;
 }
 
-async function errorNameProblems(builtEntries: ReadonlyArray<BuiltEntry>, context: SizeRunContext): Promise<Array<string>> {
+async function findErrorNameProblems(builtEntries: ReadonlyArray<BuiltEntry>, context: SizeRunContext): Promise<Array<string>> {
   const { workDirectory, bundleRequest } = context;
-  const problems: Array<string> = undeclaredErrorClasses(builtEntries, PUBLIC_ERROR_CLASSES);
+  const problems: Array<string> = findUndeclaredErrorClasses(builtEntries, PUBLIC_ERROR_CLASSES);
   let checked: number = 0;
   for (const errorClass of PUBLIC_ERROR_CLASSES) {
     const builtEntry: BuiltEntry | undefined = builtEntries.find(
@@ -139,11 +141,11 @@ async function errorNameProblems(builtEntries: ReadonlyArray<BuiltEntry>, contex
     );
     if (!builtEntry?.exports.includes(errorClass.className)) continue;
     for (const bundler of BUNDLERS) {
-      const source: string = errorNameProbeSource(builtEntry.specifier, errorClass);
+      const source: string = createErrorNameProbeSource(builtEntry.specifier, errorClass);
       const outputFile: string = join(workDirectory, `error-name-${checked}.mjs`);
       checked += 1;
-      const printed: string = await printedErrorName({ bundle: { ...bundleRequest, source }, bundler, outputFile });
-      const problem: string | null = errorNameProblem(builtEntry.specifier, errorClass.className, bundler, printed);
+      const printed: string = await readPrintedErrorName({ bundle: { ...bundleRequest, source }, bundler, outputFile });
+      const problem: string | null = findErrorNameProblem(builtEntry.specifier, errorClass.className, bundler, printed);
       if (problem !== null) problems.push(problem);
     }
   }
@@ -180,7 +182,10 @@ function printProblems(title: string, problems: ReadonlyArray<string>): void {
 async function main(): Promise<number> {
   const isUpdate: boolean = process.argv.includes('--update');
   const builtEntries: Array<BuiltEntry> = await listBuiltEntries(resolve(PACKAGES_DIST_DIRECTORY), FOUNDRY_PACKAGES);
-  const measurements: Array<SizeMeasurement> = [...SIZE_MEASUREMENTS, ...wholeEntryMeasurements(builtEntries, SIZE_MEASUREMENTS)];
+  const measurements: Array<SizeMeasurement> = [
+    ...SIZE_MEASUREMENTS,
+    ...createWholeEntryMeasurements({ builtEntries, explicitMeasurements: SIZE_MEASUREMENTS }),
+  ];
   const builtFiles: Set<string> = listBuiltFiles(PACKAGES_DIST_DIRECTORY);
   const resolutions: Array<MeasurementResolution> = measurements.map((measurement) =>
     resolveMeasurement(measurement, { entries: builtEntries, files: builtFiles }),
@@ -201,15 +206,15 @@ async function main(): Promise<number> {
     const measured: SizeReference = await measureAll(measurable, context);
     printReport({ measured, measurements, pending });
     const budget: Array<string> = measurable.flatMap((resolution) =>
-      budgetProblems(resolution.measurement.name, measured[resolution.measurement.name] ?? {}, resolution.measurement.budget),
+      findBudgetProblems(resolution.measurement.name, measured[resolution.measurement.name] ?? {}, resolution.measurement.budget),
     );
-    const errorNames: Array<string> = await errorNameProblems(builtEntries, context);
+    const errorNames: Array<string> = await findErrorNameProblems(builtEntries, context);
     let reference: Array<string> = [];
     if (isUpdate) {
       writeReference(SIZE_REFERENCE_PATH, measured);
       console.log(`[size]: ${SIZE_REFERENCE_PATH} updated; commit it with the change that moved the sizes`);
     } else {
-      reference = referenceProblems(measured, readReference(SIZE_REFERENCE_PATH));
+      reference = findReferenceProblems(measured, readReference(SIZE_REFERENCE_PATH));
     }
     printProblems('Over budget:', budget);
     printProblems('Error names:', errorNames);
