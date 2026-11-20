@@ -1,7 +1,7 @@
 import type { FoundryPackage } from '../interfaces/foundry-package.interface.ts';
 import type { Tarball } from '../interfaces/tarball.interface.ts';
 
-function sourceEntrySubpaths(sourceFiles: ReadonlyArray<string>): Array<string> {
+function listSourceEntrySubpaths(sourceFiles: ReadonlyArray<string>): Array<string> {
   return sourceFiles
     .filter((path) => path === 'ng-package.json' || path.endsWith('/ng-package.json'))
     .map((path) => (path === 'ng-package.json' ? '.' : `./${path.slice(0, -'/ng-package.json'.length)}`))
@@ -12,7 +12,7 @@ function stripDotSlash(path: string): string {
   return path.startsWith('./') ? path.slice(2) : path;
 }
 
-function declaresCssSideEffects(foundryPackage: FoundryPackage): boolean {
+function hasCssSideEffects(foundryPackage: FoundryPackage): boolean {
   return foundryPackage.sideEffects !== false && foundryPackage.sideEffects.some((pattern) => pattern.endsWith('.css'));
 }
 
@@ -22,7 +22,7 @@ export function checkExports(tarball: Tarball, sourceFiles: ReadonlyArray<string
   const exportsMap: Readonly<Record<string, unknown>> | undefined = manifest.exports;
   if (!exportsMap || typeof exportsMap !== 'object') return ['package.json has no "exports" map'];
 
-  const entrySubpaths: Array<string> = sourceEntrySubpaths(sourceFiles);
+  const entrySubpaths: Array<string> = listSourceEntrySubpaths(sourceFiles);
   const allowed: Set<string> = new Set(['./package.json', ...entrySubpaths, ...foundryPackage.nonEntryExports]);
   ['./package.json', ...entrySubpaths].forEach((subpath) => {
     if (!(subpath in exportsMap)) problems.push(`entry "${subpath}" is missing from "exports"`);
@@ -42,7 +42,7 @@ export function checkExports(tarball: Tarball, sourceFiles: ReadonlyArray<string
       console.log(`    - exports: ${subpath} matches ${matches.length} file(s) in the tarball`);
       const sourceFolder: string = prefix.slice(0, prefix.lastIndexOf('/') + 1);
       const hasSourceFolder: boolean = sourceFiles.some((file) => file.startsWith(sourceFolder));
-      if (matches.length === 0 && declaresCssSideEffects(foundryPackage) && hasSourceFolder) {
+      if (matches.length === 0 && hasCssSideEffects(foundryPackage) && hasSourceFolder) {
         problems.push(`pattern export "${subpath}" matches no file in the tarball, but the source has ${sourceFolder}`);
       }
       return;
