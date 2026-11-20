@@ -47,7 +47,7 @@ describe('deepClone', () => {
     expect(clone.due.getTime()).toBe(input.value.due.getTime());
     expect(clone.lookup).not.toBe(input.value.lookup);
     expect(clone.lines[0]).not.toBe(input.value.lines[0]);
-    expect(input.changes()).toEqual([]);
+    expect(input.listChanges()).toEqual([]);
   });
 
   it('keeps files and blobs by reference, with their name', () => {

@@ -18,13 +18,13 @@ describe('freezeAndSnapshot', () => {
 
   it('reports no changes when nothing was touched', () => {
     const input: FrozenSnapshot<object> = freezeAndSnapshot({ due: new Date(2026, 2, 1), tags: new Set(['a']), map: new Map([['k', 1]]) });
-    expect(input.changes()).toEqual([]);
+    expect(input.listChanges()).toEqual([]);
   });
 
   it('catches a function that changes the time of a date it received', () => {
     const input: FrozenSnapshot<{ due: Date }> = freezeAndSnapshot({ due: new Date(2026, 2, 1, 10) });
     input.value.due.setHours(0, 0, 0, 0);
-    expect(input.changes()).not.toEqual([]);
+    expect(input.listChanges()).not.toEqual([]);
   });
 
   it('catches entries added to a frozen Map or Set', () => {
@@ -34,7 +34,7 @@ describe('freezeAndSnapshot', () => {
     });
     input.value.map.set('k', 1);
     input.value.set.add(1);
-    expect(input.changes().filter((line) => line.endsWith('size 1'))).toHaveLength(2);
+    expect(input.listChanges().filter((line) => line.endsWith('size 1'))).toHaveLength(2);
   });
 
   it('accepts typed arrays without throwing and catches a changed byte', () => {
@@ -43,13 +43,13 @@ describe('freezeAndSnapshot', () => {
       buffer: new ArrayBuffer(2),
     });
     input.value.bytes[0] = 9;
-    expect(input.changes().some((line) => line.includes('bytes'))).toBe(true);
+    expect(input.listChanges().some((line) => line.includes('bytes'))).toBe(true);
   });
 
   it('handles cycles', () => {
     const node: { self?: unknown } = {};
     node.self = node;
-    expect(freezeAndSnapshot(node).changes()).toEqual([]);
+    expect(freezeAndSnapshot(node).listChanges()).toEqual([]);
   });
 
   it('never runs a getter', () => {
@@ -58,16 +58,16 @@ describe('freezeAndSnapshot', () => {
         throw new Error('[test]: the getter ran');
       },
     };
-    expect(freezeAndSnapshot(value).changes()).toEqual([]);
+    expect(freezeAndSnapshot(value).listChanges()).toEqual([]);
   });
 
   it('makes a start-of-day function that changes its input fail', () => {
-    function brokenStartOfDay(date: Date): Date {
+    function setStartOfDayInPlace(date: Date): Date {
       date.setHours(0, 0, 0, 0);
       return date;
     }
     const input: FrozenSnapshot<Date> = freezeAndSnapshot(new Date(2026, 2, 1, 10));
-    brokenStartOfDay(input.value);
-    expect(input.changes()).not.toEqual([]);
+    setStartOfDayInPlace(input.value);
+    expect(input.listChanges()).not.toEqual([]);
   });
 });

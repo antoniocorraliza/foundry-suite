@@ -86,7 +86,7 @@ describe('isDeepEqual', () => {
     const first: FrozenSnapshot<object> = freezeAndSnapshot({ due: new Date(2026, 0, 1), tags: new Set([1]), map: new Map([['k', 1]]) });
     const second: FrozenSnapshot<object> = freezeAndSnapshot({ due: new Date(2026, 0, 1), tags: new Set([1]), map: new Map([['k', 1]]) });
     isDeepEqual(first.value, second.value);
-    expect([...first.changes(), ...second.changes()]).toEqual([]);
+    expect([...first.listChanges(), ...second.listChanges()]).toEqual([]);
   });
 
   it('asks customEquality first for every pair, and uses the default rule when it returns undefined', () => {

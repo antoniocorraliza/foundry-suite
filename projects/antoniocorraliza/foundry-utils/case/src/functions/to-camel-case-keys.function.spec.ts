@@ -40,7 +40,7 @@ describe('toCamelCaseKeys', () => {
       order_lines: [{ unit_price: 2 }],
     });
     expect(toCamelCaseKeys(input.value)).toEqual({ userName: 'Ana', homeAddress: { streetName: 'Mayor' }, orderLines: [{ unitPrice: 2 }] });
-    expect(input.changes()).toEqual([]);
+    expect(input.listChanges()).toEqual([]);
   });
 
   it('returns new objects, never the input', () => {
@@ -72,7 +72,7 @@ describe('toCamelCaseKeys', () => {
       ],
     });
     expect(result.dates[0]).toBe(first);
-    expect(input.changes()).toEqual([]);
+    expect(input.listChanges()).toEqual([]);
   });
 
   it('decides by the type of each item of an array, not by the first one', () => {

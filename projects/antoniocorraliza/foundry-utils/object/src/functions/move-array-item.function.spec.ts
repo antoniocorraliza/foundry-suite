@@ -9,7 +9,7 @@ describe('moveArrayItem', () => {
     const result: Array<string> = moveArrayItem(input.value, 0, 2);
     expect(result).toEqual(['b', 'c', 'a']);
     expect(result).not.toBe(input.value);
-    expect(input.changes()).toEqual([]);
+    expect(input.listChanges()).toEqual([]);
   });
 
   it('moves an item backwards', () => {

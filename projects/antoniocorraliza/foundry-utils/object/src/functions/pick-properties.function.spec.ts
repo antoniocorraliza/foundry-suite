@@ -27,7 +27,7 @@ describe('pickProperties', () => {
     expect(result).toEqual({ id: 1, name: 'Ana' });
     expect(result).not.toBe(input.value);
     expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
-    expect(input.changes()).toEqual([]);
+    expect(input.listChanges()).toEqual([]);
   });
 
   it('does not create a property that the object lacks', () => {

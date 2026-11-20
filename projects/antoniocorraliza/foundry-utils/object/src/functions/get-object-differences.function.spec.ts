@@ -128,7 +128,7 @@ describe('getObjectDifferences', () => {
     const previous: FrozenSnapshot<object> = freezeAndSnapshot({ due: new Date(2026, 0, 1), list: [1] });
     const current: FrozenSnapshot<object> = freezeAndSnapshot({ due: new Date(2026, 0, 2), list: [2] });
     getObjectDifferences(previous.value, current.value, { arrays: 'byIndex' });
-    expect([...previous.changes(), ...current.changes()]).toEqual([]);
+    expect([...previous.listChanges(), ...current.listChanges()]).toEqual([]);
   });
 
   it('rejects options that are not an object and unknown array modes', () => {

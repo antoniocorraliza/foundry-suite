@@ -27,7 +27,7 @@ describe('omitProperties', () => {
     expect(result).toEqual({ id: 1, name: 'Ana' });
     expect(result).not.toBe(input.value);
     expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
-    expect(input.changes()).toEqual([]);
+    expect(input.listChanges()).toEqual([]);
   });
 
   it('accepts a key that the object lacks', () => {
