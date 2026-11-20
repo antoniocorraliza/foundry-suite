@@ -81,7 +81,7 @@ describe('FoundryCamelCaseKeys', () => {
 
   it('types keys longer than 64 characters as string', () => {
     type LongKey = 'this_key_has_more_than_sixty_four_characters_for_the_limit_of_types';
-    expectTypeOf<keyof FoundryCamelCaseKeys<Record<LongKey, number>>>().toEqualTypeOf<string>();
+    expectTypeOf<FoundryCamelCaseKeys<Record<LongKey, number>>>().toEqualTypeOf<Record<string, number>>();
   });
 
   it('compiles a 60-character key and a 12-level object without an excessive depth error', () => {

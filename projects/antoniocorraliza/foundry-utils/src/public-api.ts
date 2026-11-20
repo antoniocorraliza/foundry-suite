@@ -1,5 +1,16 @@
 export { FoundryCircularReferenceError } from './errors/foundry-circular-reference.error';
 export { FoundryCryptoUnavailableError } from './errors/foundry-crypto-unavailable.error';
 export { FoundryUtilsError } from './errors/foundry-utils.error';
+export { ɵdefineFoundryOwnProperty } from './functions/define-own-property.function';
+export { ɵformatFoundryObjectPath } from './functions/format-object-path.function';
+export { ɵgetFoundryOwnDataEntries } from './functions/get-own-data-entries.function';
+export { ɵgetFoundryValueKind } from './functions/get-value-kind.function';
+export { ɵgetFoundryValueTag } from './functions/get-value-tag.function';
+export { ɵisFoundryOptionsValue } from './functions/is-options-value.function';
+export { ɵisFoundryPlainObject } from './functions/is-plain-object.function';
 export type { FoundryBinaryInput } from './types/foundry-binary-input.type';
 export type { FoundryObjectPath } from './types/foundry-object-path.type';
+export type { ɵFoundryIsAny } from './types/is-any.type';
+export type { ɵFoundryIsKeptAsIs } from './types/is-kept-as-is.type';
+export type { ɵFoundryIsLongerThan } from './types/is-longer-than.type';
+export type { ɵFoundryValueKind } from './types/value-kind.type';

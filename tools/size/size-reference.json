@@ -37,12 +37,32 @@
   },
   "utils (root)": {
     "esbuild": {
-      "raw": 10,
-      "gzip": 10
+      "raw": 2622,
+      "gzip": 1051
     },
     "rollup": {
-      "raw": 39,
-      "gzip": 39
+      "raw": 2462,
+      "gzip": 1002
+    }
+  },
+  "utils/case": {
+    "esbuild": {
+      "raw": 4196,
+      "gzip": 1660
+    },
+    "rollup": {
+      "raw": 4086,
+      "gzip": 1587
+    }
+  },
+  "utils/case: toCamelCaseKeys": {
+    "esbuild": {
+      "raw": 3598,
+      "gzip": 1462
+    },
+    "rollup": {
+      "raw": 3573,
+      "gzip": 1429
     }
   },
   "utils/date": {
@@ -55,14 +75,34 @@
       "gzip": 39
     }
   },
-  "utils: every entry": {
+  "utils/object": {
     "esbuild": {
-      "raw": 21,
-      "gzip": 18
+      "raw": 10637,
+      "gzip": 3464
     },
     "rollup": {
-      "raw": 75,
-      "gzip": 45
+      "raw": 10496,
+      "gzip": 3313
+    }
+  },
+  "utils/object: isDeepEqual": {
+    "esbuild": {
+      "raw": 3126,
+      "gzip": 1077
+    },
+    "rollup": {
+      "raw": 3131,
+      "gzip": 1047
+    }
+  },
+  "utils: every entry": {
+    "esbuild": {
+      "raw": 13358,
+      "gzip": 4298
+    },
+    "rollup": {
+      "raw": 13151,
+      "gzip": 4128
     }
   }
 }

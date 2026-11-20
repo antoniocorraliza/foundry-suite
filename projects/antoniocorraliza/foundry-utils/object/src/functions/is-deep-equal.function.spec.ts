@@ -13,6 +13,12 @@ class FakeDate {
   readonly [Symbol.toStringTag]: string = 'Date';
 }
 
+class Unrelated {}
+
+function fakeTag(tag: string): object {
+  return Object.defineProperty(new Unrelated(), Symbol.toStringTag, { value: tag });
+}
+
 describe('isDeepEqual', () => {
   it.each([
     ['NaN and NaN', Number.NaN, Number.NaN],
@@ -122,6 +128,13 @@ describe('isDeepEqual', () => {
     expect(isDeepEqual(fake, new FakeDate())).toBe(false);
     expect(isDeepEqual(fake, new Date(0))).toBe(false);
   });
+
+  it.each(['Map', 'Set', 'RegExp', 'ArrayBuffer'])(
+    'takes an object that fakes the tag of a %s for another object, without throwing',
+    (tag) => {
+      expect(isDeepEqual(fakeTag(tag), fakeTag(tag))).toBe(false);
+    },
+  );
 
   it('is reflexive and symmetric', () => {
     fc.assert(

@@ -4,6 +4,5 @@ export class FoundryUtilsError extends Error {
 
   constructor(message: string, options?: { readonly cause?: unknown }) {
     super(message, options);
-    throw new Error('[foundry-utils]: not implemented');
   }
 }

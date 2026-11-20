@@ -1,5 +1,7 @@
 import type { FoundryKeyConversionOptions } from '../interfaces/foundry-key-conversion-options.interface';
 import type { FoundryCamelCaseKeys } from '../types/foundry-camel-case-keys.type';
+import { convertKeys } from './convert-keys.function';
+import { toCamelCase } from './to-camel-case.function';
 
 /**
  * Returns a copy with the keys of its plain objects converted to camelCase, in depth; other objects are kept by reference.
@@ -8,5 +10,5 @@ import type { FoundryCamelCaseKeys } from '../types/foundry-camel-case-keys.type
  * @throws {TypeError} When the options are not an object or have an unknown value.
  */
 export function toCamelCaseKeys<T>(value: T, options?: FoundryKeyConversionOptions): FoundryCamelCaseKeys<T> {
-  throw new Error('[foundry-utils]: not implemented');
+  return convertKeys(value, options, toCamelCase) as FoundryCamelCaseKeys<T>;
 }

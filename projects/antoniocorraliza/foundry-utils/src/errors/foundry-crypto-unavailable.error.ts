@@ -10,8 +10,7 @@ export class FoundryCryptoUnavailableError extends FoundryUtilsError {
     details: { readonly missingApi: 'crypto' | 'crypto.getRandomValues' | 'crypto.subtle' },
     options?: { readonly cause?: unknown },
   ) {
-    super('', options);
+    super(`[foundry-utils]: ${details.missingApi} is not available in this environment`, options);
     this.missingApi = details.missingApi;
-    throw new Error('[foundry-utils]: not implemented');
   }
 }

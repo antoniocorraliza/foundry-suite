@@ -43,15 +43,15 @@ describe('types of the object entry', () => {
     expectTypeOf(getObjectDifferences({}, {})).toEqualTypeOf<ReadonlyArray<FoundryObjectDifference>>();
   });
 
-  it('removes null and undefined from properties in depth, keeping dates and the items of arrays', () => {
+  it('makes every property optional and without null or undefined in depth, keeping dates and the items of arrays', () => {
     expectTypeOf<FoundryWithoutEmptyValues<Ticket>>().toEqualTypeOf<{
-      readonly id: string;
+      readonly id?: string;
       readonly title?: string;
       readonly due?: Date;
-      readonly lines: ReadonlyArray<{ readonly note?: string }>;
+      readonly lines?: ReadonlyArray<{ readonly note?: string }>;
     }>();
-    expectTypeOf(removeEmptyValues({ list: [1, null] })).toEqualTypeOf<{ list: Array<number | null> }>();
-    expectTypeOf(removeEmptyValues({ list: [1, null] }, { removeEmptyArrayItems: true })).toEqualTypeOf<{ list: Array<number> }>();
+    expectTypeOf(removeEmptyValues({ list: [1, null] })).toEqualTypeOf<{ list?: Array<number | null> }>();
+    expectTypeOf(removeEmptyValues({ list: [1, null] }, { removeEmptyArrayItems: true })).toEqualTypeOf<{ list?: Array<number> }>();
   });
 
   it('does not compile as a callback of map, which would pass the index as options', () => {

@@ -2,6 +2,13 @@ import type { SizeMeasurement } from '../interfaces/size-measurement.interface.t
 
 export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
   {
+    name: 'utils (root)',
+    packageFolder: 'foundry-utils',
+    target: 'bundle',
+    imports: [{ entry: '', symbols: 'whole-entry' }],
+    budget: { rawKilobytes: 3.2, gzipKilobytes: 1.3 },
+  },
+  {
     name: 'utils/number: clampNumber',
     packageFolder: 'foundry-utils',
     target: 'bundle',

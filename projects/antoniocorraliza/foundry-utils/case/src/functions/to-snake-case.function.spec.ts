@@ -46,10 +46,10 @@ describe('toSnakeCase', () => {
 });
 
 describe('round trip between snake_case and camelCase', () => {
-  it('returns every canonical snake_case key without two one-letter words in a row', () => {
+  it('returns every canonical snake_case key where no one-letter word is followed by a word without a lowercase second letter', () => {
     const words: fc.Arbitrary<Array<string>> = fc
       .array(LOWER_WORD, { minLength: 1, maxLength: 5 })
-      .filter((list) => list.every((word, index) => index < 2 || (list[index - 1] ?? '').length > 1 || !/^[a-z]\d*$/.test(word)));
+      .filter((list) => list.every((word, index) => index < 2 || (list[index - 1] ?? '').length > 1 || /^[a-z][a-z]/.test(word)));
     fc.assert(
       fc.property(UNDERSCORES, words, UNDERSCORES, (leading, list, trailing) => {
         const key: string = `${leading}${list.join('_')}${trailing}`;
@@ -75,6 +75,7 @@ describe('round trip between snake_case and camelCase', () => {
   it.each([
     ['pos_x_y', 'posXY', 'pos_xy'],
     ['x_a_b2', 'xAB2', 'x_ab2'],
+    ['a_a_a0a', 'aAA0a', 'a_aa0a'],
     ['a_b_c', 'aBC', 'a_bc'],
     ['is_a_b', 'isAB', 'is_ab'],
     ['get_a_b_test', 'getABTest', 'get_ab_test'],

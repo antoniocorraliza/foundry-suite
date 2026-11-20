@@ -20,6 +20,10 @@ describe('FoundryCircularReferenceError', () => {
     expect(error.message).toContain('items[2].owner');
   });
 
+  it('writes a key that is not an identifier with brackets and quotes', () => {
+    expect(new FoundryCircularReferenceError({ path: ['user name', 0] }).message).toContain('["user name"][0]');
+  });
+
   it('calls the empty path root in the message', () => {
     expect(new FoundryCircularReferenceError({ path: [] }).message).toContain('root');
   });
