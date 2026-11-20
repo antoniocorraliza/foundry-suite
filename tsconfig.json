@@ -10,12 +10,12 @@
   ],
   "compilerOptions": {
     "paths": {
-      "@antoniocorraliza/foundry-core": ["./dist/antoniocorraliza/foundry-core"],
-      "@antoniocorraliza/foundry-core/*": ["./dist/antoniocorraliza/foundry-core/*"],
-      "@antoniocorraliza/foundry-ui": ["./dist/antoniocorraliza/foundry-ui"],
-      "@antoniocorraliza/foundry-ui/*": ["./dist/antoniocorraliza/foundry-ui/*"],
-      "@antoniocorraliza/foundry-utils": ["./dist/antoniocorraliza/foundry-utils"],
-      "@antoniocorraliza/foundry-utils/*": ["./dist/antoniocorraliza/foundry-utils/*"]
+      "@antoniocorraliza/foundry-core": ["./projects/antoniocorraliza/foundry-core/src/public-api.ts"],
+      "@antoniocorraliza/foundry-core/*": ["./projects/antoniocorraliza/foundry-core/*/src/public-api.ts"],
+      "@antoniocorraliza/foundry-ui": ["./projects/antoniocorraliza/foundry-ui/src/public-api.ts"],
+      "@antoniocorraliza/foundry-ui/*": ["./projects/antoniocorraliza/foundry-ui/*/src/public-api.ts"],
+      "@antoniocorraliza/foundry-utils": ["./projects/antoniocorraliza/foundry-utils/src/public-api.ts"],
+      "@antoniocorraliza/foundry-utils/*": ["./projects/antoniocorraliza/foundry-utils/*/src/public-api.ts"]
     },
     "strict": true,
     "noUncheckedIndexedAccess": true,

@@ -17,9 +17,6 @@
           "configurations": {
             "production": {
               "tsConfig": "projects/antoniocorraliza/foundry-utils/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/antoniocorraliza/foundry-utils/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -40,9 +37,6 @@
           "configurations": {
             "production": {
               "tsConfig": "projects/antoniocorraliza/foundry-core/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/antoniocorraliza/foundry-core/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -63,9 +57,6 @@
           "configurations": {
             "production": {
               "tsConfig": "projects/antoniocorraliza/foundry-ui/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/antoniocorraliza/foundry-ui/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
