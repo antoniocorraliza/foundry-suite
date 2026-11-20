@@ -14,7 +14,7 @@ function startsWord(previous: string | undefined, character: string, next: strin
   return !isUpper(previous) || (next !== undefined && isLower(next));
 }
 
-function snakeWord(word: string): string {
+function toSnakeWord(word: string): string {
   const characters: Array<string> = word.split('');
   return characters
     .map(
@@ -26,5 +26,5 @@ function snakeWord(word: string): string {
 /** Converts one key to snake_case, keeping the underscores at both ends. */
 export function toSnakeCase(key: string): string {
   const frame: KeyFrame = splitKey(key);
-  return `${frame.leading}${frame.words.map(snakeWord).join('_')}${frame.trailing}`;
+  return `${frame.leading}${frame.words.map(toSnakeWord).join('_')}${frame.trailing}`;
 }

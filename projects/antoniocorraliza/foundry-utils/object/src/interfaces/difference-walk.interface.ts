@@ -1,6 +1,6 @@
-import type { FoundryObjectDifference } from '../interfaces/foundry-object-difference.interface';
 import type { ArrayMode } from '../types/array-mode.type';
 import type { CustomEquality } from '../types/custom-equality.type';
+import type { FoundryObjectDifference } from './foundry-object-difference.interface';
 
 /** What every step of the walk of `getObjectDifferences` shares. */
 export interface DifferenceWalk {

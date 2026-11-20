@@ -1,58 +1,57 @@
-import type { ɵFoundryValueKind } from '@antoniocorraliza/foundry-utils';
-import { ɵgetFoundryOwnDataEntries, ɵgetFoundryValueKind, ɵgetFoundryValueTag } from '@antoniocorraliza/foundry-utils';
+import type { ɵValueKind } from '@antoniocorraliza/foundry-utils';
+import { ɵgetOwnDataEntries, ɵgetValueKind, ɵgetValueTag } from '@antoniocorraliza/foundry-utils';
 import type { CompareValues } from '../types/compare-values.type';
 import type { CustomEquality } from '../types/custom-equality.type';
+import { readMapSize } from './read-map-size.function';
+import { readSetSize } from './read-set-size.function';
 
-function bytesOf(value: ArrayBuffer | ArrayBufferView): Uint8Array {
+function getBytes(value: ArrayBuffer | ArrayBufferView): Uint8Array {
   return ArrayBuffer.isView(value) ? new Uint8Array(value.buffer, value.byteOffset, value.byteLength) : new Uint8Array(value);
 }
 
 function areBytesEqual(first: ArrayBuffer | ArrayBufferView, second: ArrayBuffer | ArrayBufferView): boolean {
-  const firstBytes: Uint8Array = bytesOf(first);
-  const secondBytes: Uint8Array = bytesOf(second);
+  const firstBytes: Uint8Array = getBytes(first);
+  const secondBytes: Uint8Array = getBytes(second);
   return firstBytes.length === secondBytes.length && firstBytes.every((byte, index) => byte === secondBytes[index]);
 }
 
-function regExpParts(value: object): string {
+function getRegExpParts(value: object): string {
   const source: unknown = Object.getOwnPropertyDescriptor(RegExp.prototype, 'source')?.get?.call(value);
   const flags: unknown = Object.getOwnPropertyDescriptor(RegExp.prototype, 'flags')?.get?.call(value);
   return `${String(source)}/${String(flags)}`;
 }
 
 function areEntriesEqual(first: object, second: object, compare: CompareValues): boolean {
-  const firstEntries: Array<[string, unknown]> = ɵgetFoundryOwnDataEntries(first);
-  const secondValues: Map<string, unknown> = new Map<string, unknown>(ɵgetFoundryOwnDataEntries(second));
+  const firstEntries: Array<[string, unknown]> = ɵgetOwnDataEntries(first);
+  const secondValues: Map<string, unknown> = new Map<string, unknown>(ɵgetOwnDataEntries(second));
   return (
     firstEntries.length === secondValues.size &&
     firstEntries.every(([key, value]) => secondValues.has(key) && compare(value, secondValues.get(key)))
   );
 }
 
-function areSameKind(first: object, second: object, kind: ɵFoundryValueKind, compare: CompareValues): boolean {
+function areSameKind(first: object, second: object, kind: ɵValueKind, compare: CompareValues): boolean {
   switch (kind) {
     case 'date':
       return Object.is(Date.prototype.getTime.call(first), Date.prototype.getTime.call(second));
     case 'regExp':
-      return regExpParts(first) === regExpParts(second);
+      return getRegExpParts(first) === getRegExpParts(second);
     case 'map': {
+      if (readMapSize(first) !== readMapSize(second)) return false;
       const firstEntries: Array<[unknown, unknown]> = Array.from(Map.prototype.entries.call(first) as Iterable<[unknown, unknown]>);
-      const secondSize: number = Array.from(Map.prototype.keys.call(second) as Iterable<unknown>).length;
-      return (
-        firstEntries.length === secondSize &&
-        firstEntries.every(([key, value]) => Map.prototype.has.call(second, key) && compare(value, Map.prototype.get.call(second, key)))
+      return firstEntries.every(
+        ([key, value]) => Map.prototype.has.call(second, key) && compare(value, Map.prototype.get.call(second, key)),
       );
     }
     case 'set': {
+      if (readSetSize(first) !== readSetSize(second)) return false;
       const firstItems: Array<unknown> = Array.from(Set.prototype.values.call(first) as Iterable<unknown>);
-      const secondSize: number = Array.from(Set.prototype.values.call(second) as Iterable<unknown>).length;
-      return firstItems.length === secondSize && firstItems.every((item) => Set.prototype.has.call(second, item));
+      return firstItems.every((item) => Set.prototype.has.call(second, item));
     }
     case 'arrayBuffer':
       return areBytesEqual(first as ArrayBuffer, second as ArrayBuffer);
     case 'view':
-      return (
-        ɵgetFoundryValueTag(first) === ɵgetFoundryValueTag(second) && areBytesEqual(first as ArrayBufferView, second as ArrayBufferView)
-      );
+      return ɵgetValueTag(first) === ɵgetValueTag(second) && areBytesEqual(first as ArrayBufferView, second as ArrayBufferView);
     case 'array': {
       const firstItems: ReadonlyArray<unknown> = first as ReadonlyArray<unknown>;
       const secondItems: ReadonlyArray<unknown> = second as ReadonlyArray<unknown>;
@@ -73,8 +72,8 @@ export function areValuesEqual(first: unknown, second: unknown, customEquality: 
     if (isCustomEqual !== undefined) return isCustomEqual;
     if (left === right || (Number.isNaN(left) && Number.isNaN(right))) return true;
     if (typeof left !== 'object' || left === null || typeof right !== 'object' || right === null) return false;
-    const kind: ɵFoundryValueKind = ɵgetFoundryValueKind(left);
-    if (kind !== ɵgetFoundryValueKind(right)) return false;
+    const kind: ɵValueKind = ɵgetValueKind(left);
+    if (kind !== ɵgetValueKind(right)) return false;
     const seen: WeakSet<object> = visited.get(left) ?? new WeakSet<object>();
     if (seen.has(right)) return true;
     seen.add(right);

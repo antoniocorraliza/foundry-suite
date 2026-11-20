@@ -1,10 +1,5 @@
-import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
-import {
-  FoundryCircularReferenceError,
-  ɵdefineFoundryOwnProperty,
-  ɵgetFoundryOwnDataEntries,
-  ɵgetFoundryValueKind,
-} from '@antoniocorraliza/foundry-utils';
+import type { FoundryObjectPath, ɵValueKind } from '@antoniocorraliza/foundry-utils';
+import { FoundryCircularReferenceError, ɵdefineOwnProperty, ɵgetOwnDataEntries, ɵgetValueKind } from '@antoniocorraliza/foundry-utils';
 import type { EmptyValuesCleaning } from '../interfaces/empty-values-cleaning.interface';
 import type { FoundryRemoveEmptyValuesOptions } from '../interfaces/foundry-remove-empty-values-options.interface';
 import type { FoundryWithoutEmptyValues } from '../types/foundry-without-empty-values.type';
@@ -12,7 +7,7 @@ import { readCleaning } from './read-cleaning.function';
 
 function isEmptyCollection(value: unknown): boolean {
   if (Array.isArray(value)) return value.length === 0;
-  return ɵgetFoundryValueKind(value) === 'plainObject' && Object.keys(value as object).length === 0;
+  return ɵgetValueKind(value) === 'plainObject' && Object.keys(value as object).length === 0;
 }
 
 function isRemovedProperty(original: unknown, cleaned: unknown, cleaning: EmptyValuesCleaning): boolean {
@@ -22,7 +17,7 @@ function isRemovedProperty(original: unknown, cleaned: unknown, cleaning: EmptyV
 }
 
 function clean(value: unknown, path: FoundryObjectPath, ancestors: ReadonlyArray<object>, cleaning: EmptyValuesCleaning): unknown {
-  const kind: string = ɵgetFoundryValueKind(value);
+  const kind: ɵValueKind = ɵgetValueKind(value);
   if (kind !== 'array' && kind !== 'plainObject') return value;
   const object: object = value as object;
   if (ancestors.includes(object)) throw new FoundryCircularReferenceError({ path });
@@ -34,9 +29,9 @@ function clean(value: unknown, path: FoundryObjectPath, ancestors: ReadonlyArray
       .map(([, cleaned]) => cleaned);
   }
   const result: object = {};
-  ɵgetFoundryOwnDataEntries(object).forEach(([key, item]) => {
+  ɵgetOwnDataEntries(object).forEach(([key, item]) => {
     const cleaned: unknown = clean(item, [...path, key], inner, cleaning);
-    if (!isRemovedProperty(item, cleaned, cleaning)) ɵdefineFoundryOwnProperty(result, key, cleaned);
+    if (!isRemovedProperty(item, cleaned, cleaning)) ɵdefineOwnProperty(result, key, cleaned);
   });
   return result;
 }

@@ -7,7 +7,7 @@ type TrailingUnderscores<Text extends string, Suffix extends string = ''> = Text
   : [Text, Suffix];
 
 /** Splits a key into its leading underscores, its body and its trailing underscores. */
-export type KeyFrame<Key extends string> =
+export type KeyFrameOf<Key extends string> =
   LeadingUnderscores<Key> extends [infer Leading extends string, infer Rest extends string]
     ? TrailingUnderscores<Rest> extends [infer Body extends string, infer Trailing extends string]
       ? [Leading, Body, Trailing]

@@ -1,19 +1,19 @@
-import { ɵgetFoundryValueKind, ɵgetFoundryValueTag } from '@antoniocorraliza/foundry-utils';
+import { ɵgetValueKind, ɵgetValueTag } from '@antoniocorraliza/foundry-utils';
 import { FoundryCloneError } from '../errors/foundry-clone.error';
 import type { CloneLocation } from '../interfaces/clone-location.interface';
 
-function fail(location: CloneLocation, description: string): never {
+function throwCloneError(location: CloneLocation, description: string): never {
   throw new FoundryCloneError({
     path: location.path,
     valueDescription: location.place === null ? description : `${description} (${location.place})`,
   });
 }
 
-function inside(location: CloneLocation, key: string | number): CloneLocation {
+function enterLocation(location: CloneLocation, key: string | number): CloneLocation {
   return location.place === null ? { path: [...location.path, key], place: null } : location;
 }
 
-function className(value: object): string {
+function getClassName(value: object): string {
   const prototype: unknown = Object.getPrototypeOf(value);
   const constructorValue: unknown =
     typeof prototype === 'object' && prototype !== null ? Object.getOwnPropertyDescriptor(prototype, 'constructor')?.value : null;
@@ -23,22 +23,22 @@ function className(value: object): string {
 
 function checkOwnProperties(value: object, location: CloneLocation, visited: WeakSet<object>): void {
   Reflect.ownKeys(value).forEach((key) => {
-    if (typeof key === 'symbol') fail(location, 'symbol key');
+    if (typeof key === 'symbol') throwCloneError(location, 'symbol key');
     const descriptor: PropertyDescriptor | undefined = Object.getOwnPropertyDescriptor(value, key);
     if (descriptor === undefined || (Array.isArray(value) && key === 'length')) return;
-    if (!('value' in descriptor)) fail(inside(location, key), 'accessor');
-    if (descriptor.enumerable !== true) fail(inside(location, key), 'non-enumerable');
+    if (!('value' in descriptor)) throwCloneError(enterLocation(location, key), 'accessor');
+    if (descriptor.enumerable !== true) throwCloneError(enterLocation(location, key), 'non-enumerable');
     const segment: string | number = Array.isArray(value) && /^\d+$/.test(key) ? Number(key) : key;
-    checkValue(descriptor.value, inside(location, segment), visited);
+    checkValue(descriptor.value, enterLocation(location, segment), visited);
   });
 }
 
 function checkValue(value: unknown, location: CloneLocation, visited: WeakSet<object>): void {
-  if (typeof value === 'symbol') fail(location, 'symbol');
-  if (typeof value === 'function') fail(location, 'function');
+  if (typeof value === 'symbol') throwCloneError(location, 'symbol');
+  if (typeof value === 'function') throwCloneError(location, 'function');
   if (typeof value !== 'object' || value === null || visited.has(value)) return;
   visited.add(value);
-  switch (ɵgetFoundryValueKind(value)) {
+  switch (ɵgetValueKind(value)) {
     case 'plainObject':
     case 'array':
       checkOwnProperties(value, location, visited);
@@ -61,13 +61,13 @@ function checkValue(value: unknown, location: CloneLocation, visited: WeakSet<ob
     case 'blob':
       return;
     case 'error':
-      fail(location, 'Error');
+      throwCloneError(location, 'Error');
       return;
     case 'weakCollection':
-      fail(location, ɵgetFoundryValueTag(value).slice('[object '.length, -1));
+      throwCloneError(location, ɵgetValueTag(value).slice('[object '.length, -1));
       return;
     default:
-      fail(location, className(value));
+      throwCloneError(location, getClassName(value));
   }
 }
 

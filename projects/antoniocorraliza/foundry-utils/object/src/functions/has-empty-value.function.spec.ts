@@ -61,6 +61,15 @@ describe('hasEmptyValue', () => {
     expect(hasEmptyValue('x', { fields: ['a'] })).toBe(false);
   });
 
+  it('reads the size of a map or a set, not an own size property', () => {
+    const map: Map<string, number> = new Map<string, number>();
+    const set: Set<number> = new Set<number>([1]);
+    Object.defineProperty(map, 'size', { value: 3 });
+    Object.defineProperty(set, 'size', { value: 0 });
+    expect(hasEmptyValue(map)).toBe(true);
+    expect(hasEmptyValue(set)).toBe(false);
+  });
+
   it('does not count a cycle as empty', () => {
     const value: { self?: unknown; a: number } = { a: 1 };
     value.self = value;

@@ -1,5 +1,5 @@
 import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
-import { FoundryUtilsError, ɵformatFoundryObjectPath } from '@antoniocorraliza/foundry-utils';
+import { FoundryUtilsError, ɵformatObjectPath } from '@antoniocorraliza/foundry-utils';
 
 /** Reports two keys of the same object that convert to the same key. */
 export class FoundryKeyCollisionError extends FoundryUtilsError {
@@ -16,7 +16,7 @@ export class FoundryKeyCollisionError extends FoundryUtilsError {
     options?: { readonly cause?: unknown },
   ) {
     super(
-      `[foundry-utils]: the keys ${details.originalKeys[0]} and ${details.originalKeys[1]} of the object at ${ɵformatFoundryObjectPath(details.path)} both convert to ${details.convertedKey}`,
+      `[foundry-utils]: the keys ${details.originalKeys[0]} and ${details.originalKeys[1]} of the object at ${ɵformatObjectPath(details.path)} both convert to ${details.convertedKey}`,
       options,
     );
     this.path = details.path;

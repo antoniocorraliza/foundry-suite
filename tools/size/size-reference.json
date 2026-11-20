@@ -37,18 +37,18 @@
   },
   "utils (root)": {
     "esbuild": {
-      "raw": 2622,
-      "gzip": 1051
+      "raw": 2573,
+      "gzip": 1044
     },
     "rollup": {
-      "raw": 2462,
-      "gzip": 1002
+      "raw": 2413,
+      "gzip": 994
     }
   },
   "utils/case": {
     "esbuild": {
       "raw": 4196,
-      "gzip": 1660
+      "gzip": 1662
     },
     "rollup": {
       "raw": 4086,
@@ -77,32 +77,32 @@
   },
   "utils/object": {
     "esbuild": {
-      "raw": 10637,
-      "gzip": 3464
+      "raw": 10575,
+      "gzip": 3474
     },
     "rollup": {
-      "raw": 10496,
-      "gzip": 3313
+      "raw": 10444,
+      "gzip": 3330
     }
   },
   "utils/object: isDeepEqual": {
     "esbuild": {
       "raw": 3126,
-      "gzip": 1077
+      "gzip": 1093
     },
     "rollup": {
-      "raw": 3131,
-      "gzip": 1047
+      "raw": 3145,
+      "gzip": 1068
     }
   },
   "utils: every entry": {
     "esbuild": {
-      "raw": 13358,
-      "gzip": 4298
+      "raw": 13247,
+      "gzip": 4303
     },
     "rollup": {
-      "raw": 13151,
-      "gzip": 4128
+      "raw": 13050,
+      "gzip": 4140
     }
   }
 }

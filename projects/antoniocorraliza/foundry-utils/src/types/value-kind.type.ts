@@ -1,5 +1,5 @@
 /** Names how the functions of Utils treat a value; for internal use of the entries. */
-export type ɵFoundryValueKind =
+export type ɵValueKind =
   | 'primitive'
   | 'function'
   | 'plainObject'

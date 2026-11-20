@@ -136,6 +136,15 @@ describe('isDeepEqual', () => {
     },
   );
 
+  it('compares the real sizes of maps and sets, not an own size property', () => {
+    const map: Map<string, number> = new Map<string, number>([['k', 1]]);
+    const set: Set<number> = new Set<number>([1]);
+    Object.defineProperty(map, 'size', { value: 2 });
+    Object.defineProperty(set, 'size', { value: 2 });
+    expect(isDeepEqual(map, new Map<string, number>([['k', 1]]))).toBe(true);
+    expect(isDeepEqual(set, new Set<number>([1]))).toBe(true);
+  });
+
   it('is reflexive and symmetric', () => {
     fc.assert(
       fc.property(fc.anything(), fc.anything(), (first, second) => {

@@ -1,24 +1,24 @@
-import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
-import { ɵgetFoundryOwnDataEntries, ɵgetFoundryValueKind, ɵisFoundryOptionsValue } from '@antoniocorraliza/foundry-utils';
+import type { FoundryObjectPath, ɵValueKind } from '@antoniocorraliza/foundry-utils';
+import { ɵgetOwnDataEntries, ɵgetValueKind, ɵisOptionsValue } from '@antoniocorraliza/foundry-utils';
 import type { DifferenceWalk } from '../interfaces/difference-walk.interface';
 import type { FoundryDeepEqualOptions } from '../interfaces/foundry-deep-equal-options.interface';
 import type { FoundryObjectDifference } from '../interfaces/foundry-object-difference.interface';
 import type { ArrayMode } from '../types/array-mode.type';
+import type { CustomEquality } from '../types/custom-equality.type';
 import { areValuesEqual } from './are-values-equal.function';
-import { readCustomEquality } from './read-custom-equality.function';
 
-function arrayMode(options: unknown): ArrayMode {
-  if (!ɵisFoundryOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of getObjectDifferences must be an object');
+function getArrayMode(options: unknown): ArrayMode {
+  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of getObjectDifferences must be an object');
   const mode: unknown = options?.['arrays'] ?? 'atomic';
   if (mode === 'atomic' || mode === 'byIndex') return mode;
   throw new TypeError(`[foundry-utils]: unknown arrays option ${String(mode)}`);
 }
 
-function checkCustomEquality(options: unknown): void {
+function getCustomEquality(options: unknown): CustomEquality | null {
   const customEquality: unknown = (options as Readonly<Record<string, unknown>> | undefined)?.['customEquality'];
-  if (customEquality !== undefined && typeof customEquality !== 'function') {
-    throw new TypeError('[foundry-utils]: the customEquality option must be a function');
-  }
+  if (customEquality === undefined) return null;
+  if (typeof customEquality !== 'function') throw new TypeError('[foundry-utils]: the customEquality option must be a function');
+  return customEquality as CustomEquality;
 }
 
 function isFirstVisit(walk: DifferenceWalk, previous: object, current: object): boolean {
@@ -29,26 +29,26 @@ function isFirstVisit(walk: DifferenceWalk, previous: object, current: object): 
   return true;
 }
 
-function addedDifference(path: FoundryObjectPath, current: unknown): FoundryObjectDifference {
+function createAddedDifference(path: FoundryObjectPath, current: unknown): FoundryObjectDifference {
   // eslint-disable-next-line no-restricted-syntax -- the design gives undefined as the previous value of an added value
   return { path, kind: 'added', previous: undefined, current };
 }
 
-function removedDifference(path: FoundryObjectPath, previous: unknown): FoundryObjectDifference {
+function createRemovedDifference(path: FoundryObjectPath, previous: unknown): FoundryObjectDifference {
   // eslint-disable-next-line no-restricted-syntax -- the design gives undefined as the current value of a removed value
   return { path, kind: 'removed', previous, current: undefined };
 }
 
 function compareEntries(walk: DifferenceWalk, previous: object, current: object, path: FoundryObjectPath): void {
-  const currentValues: Map<string, unknown> = new Map<string, unknown>(ɵgetFoundryOwnDataEntries(current));
+  const currentValues: Map<string, unknown> = new Map<string, unknown>(ɵgetOwnDataEntries(current));
   const previousKeys: Set<string> = new Set<string>();
-  ɵgetFoundryOwnDataEntries(previous).forEach(([key, value]) => {
+  ɵgetOwnDataEntries(previous).forEach(([key, value]) => {
     previousKeys.add(key);
-    if (!currentValues.has(key)) walk.differences.push(removedDifference([...path, key], value));
+    if (!currentValues.has(key)) walk.differences.push(createRemovedDifference([...path, key], value));
     else compareValues(walk, value, currentValues.get(key), [...path, key]);
   });
   currentValues.forEach((value, key) => {
-    if (!previousKeys.has(key)) walk.differences.push(addedDifference([...path, key], value));
+    if (!previousKeys.has(key)) walk.differences.push(createAddedDifference([...path, key], value));
   });
 }
 
@@ -56,8 +56,8 @@ function compareItems(walk: DifferenceWalk, previous: unknown, current: unknown,
   const previousItems: ReadonlyArray<unknown> = previous as ReadonlyArray<unknown>;
   const currentItems: ReadonlyArray<unknown> = current as ReadonlyArray<unknown>;
   Array.from({ length: Math.max(previousItems.length, currentItems.length) }, (_item, index) => index).forEach((index) => {
-    if (index >= currentItems.length) walk.differences.push(removedDifference([...path, index], previousItems[index]));
-    else if (index >= previousItems.length) walk.differences.push(addedDifference([...path, index], currentItems[index]));
+    if (index >= currentItems.length) walk.differences.push(createRemovedDifference([...path, index], previousItems[index]));
+    else if (index >= previousItems.length) walk.differences.push(createAddedDifference([...path, index], currentItems[index]));
     else compareValues(walk, previousItems[index], currentItems[index], [...path, index]);
   });
 }
@@ -65,8 +65,8 @@ function compareItems(walk: DifferenceWalk, previous: unknown, current: unknown,
 function compareValues(walk: DifferenceWalk, previous: unknown, current: unknown, path: FoundryObjectPath): void {
   const isCustomEqual: boolean | undefined = walk.customEquality?.(previous, current);
   if (isCustomEqual === true) return;
-  const previousKind: string = ɵgetFoundryValueKind(previous);
-  const currentKind: string = ɵgetFoundryValueKind(current);
+  const previousKind: ɵValueKind = ɵgetValueKind(previous);
+  const currentKind: ɵValueKind = ɵgetValueKind(current);
   const isWalkable: boolean =
     isCustomEqual === undefined &&
     previousKind === currentKind &&
@@ -92,12 +92,11 @@ export function getObjectDifferences(
   options?: { readonly arrays?: 'atomic' | 'byIndex' } & FoundryDeepEqualOptions,
 ): ReadonlyArray<FoundryObjectDifference> {
   const walk: DifferenceWalk = {
-    arrayMode: arrayMode(options),
-    customEquality: readCustomEquality(options),
+    arrayMode: getArrayMode(options),
+    customEquality: getCustomEquality(options),
     differences: [],
     visited: new WeakMap<object, WeakSet<object>>(),
   };
-  checkCustomEquality(options);
   compareValues(walk, previous, current, []);
   return walk.differences;
 }

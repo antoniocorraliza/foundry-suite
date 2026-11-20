@@ -1,5 +1,5 @@
 import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
-import { FoundryUtilsError, ɵformatFoundryObjectPath } from '@antoniocorraliza/foundry-utils';
+import { FoundryUtilsError, ɵformatObjectPath } from '@antoniocorraliza/foundry-utils';
 
 /** Reports a value that `deepClone` cannot copy without changing it. */
 export class FoundryCloneError extends FoundryUtilsError {
@@ -11,7 +11,7 @@ export class FoundryCloneError extends FoundryUtilsError {
 
   constructor(details: { readonly path: FoundryObjectPath; readonly valueDescription: string }, options?: { readonly cause?: unknown }) {
     super(
-      `[foundry-utils]: cannot copy the ${details.valueDescription} at ${ɵformatFoundryObjectPath(details.path)} without changing it`,
+      `[foundry-utils]: cannot copy the ${details.valueDescription} at ${ɵformatObjectPath(details.path)} without changing it`,
       options,
     );
     this.path = details.path;

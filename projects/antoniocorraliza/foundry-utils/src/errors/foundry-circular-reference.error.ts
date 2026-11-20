@@ -1,4 +1,4 @@
-import { ɵformatFoundryObjectPath } from '../functions/format-object-path.function';
+import { ɵformatObjectPath } from '../functions/format-object-path.function';
 import type { FoundryObjectPath } from '../types/foundry-object-path.type';
 import { FoundryUtilsError } from './foundry-utils.error';
 
@@ -9,7 +9,7 @@ export class FoundryCircularReferenceError extends FoundryUtilsError {
   readonly path: FoundryObjectPath;
 
   constructor(details: { readonly path: FoundryObjectPath }, options?: { readonly cause?: unknown }) {
-    super(`[foundry-utils]: the value at ${ɵformatFoundryObjectPath(details.path)} points back to one of its ancestors`, options);
+    super(`[foundry-utils]: the value at ${ɵformatObjectPath(details.path)} points back to one of its ancestors`, options);
     this.path = details.path;
   }
 }

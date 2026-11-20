@@ -1,4 +1,4 @@
-import type { ɵFoundryIsAny, ɵFoundryIsKeptAsIs } from '@antoniocorraliza/foundry-utils';
+import type { ɵIsAny, ɵIsKeptAsIs } from '@antoniocorraliza/foundry-utils';
 
 type WithoutEmptyValue<T, RemoveArrayItems extends boolean, Depth extends ReadonlyArray<unknown>> = T extends object
   ? Depth['length'] extends 16
@@ -9,7 +9,7 @@ type WithoutEmptyValue<T, RemoveArrayItems extends boolean, Depth extends Readon
             ? FoundryWithoutEmptyValues<NonNullable<T[Index]>, RemoveArrayItems, [...Depth, unknown]>
             : FoundryWithoutEmptyValues<T[Index], RemoveArrayItems, [...Depth, unknown]>;
         }
-      : ɵFoundryIsKeptAsIs<T> extends true
+      : ɵIsKeptAsIs<T> extends true
         ? T
         : {
             [Key in keyof T as Key extends symbol ? never : Key]?: FoundryWithoutEmptyValues<
@@ -22,4 +22,4 @@ type WithoutEmptyValue<T, RemoveArrayItems extends boolean, Depth extends Readon
 
 /** Computes the result of `removeEmptyValues`: optional properties without `null` or `undefined`, in depth. */
 export type FoundryWithoutEmptyValues<T, RemoveArrayItems extends boolean = false, Depth extends ReadonlyArray<unknown> = []> =
-  ɵFoundryIsAny<T> extends true ? T : unknown extends T ? unknown : WithoutEmptyValue<T, RemoveArrayItems, Depth>;
+  ɵIsAny<T> extends true ? T : unknown extends T ? unknown : WithoutEmptyValue<T, RemoveArrayItems, Depth>;

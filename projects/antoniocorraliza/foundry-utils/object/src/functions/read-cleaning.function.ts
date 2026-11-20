@@ -1,4 +1,4 @@
-import { ɵisFoundryOptionsValue } from '@antoniocorraliza/foundry-utils';
+import { ɵisOptionsValue } from '@antoniocorraliza/foundry-utils';
 import type { EmptyValuesCleaning } from '../interfaces/empty-values-cleaning.interface';
 
 function readFlag(options: Readonly<Record<string, unknown>> | undefined, name: string): boolean {
@@ -12,7 +12,7 @@ function readFlag(options: Readonly<Record<string, unknown>> | undefined, name: 
  * @throws {TypeError} When the options are not an object or have an unknown value.
  */
 export function readCleaning(options: unknown): EmptyValuesCleaning {
-  if (!ɵisFoundryOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of removeEmptyValues must be an object');
+  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of removeEmptyValues must be an object');
   return {
     removeEmptyStrings: readFlag(options, 'removeEmptyStrings'),
     removeEmptyCollections: readFlag(options, 'removeEmptyCollections'),

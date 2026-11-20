@@ -1,7 +1,7 @@
 import type { FoundryObjectPath } from '../types/foundry-object-path.type';
 
 /** Writes a path as in JavaScript (`items[2].owner`), or `root` for the empty path; for error messages. */
-export function ɵformatFoundryObjectPath(path: FoundryObjectPath): string {
+export function ɵformatObjectPath(path: FoundryObjectPath): string {
   if (path.length === 0) return 'root';
   return path
     .map((segment, index) => {

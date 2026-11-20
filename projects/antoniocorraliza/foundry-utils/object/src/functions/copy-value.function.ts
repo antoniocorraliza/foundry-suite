@@ -1,11 +1,11 @@
-import { ɵdefineFoundryOwnProperty, ɵgetFoundryOwnDataEntries, ɵgetFoundryValueKind } from '@antoniocorraliza/foundry-utils';
+import { ɵdefineOwnProperty, ɵgetOwnDataEntries, ɵgetValueKind } from '@antoniocorraliza/foundry-utils';
 
 function copyContainer(value: object, copies: Map<object, unknown>): unknown {
-  switch (ɵgetFoundryValueKind(value)) {
+  switch (ɵgetValueKind(value)) {
     case 'array': {
       const copy: Array<unknown> = new Array<unknown>((value as ReadonlyArray<unknown>).length);
       copies.set(value, copy);
-      ɵgetFoundryOwnDataEntries(value).forEach(([key, item]) => {
+      ɵgetOwnDataEntries(value).forEach(([key, item]) => {
         if (/^\d+$/.test(key)) copy[Number(key)] = copyValueWith(item, copies);
       });
       return copy;
@@ -13,7 +13,7 @@ function copyContainer(value: object, copies: Map<object, unknown>): unknown {
     case 'plainObject': {
       const copy: object = {};
       copies.set(value, copy);
-      ɵgetFoundryOwnDataEntries(value).forEach(([key, item]) => ɵdefineFoundryOwnProperty(copy, key, copyValueWith(item, copies)));
+      ɵgetOwnDataEntries(value).forEach(([key, item]) => ɵdefineOwnProperty(copy, key, copyValueWith(item, copies)));
       return copy;
     }
     case 'map': {
