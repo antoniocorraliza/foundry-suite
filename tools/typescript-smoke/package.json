@@ -1,0 +1,14 @@
+{
+  "name": "@antoniocorraliza/foundry-suite-typescript-smoke",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Consumer app that compiles against the Foundry Utils tarball with TypeScript 5.5, 6.0 and 7, with and without the DOM types, and as CommonJS. Only the full CI level installs it.",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "typescript-5.5": "npm:typescript@5.5.4",
+    "typescript-6.0": "npm:typescript@6.0.3",
+    "typescript-7": "npm:typescript@7.0.2"
+  }
+}
