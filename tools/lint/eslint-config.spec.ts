@@ -561,3 +561,97 @@ describe.skipIf(IS_ESLINT_MISSING)('protected members of the libraries', () => {
     expect(await findMessageLines(code, path, 'Object types get a name')).toEqual([3]);
   });
 });
+
+describe.skipIf(IS_ESLINT_MISSING)('function names', () => {
+  const message: string = 'Functions start with a verb';
+  const ruleId: string = '@typescript-eslint/naming-convention';
+
+  it('accepts functions, methods and function constants that start with a verb of the list', async () => {
+    const code: string = [
+      "import type { HttpInterceptorFn } from '@angular/common/http';",
+      'export function getEntryFiles(): Array<string> {',
+      '  const runWorker = (): void => {};',
+      '  runWorker();',
+      '  return [];',
+      '}',
+      'function main(): void {}',
+      'export const foundryProbeInterceptor: HttpInterceptorFn = (request, next) => next(request);',
+      'export class ProbeComponent {',
+      '  private readonly onPointerEnter = (): void => {};',
+      '  ngOnInit(): void {}',
+      '  protected onSave(): void {}',
+      '}',
+      'export interface Snapshot {',
+      '  listChanges(): Array<string>;',
+      '}',
+      'const plugin: object = { setup(): void {}, renderChunk: (code: string): string => code };',
+      'main();',
+      '',
+    ].join('\n');
+    expect(await findRuleLines(code, 'tools/probe/probe.ts', ruleId)).toEqual([]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
+  });
+
+  it('rejects functions, methods and interface methods that start with a noun', async () => {
+    const code: string = [
+      'export function entryFiles(): Array<string> {',
+      '  return [];',
+      '}',
+      'export class Probe {',
+      '  label(): string {',
+      "    return '';",
+      '  }',
+      '}',
+      'export interface Snapshot {',
+      '  changes(): Array<string>;',
+      '}',
+      '',
+    ].join('\n');
+    expect(await findRuleLines(code, 'tools/probe/probe.ts', ruleId)).toEqual([1, 5, 10]);
+  });
+
+  it('rejects function constants and function properties that start with a noun', async () => {
+    const code: string = [
+      'export function runAll(): void {',
+      '  const worker = (): void => {};',
+      '  worker();',
+      '}',
+      'export class Probe {',
+      '  private readonly pointerEnter = (): void => {};',
+      '}',
+      '',
+    ].join('\n');
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([2, 6]);
+  });
+
+  it('checks the internal functions with the private prefix and lets deepClone keep its design name', async () => {
+    const path: string = 'projects/antoniocorraliza/foundry-utils/src/functions/probe.function.ts';
+    const code: string = [
+      '/**',
+      ' * Returns the kind.',
+      ' */',
+      'export function \u0275getKind(): string {',
+      "  return '';",
+      '}',
+      '/**',
+      ' * Returns the kind.',
+      ' */',
+      'export function \u0275valueKind(): string {',
+      "  return '';",
+      '}',
+      '/**',
+      ' * Returns a copy.',
+      ' */',
+      'export function deepClone<T>(value: T): T {',
+      '  return value;',
+      '}',
+      '',
+    ].join('\n');
+    expect(await findRuleLines(code, path, ruleId)).toEqual([10]);
+  });
+
+  it('checks the functions of the tests too', async () => {
+    const code: string = ['function tarballOf(): string {', "  return '';", '}', 'tarballOf();', ''].join('\n');
+    expect(await findRuleLines(code, 'tools/probe/probe.spec.ts', ruleId)).toEqual([1]);
+  });
+});

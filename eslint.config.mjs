@@ -46,17 +46,118 @@ const CODE_SHAPE_SELECTORS = [
     message: 'Lists are walked with array methods (forEach, map, filter, reduce...): a loop only to await inside it or to stop early.',
   })),
 ];
+// Every function starts with a verb of this list; add one here when a new name needs it.
+const FUNCTION_VERBS = [
+  'add',
+  'apply',
+  'are',
+  'build',
+  'bundle',
+  'can',
+  'capitalize',
+  'check',
+  'clamp',
+  'clean',
+  'clear',
+  'clone',
+  'close',
+  'collect',
+  'compare',
+  'compile',
+  'convert',
+  'copy',
+  'create',
+  'define',
+  'describe',
+  'dismiss',
+  'download',
+  'emit',
+  'end',
+  'enter',
+  'escape',
+  'filter',
+  'find',
+  'forbid',
+  'format',
+  'freeze',
+  'generate',
+  'get',
+  'handle',
+  'has',
+  'hide',
+  'intercept',
+  'is',
+  'list',
+  'load',
+  'mask',
+  'measure',
+  'move',
+  'normalize',
+  'omit',
+  'on',
+  'open',
+  'pack',
+  'pad',
+  'parse',
+  'pick',
+  'print',
+  'read',
+  'register',
+  'remove',
+  'reset',
+  'resolve',
+  'round',
+  'run',
+  'schedule',
+  'select',
+  'send',
+  'set',
+  'show',
+  'sleep',
+  'sort',
+  'split',
+  'start',
+  'strip',
+  'throw',
+  'to',
+  'toggle',
+  'transform',
+  'truncate',
+  'update',
+  'use',
+  'validate',
+  'visit',
+  'wait',
+  'write',
+];
+// main() of the scripts, the names of the Utils design and the lifecycle hooks of Angular keep their names. The keys of an
+// object literal are not checked: whoever receives the object names them (plugin hooks, options).
+const FUNCTION_NAME_EXCEPTIONS = '^(?:main|deepClone|customEquality|ng[A-Z]\\w*)$';
+const FUNCTION_NAME = `^\\u0275?(?:${FUNCTION_VERBS.join('|')})(?![a-z])`;
+const FUNCTION_NAME_MESSAGE = 'Functions start with a verb of FUNCTION_VERBS in eslint.config.mjs (getEntryFiles, not entryFiles).';
+const FUNCTION_VALUE_TYPES = '/^(?:ArrowFunctionExpression|FunctionExpression)$/';
+const FUNCTION_NAME_SELECTORS = [
+  {
+    selector: `VariableDeclarator[init.type=${FUNCTION_VALUE_TYPES}]:not([id.typeAnnotation.typeAnnotation.typeName.name=/Fn$/]) > Identifier.id:not([name=/${FUNCTION_NAME}/])`,
+    message: FUNCTION_NAME_MESSAGE,
+  },
+  {
+    selector: `PropertyDefinition[value.type=${FUNCTION_VALUE_TYPES}] > Identifier.key:not([name=/${FUNCTION_NAME}/])`,
+    message: FUNCTION_NAME_MESSAGE,
+  },
+];
 const COMMON_SELECTORS = [
   ...MESSAGE_SELECTORS,
   ...LIFECYCLE_HOOK_SELECTORS,
   ...CODE_SHAPE_SELECTORS,
+  ...FUNCTION_NAME_SELECTORS,
   { selector: 'Identifier[name=/\\$$/]', message: 'Observables end in `Observable`, not `$` (itemsObservable).' },
 ];
 
 // The libraries export what their designs fix, so these rules only look at their internal code there: declarations
 // that are not exported, function bodies, and private and protected members.
 const INTERNAL_ACCESS = ":matches([accessibility='private'], [accessibility='protected'])";
-function internalOnly(selector, subject) {
+function selectInternalCode(selector, subject) {
   const selectors = [
     `${selector}:not(ExportNamedDeclaration ${subject})`,
     `ExportNamedDeclaration BlockStatement ${selector}`,
@@ -68,14 +169,14 @@ function internalOnly(selector, subject) {
   return selectors;
 }
 const NAMED_DECLARATIONS = ['Identifier[name!=NAME]', 'PropertyDefinition[key.name!=NAME]', 'TSPropertySignature[key.name!=NAME]'];
-function namingSelectors(namePattern, types, subject, message) {
+function createNamingSelectors(namePattern, types, subject, message) {
   return NAMED_DECLARATIONS.flatMap((declaration) =>
     types.map((type) => ({ selector: `${declaration.replace('NAME', namePattern)} > TSTypeAnnotation > ${type}`, subject, message })),
   );
 }
 const SUBJECT_TYPE = 'TSTypeReference[typeName.name=/^(?:Subject|BehaviorSubject|ReplaySubject|AsyncSubject)$/]';
 const NAMING_RULES = [
-  ...namingSelectors(
+  ...createNamingSelectors(
     '/^(?:is|has|can)[A-Z]|^(?:IS|HAS|CAN)_/',
     [
       'TSBooleanKeyword',
@@ -85,13 +186,13 @@ const NAMING_RULES = [
     'TSBooleanKeyword',
     'Booleans start with is, has or can (isOpen, hasError, canSubmit).',
   ),
-  ...namingSelectors(
+  ...createNamingSelectors(
     '/Observable$/',
     ["TSTypeReference[typeName.name='Observable']", "TSUnionType > TSTypeReference[typeName.name='Observable']"],
     'TSTypeReference',
     'Observables end in `Observable` (itemsObservable).',
   ),
-  ...namingSelectors('/Subject$/', [SUBJECT_TYPE], 'TSTypeReference', 'Subjects end in `Subject` (itemsSubject).'),
+  ...createNamingSelectors('/Subject$/', [SUBJECT_TYPE], 'TSTypeReference', 'Subjects end in `Subject` (itemsSubject).'),
 ];
 // A Subject is never public, not even in the libraries: it is exposed with asObservable() as xObservable.
 const SUBJECT_SELECTORS = forbid(
@@ -100,7 +201,7 @@ const SUBJECT_SELECTORS = forbid(
 );
 const NAMING_SELECTORS = NAMING_RULES.map(({ selector, message }) => ({ selector, message }));
 const LIBRARY_NAMING_SELECTORS = NAMING_RULES.flatMap(({ selector, subject, message }) =>
-  internalOnly(selector, subject).map((internalSelector) => ({ selector: internalSelector, message })),
+  selectInternalCode(selector, subject).map((internalSelector) => ({ selector: internalSelector, message })),
 );
 const NULL_MESSAGE = 'Internal code uses null for "no value": undefined only comes from the language, and is only compared.';
 const NULL_RULES = [
@@ -112,7 +213,7 @@ const NULL_RULES = [
 ];
 const NULL_SELECTORS = NULL_RULES.map(({ selector }) => ({ selector, message: NULL_MESSAGE }));
 const LIBRARY_NULL_SELECTORS = NULL_RULES.flatMap(({ selector, subject }) =>
-  internalOnly(selector, subject).map((internalSelector) => ({ selector: internalSelector, message: NULL_MESSAGE })),
+  selectInternalCode(selector, subject).map((internalSelector) => ({ selector: internalSelector, message: NULL_MESSAGE })),
 );
 const GENERAL_SELECTORS = [...COMMON_SELECTORS, ...NAMING_SELECTORS, ...NULL_SELECTORS, ...SUBJECT_SELECTORS];
 const ANGULAR_SELECTORS = [
@@ -170,7 +271,7 @@ const LIBRARY_FILES = 'projects/**/';
 const PUBLIC_PROPERTY = "PropertyDefinition:not([accessibility='private']):not([accessibility='protected'])";
 // The name of an error class is its literal value: a JSDoc there would only repeat it.
 const ERROR_CLASS_NAME = "[override=true][readonly=true][key.name='name']";
-function requireJsdocOptions(publicProperty) {
+function createJsdocOptions(publicProperty) {
   return {
     publicOnly: { esm: true },
     require: { FunctionDeclaration: true, ClassDeclaration: true, MethodDefinition: true },
@@ -304,6 +405,15 @@ export default defineConfig([
       // One inner list: the groups keep their order but are not separated by blank lines.
       'simple-import-sort/imports': ['error', { groups: [['^\\u0000', '^node:', '^@?\\w', '^@antoniocorraliza(?:/|$)', '^\\.']] }],
       '@typescript-eslint/array-type': ['error', { default: 'generic' }],
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: ['function', 'classMethod', 'typeMethod'],
+          format: null,
+          filter: { regex: FUNCTION_NAME_EXCEPTIONS, match: false },
+          custom: { regex: FUNCTION_NAME, match: true },
+        },
+      ],
       '@typescript-eslint/consistent-generic-constructors': ['error', 'type-annotation'],
       '@typescript-eslint/explicit-function-return-type': ['error', { allowExpressions: true, allowTypedFunctionExpressions: true }],
       '@typescript-eslint/no-inferrable-types': 'off',
@@ -368,7 +478,7 @@ export default defineConfig([
     plugins: { jsdoc },
     settings: { jsdoc: { mode: 'typescript' } },
     rules: {
-      'jsdoc/require-jsdoc': ['error', requireJsdocOptions(PUBLIC_PROPERTY)],
+      'jsdoc/require-jsdoc': ['error', createJsdocOptions(PUBLIC_PROPERTY)],
       'jsdoc/match-description': [
         'error',
         {
@@ -398,7 +508,7 @@ export default defineConfig([
   {
     files: ['projects/**/errors/**/*.ts'],
     ignores: EXEMPT_FILES,
-    rules: { 'jsdoc/require-jsdoc': ['error', requireJsdocOptions(`${PUBLIC_PROPERTY}:not(${ERROR_CLASS_NAME})`)] },
+    rules: { 'jsdoc/require-jsdoc': ['error', createJsdocOptions(`${PUBLIC_PROPERTY}:not(${ERROR_CLASS_NAME})`)] },
   },
   {
     files: ['**/*.html'],
