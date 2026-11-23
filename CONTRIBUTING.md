@@ -79,7 +79,16 @@ export function parseCalendarDay(text: string): FoundryCalendarDay | null {}
 export function parseCalendarDay(text: string): FoundryCalendarDay | null {}
 ```
 
-Checked by: ESLint `eslint-plugin-jsdoc` in `projects/`: JSDoc required on everything exported (functions, classes, interfaces, types, constants, and the public methods and properties of exported classes; not on `private` or `protected` members), a function description that starts with a verb ending in "s" and not with "This", "A" or "Helper" (`match-description`), no types in tags (`no-types`), no tag that only repeats its name (`informative-docs`), `@param` names that exist, descriptions in `@param` and `@returns`, `@throws` when the body throws (`require-throws`) and a one-line `@example`. `tools/lint/check-text.ts` rejects the sales words and the filler openings in any JSDoc line, and a `@throws` on an `is...` or `has...` function or method. Review: the number of sentences, that nothing repeats the types, `@throws` for errors thrown by the functions it calls, whether an `@example` is needed, English and other filler that the lists do not catch.
+Checked by:
+
+- ESLint `eslint-plugin-jsdoc`, in `projects/`:
+  - JSDoc on everything exported: functions, classes, interfaces, types, constants, and the public methods and properties of exported classes (not `private` or `protected` members);
+  - a function description that starts with a verb ending in "s", and not with "This", "A" or "Helper" (`match-description`);
+  - no types in tags (`no-types`) and no tag that only repeats its name (`informative-docs`);
+  - `@param` names that exist, and descriptions in `@param` and `@returns`;
+  - `@throws` when the body throws (`require-throws`), and a one-line `@example`.
+- `tools/lint/check-text.ts`: the sales words and the filler openings in any JSDoc line, and a `@throws` on an `is...` or `has...` function or method.
+- Review: the number of sentences, that nothing repeats the types, `@throws` for the errors of the functions it calls, whether an `@example` is needed, English, and filler that the lists do not catch.
 
 ### 3. No process references
 
