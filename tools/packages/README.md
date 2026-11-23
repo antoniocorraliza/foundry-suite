@@ -41,7 +41,7 @@ Run it after `npm run build`. It packs each package with `npm pack`, unpacks the
 | Rule           | What it checks                                                                                                                                                                                                                    |
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `exports`      | every entry point has an export with `types` (first) and `default` (last), and the files exist; a pattern export (`./styles/*.css`) fails without matching files when `sideEffects` lists CSS and its folder exists in the source |
-| `license`      | `LICENSE` is in the tarball, identical to the root one, and `"license"` is `"MIT"`                                                                                                                                                |
+| `license`      | `LICENSE` is in the tarball, identical to the root one, and `"license"` is `"MIT"`, followed by ` AND <SPDX id>` for each required notice                                                                                         |
 | `tslib`        | no file imports tslib and no manifest field declares it                                                                                                                                                                           |
 | `any`          | no `any` in the published `.d.ts` files                                                                                                                                                                                           |
 | `dependencies` | `dependencies` is empty; no `optionalDependencies` or `bundleDependencies`                                                                                                                                                        |
@@ -53,12 +53,12 @@ The expected values (peers, `sideEffects`, non-entry exports, notices) are in `c
 
 ## Third-party notices
 
-No package has third-party material yet. When it is added, its notice must be inside the tarball:
+Third-party material needs its notice inside the tarball and its license in the `"license"` field:
 
-| Package | Material, when it is added                            | Notice (inside the tarball) | Required when                                    |
-| :------ | :---------------------------------------------------- | :-------------------------- | :----------------------------------------------- |
-| UI      | Fonts Inter and Urbanist (SIL Open Font License)      | `styles/fonts/OFL.txt`      | the tarball has a `styles/fonts/*.woff2`         |
-| Utils   | Table derived from Unicode CLDR (`getFirstDayOfWeek`) | `UNICODE-LICENSE.txt`       | the source has a file named `*.cldr.constant.ts` |
+| Package | Material                                              | Notice (inside the tarball) | Required when                                    | License       |
+| :------ | :---------------------------------------------------- | :-------------------------- | :----------------------------------------------- | :------------ |
+| UI      | Fonts Inter and Urbanist (SIL Open Font License)      | `styles/fonts/OFL.txt`      | the tarball has a `styles/fonts/*.woff2`         | `OFL-1.1`     |
+| Utils   | Table derived from Unicode CLDR (`getFirstDayOfWeek`) | `UNICODE-LICENSE.txt`       | the source has a file named `*.cldr.constant.ts` | `Unicode-3.0` |
 
 The `assets` of each `ng-package.json` already copy both notices: put the file in `projects/antoniocorraliza/foundry-ui/styles/fonts/OFL.txt` or `projects/antoniocorraliza/foundry-utils/UNICODE-LICENSE.txt`. The generated CLDR table is a constant, so it goes in `constants/`, and its name must end in `.cldr.constant.ts` (for example `constants/first-day-of-week.cldr.constant.ts`) for the check to see it.
 

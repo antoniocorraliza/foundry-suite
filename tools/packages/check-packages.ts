@@ -62,7 +62,7 @@ function main(): number {
       listPackageNotes(tarball, sourceFiles).forEach((note) => console.log(`    - ${note}`));
       const results: Readonly<Record<string, Array<string>>> = {
         exports: findExportProblems(tarball, sourceFiles),
-        license: findLicenseProblems(tarball, license),
+        license: findLicenseProblems(tarball, license, sourceFiles),
         tslib: findTslibProblems(tarball),
         any: findAnyProblems(tarball),
         dependencies: findDependencyProblems(tarball),

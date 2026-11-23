@@ -2,7 +2,6 @@ import type { FoundryPackage } from '../interfaces/foundry-package.interface.ts'
 
 const ANGULAR_RANGE: string = '>=21.0.0 <23.0.0';
 const RXJS_RANGE: string = '^7.8.0';
-
 // In build order: UI needs Utils compiled in dist/ to keep it out of its own bundle.
 export const FOUNDRY_PACKAGES: ReadonlyArray<FoundryPackage> = [
   {
@@ -19,6 +18,7 @@ export const FOUNDRY_PACKAGES: ReadonlyArray<FoundryPackage> = [
         // The generated CLDR table must be named *.cldr.constant.ts for this check to see it.
         whenSourceHas: /\.cldr\.constant\.ts$/,
         noticePath: 'UNICODE-LICENSE.txt',
+        licenseId: 'Unicode-3.0',
       },
     ],
   },
@@ -57,6 +57,7 @@ export const FOUNDRY_PACKAGES: ReadonlyArray<FoundryPackage> = [
         description: 'SIL Open Font License of the bundled fonts (Inter and Urbanist)',
         whenTarballHas: /^styles\/fonts\/.+\.woff2$/,
         noticePath: 'styles/fonts/OFL.txt',
+        licenseId: 'OFL-1.1',
       },
     ],
   },
