@@ -89,9 +89,9 @@ describe('isDeepEqual', () => {
     const first: { point: Point; count: number } = { point: new Point(1), count: 1 };
     const second: { point: Point; count: number } = { point: new Point(1), count: 1 };
     const isEqual: boolean = isDeepEqual(first, second, {
-      customEquality: (first, second) => {
-        pairs.push([first, second]);
-        return first instanceof Point && second instanceof Point ? first.x === second.x : undefined;
+      customEquality: (left, right) => {
+        pairs.push([left, right]);
+        return left instanceof Point && right instanceof Point ? left.x === right.x : undefined;
       },
     });
     expect(isEqual).toBe(true);

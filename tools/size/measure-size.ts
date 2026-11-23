@@ -111,34 +111,37 @@ async function measureAngularApps(measurable: ReadonlyArray<ResolvedMeasurement>
   const angularMeasurable: Array<ResolvedMeasurement> = measurable.filter((candidate) =>
     candidate.measurement.target.startsWith('angular'),
   );
-  const baseComponents: Map<string, BaseComponent> = new Map(
+  const baseSources: Map<string, string> = new Map(
     angularMeasurable.map((resolution) => {
       const baseComponent: BaseComponent = getBaseComponent(resolution.measurement, repositoryRoot);
-      return [baseComponent.className, baseComponent];
+      return [baseComponent.className, createAngularProbeSource(baseComponent, [])];
     }),
   );
-  const probeSources: Map<string, string> = new Map();
-  baseComponents.forEach((baseComponent) => probeSources.set(baseComponent.className, createAngularProbeSource(baseComponent, [])));
-  angularMeasurable.forEach((resolution) =>
-    probeSources.set(
+  const measurementSources: Map<string, string> = new Map(
+    angularMeasurable.map((resolution) => [
       resolution.measurement.name,
       createAngularProbeSource(getBaseComponent(resolution.measurement, repositoryRoot), resolution.imports),
-    ),
+    ]),
   );
-  const probeNames: Array<string> = [...probeSources.keys()];
-  const concurrency: number = Math.max(1, Math.floor(availableParallelism() / 2));
-  const figures: Array<SizeFigures> = await runWithConcurrency(
-    [...probeSources.values()].map((source, index) => async () => {
-      const workspaceDirectory: string = join(workDirectory, `angular-${index}`);
-      return measureContents(await buildAngularProbe({ source, workspaceDirectory, repositoryRoot }));
-    }),
-    concurrency,
+  const measureProbe = async (source: string, folder: string): Promise<SizeFigures> =>
+    measureContents(await buildAngularProbe({ source, workspaceDirectory: join(workDirectory, folder), repositoryRoot }));
+  const baseFigures: Map<string, SizeFigures> = new Map();
+  const measurementFigures: Map<string, SizeFigures> = new Map();
+  await runWithConcurrency(
+    [
+      ...[...baseSources].map(([className, source], index) => async () => {
+        baseFigures.set(className, await measureProbe(source, `angular-base-${index}`));
+      }),
+      ...[...measurementSources].map(([name, source], index) => async () => {
+        measurementFigures.set(name, await measureProbe(source, `angular-${index}`));
+      }),
+    ],
+    Math.max(1, Math.floor(availableParallelism() / 2)),
   );
-  const outputs: Map<string, SizeFigures> = new Map(probeNames.map((name, index) => [name, figures[index] ?? EMPTY_SIZE]));
   return Object.fromEntries(
     angularMeasurable.map((resolution) => {
-      const base: SizeFigures = outputs.get(getBaseComponent(resolution.measurement, repositoryRoot).className) ?? EMPTY_SIZE;
-      return [resolution.measurement.name, { angular: getSizeDelta(outputs.get(resolution.measurement.name) ?? base, base) }];
+      const base: SizeFigures = baseFigures.get(getBaseComponent(resolution.measurement, repositoryRoot).className) ?? EMPTY_SIZE;
+      return [resolution.measurement.name, { angular: getSizeDelta(measurementFigures.get(resolution.measurement.name) ?? base, base) }];
     }),
   );
 }

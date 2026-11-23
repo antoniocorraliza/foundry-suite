@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { FOUNDRY_PACKAGES } from '../constants/foundry-packages.constant.ts';
 import type { FoundryPackage } from '../interfaces/foundry-package.interface.ts';
 import type { PackageManifest } from '../interfaces/package-manifest.interface.ts';
@@ -13,10 +13,6 @@ function createTarball(folder: FoundryPackageFolder, manifest: PackageManifest, 
 }
 
 describe('findNoticeProblems', () => {
-  beforeEach(() => {
-    vi.spyOn(console, 'log').mockImplementation(() => undefined);
-  });
-
   it('does not require a notice while nothing it covers is present', () => {
     expect(findNoticeProblems(createTarball('foundry-utils', {}), ['date/src/functions/parse-date.function.ts'])).toEqual([]);
   });

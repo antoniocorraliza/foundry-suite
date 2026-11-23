@@ -1,5 +1,6 @@
 import type { FoundryPackage } from '../interfaces/foundry-package.interface.ts';
 import type { Tarball } from '../interfaces/tarball.interface.ts';
+import { splitExportPattern } from './split-export-pattern.function.ts';
 
 function listSourceEntrySubpaths(sourceFiles: ReadonlyArray<string>): Array<string> {
   return sourceFiles
@@ -37,7 +38,7 @@ export function findExportProblems(tarball: Tarball, sourceFiles: ReadonlyArray<
         problems.push(`pattern export "${subpath}" must map to a pattern string`);
         return;
       }
-      const [prefix = '', suffix = ''] = stripDotSlash(target).split('*');
+      const [prefix, suffix] = splitExportPattern(target);
       const matches: Array<string> = files.filter((file) => file.startsWith(prefix) && file.endsWith(suffix));
       const sourceFolder: string = prefix.slice(0, prefix.lastIndexOf('/') + 1);
       const hasSourceFolder: boolean = sourceFiles.some((file) => file.startsWith(sourceFolder));

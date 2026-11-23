@@ -390,9 +390,9 @@ projects/antoniocorraliza/foundry-core/storage/
   src/tokens/foundry-storage-options.token.ts
 ```
 
-Each file is named after the one name it exports, in kebab-case, without the `ɵ` prefix and without the suffix of its folder (`Error`, `Component`, `Directive`, `Service`, `Pipe`, `Guard`, `Interceptor`, `Resolver`): `defineFoundryStorageKey` lives in `define-foundry-storage-key.function.ts`, `provideFoundryStorage` in `provide-foundry-storage.provider.ts`, `FoundryKeyCollisionError` in `foundry-key-collision.error.ts` and `COLLISION_MODES` in `collision-modes.constant.ts`. A file exports one name; the overloads of a function count as one.
+Each file is named after the one name it exports, in kebab-case, without the `ɵ` prefix and without the suffix of its folder (`Error`, `Component`, `Directive`, `Service`, `Pipe`, `Guard`, `Interceptor`, `Resolver`): `defineFoundryStorageKey` lives in `define-foundry-storage-key.function.ts`, `provideFoundryStorage` in `provide-foundry-storage.provider.ts`, `FoundryKeyCollisionError` in `foundry-key-collision.error.ts` and `COLLISION_MODES` in `collision-modes.constant.ts`. A file exports one name; the overloads of a function count as one. An internal name with `ɵ` does not take the `Foundry` prefix (`ɵgetValueKind`, not `ɵFoundryGetValueKind`).
 
-`constants/` is the exception: constants of one topic can share a file named after the topic (`commit-rules.constant.ts` holds `COMMIT_TYPES`, `COMMIT_SCOPES` and `COMMIT_TITLE`). A large constant, or one with a meaning of its own (a closed list with its type, a table of budgets), keeps its own file named after it. A file of `constants/` exports only constants. Functions, types, interfaces and errors stay one per file. An internal name with `ɵ` does not take the `Foundry` prefix (`ɵgetValueKind`, not `ɵFoundryGetValueKind`).
+`constants/` is the exception: constants of one topic can share a file named after the topic (`commit-rules.constant.ts` holds `COMMIT_TYPES`, `COMMIT_SCOPES` and `COMMIT_TITLE`). A large constant, or one with a meaning of its own (a closed list with its type, a table of budgets), keeps its own file named after it. A file of `constants/` exports only constants. Functions, types, interfaces and errors stay one per file.
 
 A piece with an error class keeps it in `errors/`, like the HTTP client of Core: `src/errors/foundry-api.error.ts`.
 
@@ -597,13 +597,13 @@ Checked by: ESLint and `tools/lint/check-text.ts` skip the exported declarations
 
 ### Loops with an index
 
-A `for` loop with an index is used only to walk two arrays in parallel, or when what matters is the index itself. Why: with an array method, the index of the second array is read from the callback of the first, or a list of indices is built only to walk it.
+A `for` loop with an index is used only to walk two arrays in parallel. Why: with an array method, the index of the second array is read from the callback of the first, or a list of indices is built only to walk it.
 
 ```ts
 for (let index: number = 0; index < first.length; index++) if (!compare(first[index], second[index])) return false;
 ```
 
-Checked by: ESLint accepts any `for` loop with an index; the review checks that it is one of these cases.
+Checked by: ESLint accepts any `for` loop with an index; the review checks that it walks two arrays in parallel.
 
 ### Functional interceptors, guards and resolvers
 

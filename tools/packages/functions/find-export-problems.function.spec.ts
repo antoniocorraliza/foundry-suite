@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { FOUNDRY_PACKAGES } from '../constants/foundry-packages.constant.ts';
 import type { FoundryPackage } from '../interfaces/foundry-package.interface.ts';
 import type { PackageManifest } from '../interfaces/package-manifest.interface.ts';
@@ -23,10 +23,6 @@ const ROOT_ENTRY: PackageManifest = {
 const ROOT_FILES: Readonly<Record<string, string>> = { 'fesm2022/package.mjs': '', 'types/package.d.ts': '' };
 
 describe('findExportProblems', () => {
-  beforeEach(() => {
-    vi.spyOn(console, 'log').mockImplementation(() => undefined);
-  });
-
   it('accepts a package whose entries are all exported and present', () => {
     expect(findExportProblems(createTarball('foundry-core', ROOT_ENTRY, ROOT_FILES), ['ng-package.json'])).toEqual([]);
   });
