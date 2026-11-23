@@ -10,3 +10,7 @@ export const MAX_EPOCH_DAY: number = 2_932_896;
 export const MIN_TIME: number = -62_135_596_800_000;
 /** Gives the last millisecond of 9999-12-31 in UTC. */
 export const MAX_TIME: number = 253_402_300_799_999;
+/** Gives the most days that a list of days returns, about a hundred years. */
+export const MAX_LISTED_DAYS: number = 36_600;
+/** Gives the most weeks of `getCalendarWeek`, the whole weeks that fit in the most listed days. */
+export const MAX_CALENDAR_WEEKS: number = 5228;
