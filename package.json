@@ -36,6 +36,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "FOUNDRY_TEST_COVERAGE=true vitest run --coverage",
+    "test:exhaustive": "FOUNDRY_TEST_EXHAUSTIVE=true vitest run --project \"utils-exhaustive:*\"",
     "test:warmup": "vitest run --project \"smoke:ng-browser:*\"",
     "test:jest": "node tools/packages/install-utils-tarball.ts tools/jest-smoke && npm test --prefix tools/jest-smoke",
     "test:typescript": "node tools/packages/install-utils-tarball.ts tools/typescript-smoke && node tools/packages/check-typescript-consumers.ts"

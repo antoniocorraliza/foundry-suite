@@ -1,7 +1,12 @@
 import type { TestProjectInlineConfiguration } from 'vitest/config';
 import { SMOKE_DIRECTORY, UTILS_DIRECTORY } from '../constants/test-paths.constant.ts';
 import { UTILS_BROWSER_SPECS } from '../constants/utils-browser-specs.constant.ts';
-import { UTILS_TIME_ZONES, UTILS_ZONED_FOLDERS } from '../constants/utils-time-zones.constant.ts';
+import {
+  UTILS_EXHAUSTIVE_SPECS,
+  UTILS_EXHAUSTIVE_TEST_TIMEOUT,
+  UTILS_TIME_ZONES,
+  UTILS_ZONED_FOLDERS,
+} from '../constants/utils-time-zones.constant.ts';
 import type { TestEnvironment } from '../interfaces/test-environment.interface.ts';
 import { createBrowserProjects } from './create-browser-projects.function.ts';
 import { createTypescriptJsdomProject } from './create-typescript-jsdom-project.function.ts';
@@ -22,9 +27,17 @@ export function createUtilsProjects(environment: TestEnvironment): Array<TestPro
         name: 'utils',
         timeZones: [timeZone],
         include: [...listSpecsForTimeZone(timeZone), `${SMOKE_DIRECTORY}/timezone-node.smoke.spec.ts`],
-        exclude: ['**/node_modules/**', ...otherEnvironmentSpecs],
+        exclude: ['**/node_modules/**', UTILS_EXHAUSTIVE_SPECS, ...otherEnvironmentSpecs],
       }),
     ),
+    ...(environment.isExhaustiveEnabled
+      ? createTypescriptNodeProjects({
+          name: 'utils-exhaustive',
+          timeZones: UTILS_TIME_ZONES,
+          include: [`${UTILS_DIRECTORY}/${UTILS_EXHAUSTIVE_SPECS}`],
+          testTimeout: UTILS_EXHAUSTIVE_TEST_TIMEOUT,
+        })
+      : []),
     ...createTypescriptNodeProjects({
       name: 'utils-apia',
       timeZones: ['Pacific/Apia'],
@@ -44,7 +57,7 @@ export function createUtilsProjects(environment: TestEnvironment): Array<TestPro
       timeZones: ['Europe/Madrid', 'America/Santiago'],
       include: [...UTILS_BROWSER_SPECS.map((spec) => `${UTILS_DIRECTORY}/${spec}`), `${SMOKE_DIRECTORY}/timezone-browser.smoke.spec.ts`],
       // Walking every minute or every day of the calendar proves nothing new about the browser engine.
-      exclude: ['**/*.exhaustive.*spec.ts', ...otherEnvironmentSpecs],
+      exclude: [UTILS_EXHAUSTIVE_SPECS, ...otherEnvironmentSpecs],
     }),
   ];
 }

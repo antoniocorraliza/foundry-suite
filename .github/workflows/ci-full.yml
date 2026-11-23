@@ -130,6 +130,41 @@ jobs:
           npm audit --json > "$RUNNER_TEMP/npm-audit.json" || true
           node tools/ci/audit-report.ts "$RUNNER_TEMP/npm-audit.json"
 
+  unit-exhaustive:
+    name: Unit - exhaustive date specs - ${{ matrix.time-zone }}
+    needs: gate
+    if: ${{ !cancelled() && needs.gate.outputs.run != 'false' && !github.event.pull_request.draft }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        time-zone: [Europe-Madrid, America-Mexico_City, America-Santiago, UTC]
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up the workspace
+        uses: ./.github/actions/setup-workspace
+        with:
+          node-version: '22'
+          angular: '21'
+          browsers: none
+
+      - name: Exhaustive date specs (every minute and every day of the calendar)
+        env:
+          FOUNDRY_TEST_EXHAUSTIVE: 'true'
+          TIME_ZONE: ${{ matrix.time-zone }}
+        run: npx vitest run --project "utils-exhaustive:$TIME_ZONE" --reporter=default --reporter=json --outputFile.json="$RUNNER_TEMP/exhaustive.json"
+
+      - name: Time of each exhaustive spec
+        if: ${{ !cancelled() }}
+        env:
+          TIME_ZONE: ${{ matrix.time-zone }}
+        run: node tools/ci/exhaustive-report.ts "$RUNNER_TEMP/exhaustive.json" "$TIME_ZONE"
+
   smoke-node-26:
     name: Smoke - Node 26
     needs: gate
@@ -194,7 +229,7 @@ jobs:
   # Required check of main: rename "Full level" only with the rule; a new job joins the level through needs.
   result:
     name: Full level
-    needs: [gate, unit-node, unit-browsers, smoke-node-26, smoke-consumers]
+    needs: [gate, unit-node, unit-exhaustive, unit-browsers, smoke-node-26, smoke-consumers]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 5

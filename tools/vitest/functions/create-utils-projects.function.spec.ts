@@ -6,13 +6,14 @@ import { createUtilsProjects } from './create-utils-projects.function.ts';
 const UTILS: string = 'projects/antoniocorraliza/foundry-utils';
 const ZONE_PROJECTS: Array<string> = ['utils:Europe-Madrid', 'utils:America-Mexico_City', 'utils:America-Santiago', 'utils:UTC'];
 
-function listProjectsRunning(file: string): Array<string> {
-  const projects: Array<TestProjectInlineConfiguration> = createUtilsProjects({
-    browsers: ['chromium'],
-    isCoverageEnabled: false,
-    expectedAngularMajor: 21,
-  });
-  return projects
+const EXHAUSTIVE_PROJECTS: Array<string> = ZONE_PROJECTS.map((project) => project.replace('utils:', 'utils-exhaustive:'));
+
+function createProjects(isExhaustiveEnabled: boolean): Array<TestProjectInlineConfiguration> {
+  return createUtilsProjects({ browsers: ['chromium'], isCoverageEnabled: false, isExhaustiveEnabled, expectedAngularMajor: 21 });
+}
+
+function listProjectsRunning(file: string, isExhaustiveEnabled: boolean = false): Array<string> {
+  return createProjects(isExhaustiveEnabled)
     .filter((project) => {
       const include: Array<string> = project.test?.include ?? [];
       const exclude: Array<string> = project.test?.exclude ?? [];
@@ -29,8 +30,29 @@ describe('createUtilsProjects', () => {
     expect(listProjectsRunning(`${UTILS}/date/src/functions/parse-date.function.spec.ts`)).toEqual([...ZONE_PROJECTS, 'utils-browser']);
   });
 
-  it('runs the exhaustive date specs in the four time zones on Node only', () => {
-    expect(listProjectsRunning(`${UTILS}/date/src/functions/build-local-date.exhaustive.function.spec.ts`)).toEqual(ZONE_PROJECTS);
+  it('leaves the exhaustive date specs out of every project unless they are asked for', () => {
+    expect(listProjectsRunning(`${UTILS}/date/src/functions/parse-date.exhaustive.function.spec.ts`)).toEqual([]);
+  });
+
+  it('runs the exhaustive date specs, when asked for, only in their own project of each time zone, on Node', () => {
+    expect(listProjectsRunning(`${UTILS}/date/src/functions/parse-date.exhaustive.function.spec.ts`, true)).toEqual(EXHAUSTIVE_PROJECTS);
+    expect(listProjectsRunning(`${UTILS}/date/src/functions/parse-date.function.spec.ts`, true)).toEqual([
+      ...ZONE_PROJECTS,
+      'utils-browser',
+    ]);
+  });
+
+  it('gives each exhaustive date spec ten minutes and keeps the time zone of its project', () => {
+    const projects: Array<TestProjectInlineConfiguration> = createProjects(true).filter((project) => {
+      const name: string | { label: string } | undefined = project.test?.name;
+      return typeof name === 'string' && name.startsWith('utils-exhaustive:');
+    });
+    expect(projects.map((project) => [project.test?.testTimeout, project.test?.env?.['TZ']])).toEqual([
+      [600_000, 'Europe/Madrid'],
+      [600_000, 'America/Mexico_City'],
+      [600_000, 'America/Santiago'],
+      [600_000, 'UTC'],
+    ]);
   });
 
   it('runs the specs of a day that the time zone skips only in that time zone', () => {
