@@ -55,6 +55,10 @@ describe('createUtilsProjects', () => {
     ]);
   });
 
+  it('runs the Node-only date specs in the four time zones and not in the browser', () => {
+    expect(listProjectsRunning(`${UTILS}/date/src/functions/get-first-day-of-week.node.function.spec.ts`)).toEqual(ZONE_PROJECTS);
+  });
+
   it('runs the specs of a day that the time zone skips only in that time zone', () => {
     expect(listProjectsRunning(`${UTILS}/date/src/functions/build-local-days.apia.function.spec.ts`)).toEqual(['utils-apia:Pacific-Apia']);
   });

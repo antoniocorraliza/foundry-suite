@@ -35,7 +35,6 @@ const LOCALE_CASES: ReadonlyArray<[string, number]> = [
   ['en-001', 1],
   ['xx', 1],
   ['EN-us', 0],
-  ['und-BU', 0],
   ['und', 0],
 ];
 

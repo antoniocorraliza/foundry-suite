@@ -56,8 +56,9 @@ export function createUtilsProjects(environment: TestEnvironment): Array<TestPro
       environment,
       timeZones: ['Europe/Madrid', 'America/Santiago'],
       include: [...UTILS_BROWSER_SPECS.map((spec) => `${UTILS_DIRECTORY}/${spec}`), `${SMOKE_DIRECTORY}/timezone-browser.smoke.spec.ts`],
-      // Walking every minute or every day of the calendar proves nothing new about the browser engine.
-      exclude: [UTILS_EXHAUSTIVE_SPECS, ...otherEnvironmentSpecs],
+      // Walking every minute or every day of the calendar proves nothing new about the browser engine, and the
+      // Node-only specs compare with data that each engine updates at its own pace (CLDR, region aliases).
+      exclude: [UTILS_EXHAUSTIVE_SPECS, '**/*.node.*spec.ts', ...otherEnvironmentSpecs],
     }),
   ];
 }

@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { getFirstDayOfWeek } from '../functions/get-first-day-of-week.function';
+import { getFirstDayOfWeek } from './get-first-day-of-week.function';
 
 interface EngineWeekInfo {
   readonly firstDay: number;
 }
 
 interface LocaleWithWeekInfo {
-  readonly region?: string;
   readonly weekInfo?: EngineWeekInfo;
   readonly getWeekInfo?: () => EngineWeekInfo;
 }
@@ -21,8 +20,24 @@ function readEngineFirstDay(tag: string): number | null {
   return weekInfo === undefined ? null : weekInfo.firstDay % 7;
 }
 
-describe('FIRST_DAY_OF_WEEK_REGIONS', () => {
-  it('gives the first day of the week of the engine for every two-letter region', () => {
+function runWithoutWeekData<T>(action: () => T): T {
+  const prototype: object = Intl.Locale.prototype;
+  const descriptors: Array<[string, PropertyDescriptor | undefined]> = ['weekInfo', 'getWeekInfo'].map((key) => [
+    key,
+    Object.getOwnPropertyDescriptor(prototype, key),
+  ]);
+  descriptors.forEach(([key]) => Reflect.deleteProperty(prototype, key));
+  try {
+    return action();
+  } finally {
+    descriptors.forEach(([key, descriptor]) => {
+      if (descriptor !== undefined) Object.defineProperty(prototype, key, descriptor);
+    });
+  }
+}
+
+describe('getFirstDayOfWeek against the CLDR data of Node', () => {
+  it('gives the first day of the week of Node for every two-letter region', () => {
     const tags: Array<string> = LETTERS.flatMap((first) => LETTERS.map((second) => `und-${first}${second}`));
     const mismatches: Array<string> = tags
       .filter((tag) => readEngineFirstDay(tag) !== getFirstDayOfWeek(tag))
@@ -30,7 +45,12 @@ describe('FIRST_DAY_OF_WEEK_REGIONS', () => {
     expect(mismatches).toEqual([]);
   });
 
-  it.each(LANGUAGES)('gives the first day of the week of the engine for %s, without a region', (language) => {
+  it.each(LANGUAGES)('gives the first day of the week of Node for %s, without a region', (language) => {
     expect(getFirstDayOfWeek(language)).toBe(readEngineFirstDay(language));
+  });
+
+  it('reads an old region code as the current one, as Node does: und-BU is Myanmar and starts on Sunday', () => {
+    expect(getFirstDayOfWeek('und-BU')).toBe(0);
+    expect(runWithoutWeekData(() => getFirstDayOfWeek('und-BU'))).toBe(0);
   });
 });
