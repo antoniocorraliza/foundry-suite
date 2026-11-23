@@ -8,7 +8,7 @@ import { getEpochDayOfDate } from './get-epoch-day-of-date.function';
 export function getConsecutiveDays(start: Date, count: number): Array<Date> {
   const startEpochDay: number = getEpochDayOfDate(start);
   if (!Number.isInteger(count) || count < 0) {
-    throw new RangeError(`[foundry-utils]: the count must be an integer from 0, got ${String(count)}`);
+    throw new RangeError(`[foundry-utils]: the count must be an integer of at least 0, got ${String(count)}`);
   }
   return buildLocalDays(startEpochDay, count, 1);
 }

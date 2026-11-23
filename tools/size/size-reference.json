@@ -37,12 +37,12 @@
   },
   "utils (root)": {
     "esbuild": {
-      "raw": 3401,
-      "gzip": 1327
+      "raw": 3413,
+      "gzip": 1333
     },
     "rollup": {
-      "raw": 3211,
-      "gzip": 1265
+      "raw": 3223,
+      "gzip": 1271
     }
   },
   "utils/case": {
@@ -67,12 +67,12 @@
   },
   "utils/date": {
     "esbuild": {
-      "raw": 19105,
-      "gzip": 5949
+      "raw": 19016,
+      "gzip": 5950
     },
     "rollup": {
-      "raw": 18693,
-      "gzip": 5789
+      "raw": 18585,
+      "gzip": 5775
     }
   },
   "utils/date: addCalendarDays + compareCalendarDays + formatCalendarDay": {
@@ -107,22 +107,22 @@
   },
   "utils/date: parseDate": {
     "esbuild": {
-      "raw": 6451,
-      "gzip": 2553
+      "raw": 6437,
+      "gzip": 2547
     },
     "rollup": {
-      "raw": 6408,
-      "gzip": 2506
+      "raw": 6387,
+      "gzip": 2500
     }
   },
   "utils/date: parseDate + formatDate": {
     "esbuild": {
-      "raw": 8255,
-      "gzip": 3000
+      "raw": 8241,
+      "gzip": 2996
     },
     "rollup": {
-      "raw": 8202,
-      "gzip": 2944
+      "raw": 8181,
+      "gzip": 2938
     }
   },
   "utils/date: parseLocalDateTime + localDateTimeToDate": {
@@ -157,12 +157,12 @@
   },
   "utils: every entry": {
     "esbuild": {
-      "raw": 31549,
-      "gzip": 9740
+      "raw": 31460,
+      "gzip": 9741
     },
     "rollup": {
-      "raw": 30985,
-      "gzip": 9391
+      "raw": 30888,
+      "gzip": 9375
     }
   }
 }

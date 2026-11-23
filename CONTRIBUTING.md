@@ -611,7 +611,7 @@ it.runIf(timeZone !== 'UTC')('finds clock change days to walk in a time zone tha
 });
 ```
 
-Checked by: `tools/lint/check-text.ts` reports a top-level function declared in more than one spec file. Review: where a shared helper goes, and the time zones where a reference is tested.
+Checked by: `tools/lint/check-text.ts` reports a top-level function declared in more than one spec file. Review: where a shared helper goes, copies of a helper under another name, and the time zones where a reference is tested.
 
 ## Exceptions
 
@@ -742,6 +742,17 @@ export function deepClone<T>(value: T): T {}
 ```
 
 Checked by: the exception list `FUNCTION_NAME_EXCEPTIONS` in `eslint.config.mjs`. A public name of a later design that does not start with a verb is added there with its block.
+
+### Imports of the spec helpers
+
+The helpers of `tools/vitest/` import values without `.ts`: the specs of `projects/` compile them with `tsconfig.spec.json`, which does not allow the extension. Type imports keep it, as in the rest of `tools/`.
+
+```ts
+// tools/vitest/functions/list-clock-change-days.function.ts
+import { listDaysOfYears } from './list-days-of-years.function';
+```
+
+Checked by: `npm run typecheck` fails (TS5097) when a helper that a spec of `projects/` imports has a value import ending in `.ts`.
 
 ### Problem lists of the tools
 

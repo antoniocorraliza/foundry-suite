@@ -16,6 +16,8 @@ import { buildZonedDate } from './build-zoned-date.function';
 import { convertCivilDateToEpochDay } from './convert-civil-date-to-epoch-day.function';
 import { convertTimestampToMilliseconds } from './convert-timestamp-to-milliseconds.function';
 import { findStartOfExistingDay } from './find-start-of-existing-day.function';
+import { getMillisecondsOfDay } from './get-milliseconds-of-day.function';
+import { getStartOfUtcDay } from './get-start-of-utc-day.function';
 import { readDateParts } from './read-date-parts.function';
 import { readDateText } from './read-date-text.function';
 import { readDateTime } from './read-date-time.function';
@@ -38,8 +40,8 @@ function readTimestamp(timestamp: number, timestampUnit: TimestampUnit): Date | 
 }
 
 function readZonedText(date: CivilDate, time: TimeTextReading, offsetMinutes: number, timeZone: FoundryTimeZoneMode): Date | null {
-  const utcDate: Date | null = buildZonedDate(date, time, 'utc');
-  return utcDate === null ? null : createDateInRange(utcDate.getTime() - offsetMinutes * MILLISECONDS_PER_MINUTE, timeZone);
+  const utcTime: number = getStartOfUtcDay(convertCivilDateToEpochDay(date)).getTime() + getMillisecondsOfDay(time);
+  return createDateInRange(utcTime - offsetMinutes * MILLISECONDS_PER_MINUTE, timeZone);
 }
 
 function readText(text: string, format: FoundryDateFormat, timeZone: FoundryTimeZoneMode): Date | null {
