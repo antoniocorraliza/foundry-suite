@@ -3,7 +3,7 @@
   "version": "2.0.0-rc.0",
   "description": "Framework-agnostic TypeScript utilities of The Foundry Suite. Version 2.0 is in development.",
   "author": "Antonio Corraliza León",
-  "license": "MIT",
+  "license": "MIT AND Unicode-3.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/antoniocorraliza/foundry-suite.git",

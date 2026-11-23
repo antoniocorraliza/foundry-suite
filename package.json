@@ -29,6 +29,7 @@
     "size": "node tools/size/measure-size.ts",
     "size:update": "node tools/size/measure-size.ts --update",
     "size:changelog": "node tools/size/check-size-changelog.ts",
+    "generate:cldr": "node tools/cldr/generate-first-day-of-week.ts",
     "lint": "eslint . && prettier --check . && node tools/lint/check-text.ts && npm run typecheck",
     "format": "prettier --write .",
     "typecheck": "tsc -p tsconfig.spec.json --noEmit && tsc -p tsconfig.tools.json",
