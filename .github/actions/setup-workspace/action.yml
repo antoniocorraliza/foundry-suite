@@ -58,37 +58,41 @@ runs:
       run: |
         echo "FOUNDRY_TEST_BROWSERS=$BROWSERS" >> "$GITHUB_ENV"
         echo "FOUNDRY_EXPECTED_ANGULAR_MAJOR=$ANGULAR" >> "$GITHUB_ENV"
-        angular_version=$(node -p 'JSON.parse(require("fs").readFileSync("node_modules/@angular/core/package.json", "utf8")).version')
-        typescript_version=$(node -p 'JSON.parse(require("fs").readFileSync("node_modules/typescript/package.json", "utf8")).version')
+        angular_version=$(node -p "require('./node_modules/@angular/core/package.json').version")
+        typescript_version=$(node -p "require('./node_modules/typescript/package.json').version")
         echo "Angular $angular_version, TypeScript $typescript_version, browsers: $BROWSERS"
 
     - name: Read the Playwright version
       id: playwright
-      if: inputs.browsers-preinstalled != 'true' && inputs.browsers != 'none'
       shell: bash
       env:
         BROWSERS: ${{ inputs.browsers }}
+        PREINSTALLED: ${{ inputs.browsers-preinstalled }}
       run: |
-        echo "version=$(node -p 'JSON.parse(require("fs").readFileSync("node_modules/playwright/package.json", "utf8")).version')" >> "$GITHUB_OUTPUT"
+        if [ "$PREINSTALLED" = "true" ] || [ "$BROWSERS" = "none" ]; then
+          echo "install=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        echo "install=true" >> "$GITHUB_OUTPUT"
+        echo "version=$(node -p "require('./node_modules/playwright/package.json').version")" >> "$GITHUB_OUTPUT"
         echo "list=${BROWSERS//,/ }" >> "$GITHUB_OUTPUT"
         echo "key=${BROWSERS//,/-}" >> "$GITHUB_OUTPUT"
 
     - name: Cache the Playwright browsers
       id: playwright-cache
-      if: inputs.browsers-preinstalled != 'true' && inputs.browsers != 'none'
+      if: steps.playwright.outputs.install == 'true'
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.cache/ms-playwright
         key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}-${{ steps.playwright.outputs.key }}
 
     - name: Install the Playwright browsers
-      if: inputs.browsers-preinstalled != 'true' && inputs.browsers != 'none' && steps.playwright-cache.outputs.cache-hit != 'true'
+      if: steps.playwright.outputs.install == 'true' && steps.playwright-cache.outputs.cache-hit != 'true'
       shell: bash
       run: npx playwright install --only-shell ${{ steps.playwright.outputs.list }}
 
-    # The cache keeps the browsers but not their system packages. The runner image already has
-    # the libraries of Chrome, so a Chromium-only job skips this slow step.
+    # Also on a cache hit, which keeps no system packages; the runner image has those of Chrome, so Chromium alone skips it.
     - name: Install the system packages of the browsers
-      if: inputs.browsers-preinstalled != 'true' && inputs.browsers != 'none' && inputs.browsers != 'chromium'
+      if: steps.playwright.outputs.install == 'true' && inputs.browsers != 'chromium'
       shell: bash
       run: npx playwright install-deps ${{ steps.playwright.outputs.list }}

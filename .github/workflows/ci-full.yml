@@ -78,7 +78,6 @@ jobs:
         if: matrix.angular == '21'
         run: npm run check:packages
 
-  # Its tag must match the Playwright version of both lockfiles.
   unit-browsers:
     name: Unit - Angular ${{ matrix.angular }} - Node 24 - browsers
     needs: gate
@@ -86,6 +85,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     container:
+      # Its tag must match the Playwright version of both lockfiles.
       image: mcr.microsoft.com/playwright:v1.65.1-noble
       # Firefox refuses to run as root in this image: use the runner's user.
       options: --user 1001
@@ -191,8 +191,7 @@ jobs:
       - name: Compile against Utils with TypeScript 5.5, 6.0 and 7
         run: npm run test:typescript
 
-  # Required check of main: "Full level". Do not rename it without changing the rule.
-  # A new job joins the level by adding its id to needs, without touching the rule.
+  # Required check of main: rename "Full level" only with the rule; a new job joins the level through needs.
   result:
     name: Full level
     needs: [gate, unit-node, unit-browsers, smoke-node-26, smoke-consumers]

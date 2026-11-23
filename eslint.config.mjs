@@ -6,6 +6,10 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
+function forbid(selectors, message) {
+  return selectors.map((selector) => ({ selector, message }));
+}
+
 const MESSAGE_FORMAT = String.raw`/^\[[a-z0-9-]+\]: [^A-Z].*[^.]$/`;
 const MESSAGE_PREFIX = String.raw`/^\[[a-z0-9-]+\]: /`;
 const MESSAGE_RULE = 'Messages read "[who]: lowercase sentence without a final period" (CONTRIBUTING.md).';
@@ -29,11 +33,10 @@ const LIFECYCLE_HOOK_SELECTORS = [
     message: 'Lifecycle hooks only call methods of the class: move the code to a named method.',
   },
 ];
-// no-restricted-syntax takes the last matching block whole, so every block below repeats the common selectors.
 const TOP_LEVEL = ['Program > ', 'Program > ExportNamedDeclaration > '];
+const FUNCTION_VALUE_TYPES = '/^(?:ArrowFunctionExpression|FunctionExpression)$/';
 // Functional interceptors, guards and resolvers keep the constant with the type that Angular expects (HttpInterceptorFn...).
-const FUNCTION_VALUE =
-  '[init.type=/^(?:ArrowFunctionExpression|FunctionExpression)$/]:not([id.typeAnnotation.typeAnnotation.typeName.name=/Fn$/])';
+const FUNCTION_VALUE = `[init.type=${FUNCTION_VALUE_TYPES}]:not([id.typeAnnotation.typeAnnotation.typeName.name=/Fn$/])`;
 const CODE_SHAPE_SELECTORS = [
   ...TOP_LEVEL.map((prefix) => ({
     selector: `${prefix}VariableDeclaration > VariableDeclarator${FUNCTION_VALUE}`,
@@ -131,15 +134,13 @@ const FUNCTION_VERBS = [
   'wait',
   'write',
 ];
-// main() of the scripts, the names of the Utils design and the lifecycle hooks of Angular keep their names. The keys of an
-// object literal are not checked: whoever receives the object names them (plugin hooks, options).
+// main(), the names of the Utils design and Angular's lifecycle hooks keep their names; object literal keys are not checked.
 const FUNCTION_NAME_EXCEPTIONS = '^(?:main|deepClone|customEquality|ng[A-Z]\\w*)$';
 const FUNCTION_NAME = `^\\u0275?(?:${FUNCTION_VERBS.join('|')})(?![a-z])`;
 const FUNCTION_NAME_MESSAGE = 'Functions start with a verb of FUNCTION_VERBS in eslint.config.mjs (getEntryFiles, not entryFiles).';
-const FUNCTION_VALUE_TYPES = '/^(?:ArrowFunctionExpression|FunctionExpression)$/';
 const FUNCTION_NAME_SELECTORS = [
   {
-    selector: `VariableDeclarator[init.type=${FUNCTION_VALUE_TYPES}]:not([id.typeAnnotation.typeAnnotation.typeName.name=/Fn$/]) > Identifier.id:not([name=/${FUNCTION_NAME}/])`,
+    selector: `VariableDeclarator${FUNCTION_VALUE} > Identifier.id:not([name=/${FUNCTION_NAME}/])`,
     message: FUNCTION_NAME_MESSAGE,
   },
   {
@@ -155,8 +156,7 @@ const COMMON_SELECTORS = [
   { selector: 'Identifier[name=/\\$$/]', message: 'Observables end in `Observable`, not `$` (itemsObservable).' },
 ];
 
-// The libraries export what their designs fix, so these rules only look at their internal code there: declarations
-// that are not exported, function bodies, and private and protected members.
+// The libraries export what their designs fix: there, these rules only see unexported code, function bodies and internal members.
 const INTERNAL_ACCESS = ":matches([accessibility='private'], [accessibility='protected'])";
 function selectInternalCode(selector, subject) {
   const selectors = [
@@ -252,22 +252,9 @@ const LIBRARY_GENERAL_SELECTORS = [
 const TEST_SELECTORS = [...COMMON_SELECTORS, ...NAMING_SELECTORS];
 const TOKEN_CLASSES = '/^(?:InjectionToken|HttpContextToken)$/';
 const EXEMPT_FILES = ['**/*.spec.ts', '**/*.test-d.ts', '**/*.d.ts'];
-function forbid(selectors, message) {
-  return selectors.map((selector) => ({ selector, message }));
-}
 const NAMED_OBJECT_TYPES_MESSAGE = 'Object types get a name: declare an interface in interfaces/.';
 const NAMED_OBJECT_TYPES = forbid(['TSTypeLiteral'], NAMED_OBJECT_TYPES_MESSAGE);
-// The public API of the libraries is written as its design fixes it, inline object types included, so only what is
-// not exported has to name them: declarations that are not exported, function bodies and private members.
-const INTERNAL_MEMBER = ":matches(PropertyDefinition, MethodDefinition):matches([accessibility='private'], [accessibility='protected'])";
-const LIBRARY_NAMED_OBJECT_TYPES = forbid(
-  [
-    'TSTypeLiteral:not(ExportNamedDeclaration TSTypeLiteral)',
-    'ExportNamedDeclaration BlockStatement TSTypeLiteral',
-    `ExportNamedDeclaration ${INTERNAL_MEMBER} TSTypeLiteral`,
-  ],
-  NAMED_OBJECT_TYPES_MESSAGE,
-);
+const LIBRARY_NAMED_OBJECT_TYPES = forbid(selectInternalCode('TSTypeLiteral', 'TSTypeLiteral'), NAMED_OBJECT_TYPES_MESSAGE);
 const LIBRARY_FILES = 'projects/**/';
 const PUBLIC_PROPERTY = "PropertyDefinition:not([accessibility='private']):not([accessibility='protected'])";
 // The name of an error class is its literal value: a JSDoc there would only repeat it.
@@ -294,43 +281,33 @@ const CODE_FILE_SELECTORS = [
   ...forbid(['TSTypeAliasDeclaration'], 'Types go in types/.'),
   ...forbid(['TSEnumDeclaration'], 'Enums go in constants/.'),
   ...forbid(
-    TOP_LEVEL.map(
-      (prefix) => `${prefix}VariableDeclaration > VariableDeclarator[init.type!=/^(?:ArrowFunctionExpression|FunctionExpression)$/]`,
-    ),
+    TOP_LEVEL.map((prefix) => `${prefix}VariableDeclaration > VariableDeclarator[init.type!=${FUNCTION_VALUE_TYPES}]`),
     'Top-level values go in constants/ or tokens/; module state goes inside a function.',
   ),
 ];
-const INTERFACE_FILE_SELECTORS = forbid(
-  TOP_LEVEL.flatMap((prefix) => [
-    `${prefix}FunctionDeclaration`,
-    `${prefix}VariableDeclaration`,
-    `${prefix}ClassDeclaration`,
-    `${prefix}TSEnumDeclaration`,
-    `${prefix}TSTypeAliasDeclaration`,
-  ]),
-  'Files in interfaces/ only declare interfaces; types go in types/.',
-);
-const TYPE_FILE_SELECTORS = forbid(
-  TOP_LEVEL.flatMap((prefix) => [
-    `${prefix}FunctionDeclaration`,
-    `${prefix}VariableDeclaration`,
-    `${prefix}ClassDeclaration`,
-    `${prefix}TSEnumDeclaration`,
-    `${prefix}TSInterfaceDeclaration`,
-  ]),
-  'Files in types/ only declare types; interfaces go in interfaces/.',
-);
-const ERROR_FILE_SELECTORS = forbid(
-  TOP_LEVEL.flatMap((prefix) => [
-    `${prefix}FunctionDeclaration`,
-    `${prefix}VariableDeclaration`,
-    `${prefix}ClassDeclaration:not([superClass.name=${ERROR_CLASS}])`,
-    `${prefix}TSEnumDeclaration`,
-    `${prefix}TSInterfaceDeclaration`,
-    `${prefix}TSTypeAliasDeclaration`,
-  ]),
-  'Files in errors/ only declare classes that extend an error.',
-);
+const TOP_LEVEL_DECLARATIONS = [
+  'FunctionDeclaration',
+  'VariableDeclaration',
+  'ClassDeclaration',
+  'TSEnumDeclaration',
+  'TSInterfaceDeclaration',
+  'TSTypeAliasDeclaration',
+];
+function allowOnly(allowedDeclarations, message, forbiddenForms = []) {
+  const forbidden = [...TOP_LEVEL_DECLARATIONS.filter((declaration) => !allowedDeclarations.includes(declaration)), ...forbiddenForms];
+  return forbid(
+    TOP_LEVEL.flatMap((prefix) => forbidden.map((declaration) => `${prefix}${declaration}`)),
+    message,
+  );
+}
+const INTERFACE_FILE_SELECTORS = allowOnly(['TSInterfaceDeclaration'], 'Files in interfaces/ only declare interfaces; types go in types/.');
+const TYPE_FILE_SELECTORS = allowOnly(['TSTypeAliasDeclaration'], 'Files in types/ only declare types; interfaces go in interfaces/.');
+const ERROR_FILE_SELECTORS = allowOnly(['ClassDeclaration'], 'Files in errors/ only declare classes that extend an error.', [
+  `ClassDeclaration:not([superClass.name=${ERROR_CLASS}])`,
+]);
+const TOKEN_FILE_SELECTORS = allowOnly(['VariableDeclaration'], 'Files in tokens/ only declare Angular tokens.', [
+  `VariableDeclaration > VariableDeclarator[init.callee.name!=${TOKEN_CLASSES}]`,
+]);
 const CONSTANT_FILE_SELECTORS = [
   ...forbid(
     TOP_LEVEL.map(
@@ -339,15 +316,7 @@ const CONSTANT_FILE_SELECTORS = [
     ),
     'Constants declare their type, or end in `as const` when they are a closed list.',
   ),
-  ...forbid(
-    TOP_LEVEL.flatMap((prefix) => [
-      `${prefix}FunctionDeclaration`,
-      `${prefix}ClassDeclaration`,
-      `${prefix}TSInterfaceDeclaration`,
-      `${prefix}TSTypeAliasDeclaration`,
-    ]),
-    'Files in constants/ only declare constants and enums.',
-  ),
+  ...allowOnly(['VariableDeclaration', 'TSEnumDeclaration'], 'Files in constants/ only declare constants and enums.'),
   ...forbid([`NewExpression[callee.name=${TOKEN_CLASSES}]`], 'Angular tokens go in tokens/.'),
 ];
 const TYPEDEF_OPTIONS = {
@@ -360,17 +329,26 @@ const TYPEDEF_OPTIONS = {
   arrayDestructuring: false,
   objectDestructuring: false,
 };
-const TOKEN_FILE_SELECTORS = forbid(
-  TOP_LEVEL.flatMap((prefix) => [
-    `${prefix}FunctionDeclaration`,
-    `${prefix}ClassDeclaration`,
-    `${prefix}TSInterfaceDeclaration`,
-    `${prefix}TSTypeAliasDeclaration`,
-    `${prefix}TSEnumDeclaration`,
-    `${prefix}VariableDeclaration > VariableDeclarator[init.callee.name!=${TOKEN_CLASSES}]`,
-  ]),
-  'Files in tokens/ only declare Angular tokens.',
-);
+// no-restricted-syntax takes the last matching block whole, so every block repeats the common selectors.
+const FILE_KINDS = [
+  { pattern: '*.ts', selectors: CODE_FILE_SELECTORS },
+  { pattern: '*.service.ts', selectors: [...CODE_FILE_SELECTORS, ...SERVICE_SELECTORS], isLibraryOnly: true },
+  { pattern: 'interfaces/**/*.ts', selectors: INTERFACE_FILE_SELECTORS },
+  { pattern: 'types/**/*.ts', selectors: TYPE_FILE_SELECTORS },
+  {
+    pattern: 'constants/**/*.ts',
+    selectors: CONSTANT_FILE_SELECTORS,
+    // A closed list is `as const`, and its type is derived from it in types/.
+    rules: { '@typescript-eslint/typedef': ['error', { ...TYPEDEF_OPTIONS, variableDeclaration: false }] },
+  },
+  { pattern: 'tokens/**/*.ts', selectors: TOKEN_FILE_SELECTORS },
+  {
+    pattern: 'errors/**/*.ts',
+    selectors: ERROR_FILE_SELECTORS,
+    // The name of an error class is a literal type with its type annotation, as typedef asks.
+    rules: { '@typescript-eslint/prefer-as-const': 'off', 'max-classes-per-file': ['error', 1] },
+  },
+];
 
 export default defineConfig([
   globalIgnores(['dist/', 'out-tsc/', 'coverage/', '.angular/']),
@@ -401,7 +379,6 @@ export default defineConfig([
         'tmp',
         'val',
       ],
-      'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...CODE_FILE_SELECTORS],
       '@typescript-eslint/consistent-type-imports': 'error',
       // One inner list: the groups keep their order but are not separated by blank lines.
       'simple-import-sort/imports': [
@@ -425,49 +402,12 @@ export default defineConfig([
       '@typescript-eslint/typedef': ['error', TYPEDEF_OPTIONS],
     },
   },
-  {
-    files: ['**/interfaces/**/*.ts'],
+  ...FILE_KINDS.filter(({ isLibraryOnly }) => !isLibraryOnly).map(({ pattern, selectors, rules }) => ({
+    files: [`**/${pattern}`],
     ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...INTERFACE_FILE_SELECTORS] },
-  },
-  {
-    files: ['**/types/**/*.ts'],
-    ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...TYPE_FILE_SELECTORS] },
-  },
-  {
-    files: ['**/constants/**/*.ts'],
-    ignores: EXEMPT_FILES,
-    rules: {
-      // A closed list is `as const`, and its type is derived from it in types/.
-      '@typescript-eslint/typedef': ['error', { ...TYPEDEF_OPTIONS, variableDeclaration: false }],
-      'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...CONSTANT_FILE_SELECTORS],
-    },
-  },
-  {
-    files: ['**/tokens/**/*.ts'],
-    ignores: EXEMPT_FILES,
-    rules: { 'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...TOKEN_FILE_SELECTORS] },
-  },
-  {
-    files: ['**/errors/**/*.ts'],
-    ignores: EXEMPT_FILES,
-    rules: {
-      // The name of an error class is a literal type with its type annotation, as typedef asks.
-      '@typescript-eslint/prefer-as-const': 'off',
-      'max-classes-per-file': ['error', 1],
-      'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...ERROR_FILE_SELECTORS],
-    },
-  },
-  ...[
-    ['*.ts', CODE_FILE_SELECTORS],
-    ['*.service.ts', [...CODE_FILE_SELECTORS, ...SERVICE_SELECTORS]],
-    ['interfaces/**/*.ts', INTERFACE_FILE_SELECTORS],
-    ['types/**/*.ts', TYPE_FILE_SELECTORS],
-    ['constants/**/*.ts', CONSTANT_FILE_SELECTORS],
-    ['tokens/**/*.ts', TOKEN_FILE_SELECTORS],
-    ['errors/**/*.ts', ERROR_FILE_SELECTORS],
-  ].map(([pattern, selectors]) => ({
+    rules: { ...rules, 'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...selectors] },
+  })),
+  ...FILE_KINDS.map(({ pattern, selectors }) => ({
     files: [`${LIBRARY_FILES}${pattern}`],
     ignores: EXEMPT_FILES,
     rules: { 'no-restricted-syntax': ['error', ...LIBRARY_GENERAL_SELECTORS, ...LIBRARY_NAMED_OBJECT_TYPES, ...selectors] },

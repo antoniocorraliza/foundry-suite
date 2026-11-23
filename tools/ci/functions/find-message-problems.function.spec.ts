@@ -16,9 +16,13 @@ describe('findMessageProblems', () => {
     'Co-Authored-By: Someone <someone@example.com>',
     'co-authored-by: someone',
     'Generated with a tool',
-    'Claude-Session: https://example.com',
-    'Someone <noreply@anthropic.com>',
+    'Assistant-Session: https://example.com',
+    'Agent-session: 1234',
   ])('rejects an attribution line: %s', (line) => {
     expect(findMessageProblems(`fix(core): retry the refresh once\n\n${line}`)).toEqual(['the message credits a tool or an assistant']);
+  });
+
+  it('accepts a body that mentions a session', () => {
+    expect(findMessageProblems('fix(core): end the session on logout\n\nThe session ends even when the server is down.')).toEqual([]);
   });
 });

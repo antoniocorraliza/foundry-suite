@@ -26,7 +26,7 @@ describe('findTextProblems', () => {
 
   it.each([
     ['a sales word', ' * Parses a day in a simple way.', 'sales word in JSDoc'],
-    ['a phrase that says nothing', ' * Returns the day, as expected.', 'sales word in JSDoc'],
+    ['a phrase that says nothing', ' * Returns the day, as expected.', 'filler in JSDoc'],
     ['a "This function" opening', '/** This function parses a day. */', 'filler in JSDoc'],
     ['a "Helper to" opening', ' * Helper to parse a day.', 'filler in JSDoc'],
     ['a "note that"', ' * Returns null. Note that the day is local.', 'filler in JSDoc'],

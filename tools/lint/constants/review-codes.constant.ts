@@ -28,3 +28,7 @@ export const REVIEW_CODE_EXCEPTIONS: ReadonlyArray<string> = [
   'F11',
   'F12',
 ];
+export const REVIEW_CODE_EXCEPTION_PATTERN: RegExp = new RegExp(
+  `(?<![\\w+-])(?:${REVIEW_CODE_EXCEPTIONS.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![\\w-])`,
+  'g',
+);

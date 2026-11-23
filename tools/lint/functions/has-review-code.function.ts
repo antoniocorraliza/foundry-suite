@@ -1,10 +1,5 @@
-import { REVIEW_CODE, REVIEW_CODE_EXCEPTIONS } from '../constants/review-codes.constant.ts';
-
-function escapeForPattern(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+import { REVIEW_CODE, REVIEW_CODE_EXCEPTION_PATTERN } from '../constants/review-codes.constant.ts';
 
 export function hasReviewCode(text: string): boolean {
-  const exceptions: RegExp = new RegExp(`(?<![\\w+-])(?:${REVIEW_CODE_EXCEPTIONS.map(escapeForPattern).join('|')})(?![\\w-])`, 'g');
-  return REVIEW_CODE.test(text.replace(exceptions, ' '));
+  return REVIEW_CODE.test(text.replace(REVIEW_CODE_EXCEPTION_PATTERN, ' '));
 }

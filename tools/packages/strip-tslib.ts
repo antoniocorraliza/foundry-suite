@@ -23,8 +23,7 @@ function main(): number {
     return 1;
   }
 
-  // ng-packagr 21 adds tslib to dependencies whenever the source manifest does not declare it, even if no file
-  // imports it. The code is compiled with importHelpers: false, and check-packages proves that nothing imports tslib.
+  // ng-packagr 21 adds tslib to dependencies whenever the source manifest does not declare it, even if no file imports it.
   const distManifestPath: string = join(PACKAGES_DIST_DIRECTORY, foundryPackage.folder, 'package.json');
   const distManifest: PackageManifest = readManifest(distManifestPath);
   const { tslib, ...dependencies } = distManifest.dependencies ?? {};

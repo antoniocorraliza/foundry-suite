@@ -21,7 +21,6 @@ export default defineConfig((): ViteUserConfig => {
         }),
       ].map(addSourceAliases),
       coverage: {
-        // `npm run test:coverage` sets FOUNDRY_TEST_COVERAGE; without it, Firefox and WebKit break the coverage run.
         provider: 'v8',
         include: ['projects/antoniocorraliza/**/src/**/*.ts'],
         exclude: ['**/*.spec.ts', '**/*.test-d.ts', '**/*.d.ts'],

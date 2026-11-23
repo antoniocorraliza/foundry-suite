@@ -3,18 +3,18 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 // The Angular 22 install of CI has no ESLint: the lint, and this configuration, only run with Angular 21.
 const IS_ESLINT_MISSING: boolean = process.env['FOUNDRY_EXPECTED_ANGULAR_MAJOR'] === '22';
-let ESLINT: ESLint;
+let eslint: ESLint;
 
 // Loading the configuration and its plugins takes seconds on a busy machine: it happens here, not in the first test.
 beforeAll(async () => {
   if (IS_ESLINT_MISSING) return;
   const { ESLint: ESLintClass } = await import('eslint');
-  ESLINT = new ESLintClass();
-  await ESLINT.lintText('', { filePath: 'projects/antoniocorraliza/foundry-utils/src/public-api.ts' });
+  eslint = new ESLintClass();
+  await eslint.lintText('', { filePath: 'projects/antoniocorraliza/foundry-utils/src/public-api.ts' });
 }, 60_000);
 
 async function findMissingJsdocLines(code: string, filePath: string): Promise<Array<number>> {
-  const [result] = await ESLINT.lintText(code, { filePath });
+  const [result] = await eslint.lintText(code, { filePath });
   return (result?.messages ?? []).filter((message) => message.ruleId === 'jsdoc/require-jsdoc').map((message) => message.line);
 }
 
@@ -63,7 +63,7 @@ describe.skipIf(IS_ESLINT_MISSING)('jsdoc on the name of error classes', () => {
 });
 
 async function findLifecycleHookLines(code: string): Promise<Array<number>> {
-  const [result] = await ESLINT.lintText(code, { filePath: 'tools/size/app/components/probe/probe.component.ts' });
+  const [result] = await eslint.lintText(code, { filePath: 'tools/size/app/components/probe/probe.component.ts' });
   return (result?.messages ?? [])
     .filter((message) => message.message.startsWith('Lifecycle hooks only call'))
     .map((message) => message.line);
@@ -109,12 +109,12 @@ describe.skipIf(IS_ESLINT_MISSING)('code in lifecycle hooks', () => {
 });
 
 async function findMessageLines(code: string, filePath: string, messageStart: string): Promise<Array<number>> {
-  const [result] = await ESLINT.lintText(code, { filePath });
+  const [result] = await eslint.lintText(code, { filePath });
   return (result?.messages ?? []).filter((message) => message.message.startsWith(messageStart)).map((message) => message.line);
 }
 
 async function findRuleLines(code: string, filePath: string, ruleId: string): Promise<Array<number>> {
-  const [result] = await ESLINT.lintText(code, { filePath });
+  const [result] = await eslint.lintText(code, { filePath });
   return (result?.messages ?? []).filter((message) => message.ruleId === ruleId).map((message) => message.line);
 }
 
@@ -390,7 +390,7 @@ const ANGULAR_MESSAGES: ReadonlyArray<string> = [
 ];
 
 async function findAngularLines(code: string, filePath: string): Promise<Array<string>> {
-  const [result] = await ESLINT.lintText(code, { filePath });
+  const [result] = await eslint.lintText(code, { filePath });
   return (result?.messages ?? [])
     .filter(
       (message) => message.ruleId?.startsWith('@angular-eslint/') || ANGULAR_MESSAGES.some((start) => message.message.startsWith(start)),
@@ -560,7 +560,7 @@ describe.skipIf(IS_ESLINT_MISSING)('subjects', () => {
 });
 
 describe.skipIf(IS_ESLINT_MISSING)('protected members of the libraries', () => {
-  it('ask for named object types like private members', async () => {
+  it('asks for named object types like private members', async () => {
     const code: string = [
       'export class FoundryPanelComponent {',
       '  readonly position: { readonly top: number } = { top: 0 };',
