@@ -34,6 +34,8 @@ function readUtcParts(date: Date): Required<FoundryDateParts> {
 export function getZonedParts(date: Date, timeZone: FoundryTimeZoneMode): Required<FoundryDateParts> {
   const copy: Date = new Date(getValidTime(date));
   const parts: Required<FoundryDateParts> = timeZone === 'utc' ? readUtcParts(copy) : readLocalParts(copy);
-  if (parts.year < MIN_YEAR || parts.year > MAX_YEAR) throw new RangeError(`[foundry-utils]: the year ${parts.year} is outside 1-9999`);
+  if (parts.year < MIN_YEAR || parts.year > MAX_YEAR) {
+    throw new RangeError(`[foundry-utils]: the year ${parts.year} is outside ${MIN_YEAR}-${MAX_YEAR}`);
+  }
   return parts;
 }

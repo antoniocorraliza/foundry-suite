@@ -1,10 +1,5 @@
-import { ɵisOptionsValue } from '@antoniocorraliza/foundry-utils';
+import { ɵisOptionsValue, ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';
 import { MAX_YEAR, MIN_YEAR } from '../constants/date-limits.constant';
-
-function readNonNegativeInteger(options: Readonly<Record<string, unknown>> | undefined, name: string): number | null {
-  const value: unknown = options?.[name];
-  return Number.isInteger(value) && (value as number) >= 0 ? (value as number) : null;
-}
 
 /**
  * Returns the years around a reference year, or the current local year, in ascending order.
@@ -17,16 +12,17 @@ export function getYearRange(options: {
   readonly yearsAfter: number;
 }): Array<number> {
   if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of getYearRange must be an object');
-  const referenceYear: unknown = options?.['referenceYear'] === undefined ? new Date().getFullYear() : options['referenceYear'];
-  const yearsBefore: number | null = readNonNegativeInteger(options, 'yearsBefore');
-  const yearsAfter: number | null = readNonNegativeInteger(options, 'yearsAfter');
-  if (!Number.isInteger(referenceYear) || yearsBefore === null || yearsAfter === null) {
-    throw new RangeError('[foundry-utils]: referenceYear must be an integer, and yearsBefore and yearsAfter integers from 0');
-  }
-  const firstYear: number = (referenceYear as number) - yearsBefore;
-  const lastYear: number = (referenceYear as number) + yearsAfter;
+  const referenceYear: number = ɵparseIntegerOption({
+    options,
+    name: 'referenceYear',
+    minimum: MIN_YEAR,
+    maximum: MAX_YEAR,
+    fallback: new Date().getFullYear(),
+  });
+  const firstYear: number = referenceYear - ɵparseIntegerOption({ options, name: 'yearsBefore', minimum: 0 });
+  const lastYear: number = referenceYear + ɵparseIntegerOption({ options, name: 'yearsAfter', minimum: 0 });
   if (firstYear < MIN_YEAR || lastYear > MAX_YEAR) {
-    throw new RangeError(`[foundry-utils]: the years ${firstYear} to ${lastYear} are outside 1-9999`);
+    throw new RangeError(`[foundry-utils]: the years ${firstYear} to ${lastYear} are outside ${MIN_YEAR}-${MAX_YEAR}`);
   }
   return Array.from({ length: lastYear - firstYear + 1 }, (_entry, index) => firstYear + index);
 }

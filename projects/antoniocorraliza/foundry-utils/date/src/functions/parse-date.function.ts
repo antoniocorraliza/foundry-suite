@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵisOptionsValue, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { DATE_FORMATS } from '../constants/date-formats.constant';
 import { MAX_TIME, MAX_YEAR, MIN_TIME, MIN_YEAR } from '../constants/date-limits.constant';
 import { MILLISECONDS_PER_DAY, MILLISECONDS_PER_MINUTE } from '../constants/time-units.constant';
@@ -15,7 +15,6 @@ import { buildLocalDate } from './build-local-date.function';
 import { convertCivilDateToEpochDay } from './convert-civil-date-to-epoch-day.function';
 import { getLocalEpochDay } from './get-local-epoch-day.function';
 import { getStartOfLocalDay } from './get-start-of-local-day.function';
-import { parseBooleanOption } from './parse-boolean-option.function';
 import { readDateParts } from './read-date-parts.function';
 import { readDateText } from './read-date-text.function';
 import { readDateTime } from './read-date-time.function';
@@ -74,7 +73,7 @@ export function parseDate(value: unknown, options?: FoundryParseDateOptions): Da
   if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of parseDate must be an object');
   const format: FoundryDateFormat = ɵparseEnumOption({ options, name: 'format', allowedValues: DATE_FORMATS, fallback: 'iso' });
   const timeZone: FoundryTimeZoneMode = ɵparseEnumOption({ options, name: 'timeZone', allowedValues: TIME_ZONE_MODES, fallback: 'local' });
-  const isCalendarDate: boolean = parseBooleanOption(options, 'calendarDate');
+  const isCalendarDate: boolean = ɵparseBooleanOption({ options, name: 'calendarDate', fallback: false });
   const timestampUnit: 'milliseconds' | 'seconds' = ɵparseEnumOption({
     options,
     name: 'timestampUnit',

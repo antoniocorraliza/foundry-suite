@@ -1,4 +1,4 @@
-import { ɵisOptionsValue } from '@antoniocorraliza/foundry-utils';
+import { ɵisOptionsValue, ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';
 import { MAX_CALENDAR_WEEKS } from '../constants/date-limits.constant';
 import type { FoundryWeekday } from '../types/foundry-weekday.type';
 import { buildLocalDays } from './build-local-days.function';
@@ -14,11 +14,8 @@ import { parseWeekdayOption } from './parse-weekday-option.function';
 export function getCalendarWeek(date: Date, options?: { readonly firstDayOfWeek?: FoundryWeekday; readonly weeks?: number }): Array<Date> {
   if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of getCalendarWeek must be an object');
   const firstDayOfWeek: FoundryWeekday = parseWeekdayOption(options);
-  const weeks: unknown = options?.['weeks'] ?? 1;
-  if (!Number.isInteger(weeks) || (weeks as number) < 1 || (weeks as number) > MAX_CALENDAR_WEEKS) {
-    throw new RangeError(`[foundry-utils]: weeks must be an integer from 1 to 5228, got ${String(weeks)}`);
-  }
+  const weeks: number = ɵparseIntegerOption({ options, name: 'weeks', minimum: 1, maximum: MAX_CALENDAR_WEEKS, fallback: 1 });
   const epochDay: number = getEpochDayOfDate(date);
   const daysSinceFirst: number = (getWeekdayOfEpochDay(epochDay) - firstDayOfWeek + 7) % 7;
-  return buildLocalDays(epochDay - daysSinceFirst, (weeks as number) * 7, 1);
+  return buildLocalDays(epochDay - daysSinceFirst, weeks * 7, 1);
 }

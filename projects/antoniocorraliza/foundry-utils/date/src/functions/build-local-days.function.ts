@@ -16,6 +16,8 @@ function buildLocalDay(epochDay: number): Date {
  * @throws {RangeError} When the list passes 36600 days, a day is outside 1-9999 or the time zone skips a day.
  */
 export function buildLocalDays(firstEpochDay: number, count: number, step: number): Array<Date> {
-  if (count > MAX_LISTED_DAYS) throw new RangeError(`[foundry-utils]: a list of days has at most 36600 days, ${count} requested`);
+  if (count > MAX_LISTED_DAYS) {
+    throw new RangeError(`[foundry-utils]: a list of days has at most ${MAX_LISTED_DAYS} days, ${count} requested`);
+  }
   return Array.from({ length: count }, (_entry, index) => buildLocalDay(firstEpochDay + index * step));
 }

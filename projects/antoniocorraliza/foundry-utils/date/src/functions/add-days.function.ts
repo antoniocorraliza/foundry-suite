@@ -14,7 +14,7 @@ import { getZonedParts } from './get-zoned-parts.function';
  */
 export function addDays(date: Date, days: number): Date {
   const parts: Required<FoundryDateParts> = getZonedParts(date, 'local');
-  if (!Number.isInteger(days)) throw new RangeError(`[foundry-utils]: days must be an integer, got ${String(days)}`);
+  if (!Number.isInteger(days)) throw new RangeError(`[foundry-utils]: the days to add must be an integer, got ${String(days)}`);
   const targetEpochDay: number = convertCivilDateToEpochDay(parts) + days;
   const targetDay: FoundryCalendarDay = convertEpochDayToCalendarDay(targetEpochDay);
   if (getLocalEpochDay(getStartOfLocalDay(targetEpochDay)) !== targetEpochDay) {

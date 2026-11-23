@@ -1,10 +1,5 @@
+import { ɵparseBooleanOption } from '@antoniocorraliza/foundry-utils';
 import type { EmptyValuesCleaning } from '../interfaces/empty-values-cleaning.interface';
-
-function parseFlag(options: Readonly<Record<string, unknown>> | undefined, name: string): boolean {
-  const flag: unknown = options?.[name] ?? false;
-  if (typeof flag !== 'boolean') throw new TypeError(`[foundry-utils]: the ${name} option of removeEmptyValues must be a boolean`);
-  return flag;
-}
 
 /**
  * Parses the options of `removeEmptyValues`.
@@ -12,8 +7,8 @@ function parseFlag(options: Readonly<Record<string, unknown>> | undefined, name:
  */
 export function parseCleaning(options: Readonly<Record<string, unknown>> | undefined): EmptyValuesCleaning {
   return {
-    removeEmptyStrings: parseFlag(options, 'removeEmptyStrings'),
-    removeEmptyCollections: parseFlag(options, 'removeEmptyCollections'),
-    removeEmptyArrayItems: parseFlag(options, 'removeEmptyArrayItems'),
+    removeEmptyStrings: ɵparseBooleanOption({ options, name: 'removeEmptyStrings', fallback: false }),
+    removeEmptyCollections: ɵparseBooleanOption({ options, name: 'removeEmptyCollections', fallback: false }),
+    removeEmptyArrayItems: ɵparseBooleanOption({ options, name: 'removeEmptyArrayItems', fallback: false }),
   };
 }
