@@ -36,6 +36,7 @@ export function readTestEnvironment(): TestEnvironment {
   return {
     browsers: parseSelectedBrowsers(process.env['FOUNDRY_TEST_BROWSERS']),
     isCoverageEnabled: process.env['FOUNDRY_TEST_COVERAGE'] === 'true',
+    isExhaustiveEnabled: process.env['FOUNDRY_TEST_EXHAUSTIVE'] === 'true',
     expectedAngularMajor: parseExpectedAngularMajor(
       process.env['FOUNDRY_EXPECTED_ANGULAR_MAJOR'],
       readFileSync(new URL('../../../package.json', import.meta.url), 'utf8'),

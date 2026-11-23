@@ -67,12 +67,72 @@
   },
   "utils/date": {
     "esbuild": {
-      "raw": 10,
-      "gzip": 10
+      "raw": 18746,
+      "gzip": 5936
     },
     "rollup": {
-      "raw": 39,
-      "gzip": 39
+      "raw": 18372,
+      "gzip": 5715
+    }
+  },
+  "utils/date: addCalendarDays + compareCalendarDays + formatCalendarDay": {
+    "esbuild": {
+      "raw": 2456,
+      "gzip": 1121
+    },
+    "rollup": {
+      "raw": 2425,
+      "gzip": 1068
+    }
+  },
+  "utils/date: getFirstDayOfWeek": {
+    "esbuild": {
+      "raw": 1082,
+      "gzip": 669
+    },
+    "rollup": {
+      "raw": 1075,
+      "gzip": 659
+    }
+  },
+  "utils/date: parseCalendarDay": {
+    "esbuild": {
+      "raw": 4106,
+      "gzip": 1805
+    },
+    "rollup": {
+      "raw": 4091,
+      "gzip": 1767
+    }
+  },
+  "utils/date: parseDate": {
+    "esbuild": {
+      "raw": 6064,
+      "gzip": 2480
+    },
+    "rollup": {
+      "raw": 6028,
+      "gzip": 2407
+    }
+  },
+  "utils/date: parseDate + formatDate": {
+    "esbuild": {
+      "raw": 7865,
+      "gzip": 2931
+    },
+    "rollup": {
+      "raw": 7828,
+      "gzip": 2847
+    }
+  },
+  "utils/date: parseLocalDateTime + localDateTimeToDate": {
+    "esbuild": {
+      "raw": 5358,
+      "gzip": 2196
+    },
+    "rollup": {
+      "raw": 5353,
+      "gzip": 2162
     }
   },
   "utils/object": {
@@ -97,12 +157,12 @@
   },
   "utils: every entry": {
     "esbuild": {
-      "raw": 13156,
-      "gzip": 4391
+      "raw": 31210,
+      "gzip": 9702
     },
     "rollup": {
-      "raw": 12895,
-      "gzip": 4237
+      "raw": 30682,
+      "gzip": 9319
     }
   }
 }

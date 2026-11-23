@@ -10,7 +10,7 @@ function createTarball(files: ReadonlyArray<string>): Tarball {
     peerDependencies: {},
     sideEffects: ['**/*.css'],
     nonEntryExports: ['./styles/*.css'],
-    notices: [{ noticePath: 'styles/fonts/OFL.txt', description: 'fonts', whenTarballHas: /\.woff2$/ }],
+    notices: [{ noticePath: 'styles/fonts/OFL.txt', description: 'fonts', whenTarballHas: /\.woff2$/, licenseId: 'OFL-1.1' }],
   } as unknown as FoundryPackage;
   return { foundryPackage, files: [...files], manifest: { exports: { './styles/*.css': './styles/*.css' } } } as unknown as Tarball;
 }

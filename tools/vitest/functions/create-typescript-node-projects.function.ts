@@ -13,6 +13,7 @@ export function createTypescriptNodeProjects(options: TypescriptNodeProjectOptio
       include: [...options.include],
       exclude: [...(options.exclude ?? [])],
       provide: { expectedTimeZone: timeZone },
+      ...(options.testTimeout === undefined ? {} : { testTimeout: options.testTimeout }),
     },
   }));
 }

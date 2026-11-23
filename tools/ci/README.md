@@ -23,10 +23,13 @@ Angular 21, Node 24, one job: `npm ci`, commit messages of the branch (`tools/ci
 | `Unit - Angular 21 - Node 24 - browsers` (and development audit) |   21    |  24  | Chromium, Firefox, WebKit (in the Playwright image) |     yes      |     yes      |
 | `Unit - Angular 22 - Node 22`                                    |   22    |  22  | none                                                |      no      |     yes      |
 | `Unit - Angular 22 - Node 24 - browsers`                         |   22    |  24  | Chromium, Firefox, WebKit (in the Playwright image) |      no      |     yes      |
+| `Unit - exhaustive date specs - <time zone>` (four jobs)         |   21    |  22  | none                                                |     yes      |     yes      |
 | `Smoke - Node 26` (smoke tests, build and `check:packages`)      |   21    |  26  | none                                                |      no      |     yes      |
 | `Smoke - Utils consumers` (Jest and TypeScript matrix)           |   21    |  22  | none                                                |     yes      |     yes      |
 
-Every unit job runs the zone.js and the zoneless projects.
+Every unit job but the exhaustive ones runs the zone.js and the zoneless projects.
+
+The exhaustive date specs (`*.exhaustive.*spec.ts`: every minute or every day of the calendar) take about a minute per time zone, so they leave the fast level and `npm test`. Their jobs run `utils-exhaustive:<time zone>` with `FOUNDRY_TEST_EXHAUSTIVE=true`, ten minutes per test, and write the time of each spec to the job summary (`tools/ci/exhaustive-report.ts`). To run them locally: `npm run test:exhaustive`.
 
 The full product would be 2 Angular versions x 2 change detections x 2 Node versions x 3 browsers = 24 jobs. What is cut and why:
 

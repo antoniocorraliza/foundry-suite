@@ -3,4 +3,5 @@ export interface ThirdPartyNotice {
   readonly whenTarballHas?: RegExp;
   readonly whenSourceHas?: RegExp;
   readonly noticePath: string;
+  readonly licenseId: string;
 }

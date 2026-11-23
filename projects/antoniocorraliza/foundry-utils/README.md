@@ -1,6 +1,6 @@
 # Foundry Utils
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: MIT AND Unicode-3.0](https://img.shields.io/badge/license-MIT%20AND%20Unicode--3.0-blue.svg)](LICENSE)
 
 Framework-agnostic TypeScript utilities of The Foundry Suite.
 
@@ -23,9 +23,10 @@ It has no dependencies and no peer dependencies.
 ## Compatibility
 
 - Node 22.12 or later.
-- ES modules only. Every entry is imported on its own: `@antoniocorraliza/foundry-utils/object`, `@antoniocorraliza/foundry-utils/case`.
+- ES modules only. Every entry is imported on its own: `@antoniocorraliza/foundry-utils/object`, `@antoniocorraliza/foundry-utils/case`, `@antoniocorraliza/foundry-utils/date`.
 - TypeScript 5.5 or later, with `moduleResolution` set to `bundler` or `nodenext`. A CommonJS file (`.cts`) that imports it compiles with TypeScript 6.0 and 7.0, and fails with 5.5 (TS1479). `node10` is not supported: the secondary entries do not resolve.
 - Jest 30 with `jest-environment-jsdom`, with the recipe below. Not tested with `ts-jest`.
+- `/date` is tested in the time zones `Europe/Madrid`, `America/Mexico_City`, `America/Santiago` and `UTC`, plus `Pacific/Apia` and `Australia/Lord_Howe` for their clock changes.
 
 ### Jest
 
@@ -52,3 +53,5 @@ module.exports = { presets: [['@babel/preset-env', { targets: { node: 'current' 
 ## License
 
 [MIT](LICENSE) © 2026 Antonio Corraliza León.
+
+The first day of the week of `getFirstDayOfWeek` comes from Unicode CLDR 48, under the [Unicode License v3](UNICODE-LICENSE.txt).

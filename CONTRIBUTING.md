@@ -58,7 +58,7 @@ The public API of the libraries is documented with JSDoc. It is documentation fo
 - One sentence, two at most: what it does, and what it returns in the cases that are not obvious (`null`, empty, errors).
 - No adjectives or sales words (robust, powerful, seamless, simple, easy, efficient...) and no phrases that say nothing ("for convenience", "as expected", "note that").
 - Only what the types do not say: no `@param` or `@returns` that repeat the name or the type.
-- `@throws` for each error the function can throw, also for invalid arguments. A function that never throws has none, and an `is...` or `has...` function never throws. An error that a callback of the application lets through (`customEquality`) takes no `@throws`: it comes from the application's code.
+- `@throws` for each error the function can throw, also for invalid arguments. A function that never throws has none, and an `is...` or `has...` function never throws, with one exception (see "Exceptions"). An error that a callback of the application lets through (`customEquality`) takes no `@throws`: it comes from the application's code.
 - `@example` only when the use is not obvious, on one line.
 - In English, without process references.
 
@@ -87,7 +87,7 @@ Checked by:
   - no types in tags (`no-types`) and no tag that only repeats its name (`informative-docs`);
   - `@param` names that exist, and descriptions in `@param` and `@returns`;
   - `@throws` when the body throws (`require-throws`), and a one-line `@example`.
-- `tools/lint/check-text.ts`: the sales words and the filler openings in any JSDoc line, and a `@throws` on an `is...` or `has...` function or method.
+- `tools/lint/check-text.ts`: the sales words and the filler openings in any JSDoc line, and a `@throws` on an `is...` or `has...` function or method that is not in `NEVER_THROWING_NAME_EXCEPTIONS`.
 - Review: the number of sentences, that nothing repeats the types, `@throws` for the errors of the functions it calls, whether an `@example` is needed, English, and filler that the lists do not catch.
 
 ### 3. No process references
@@ -355,6 +355,8 @@ Checked by: Prettier joins a signature that fits; `tools/lint/check-text.ts` rej
 ### 13. Folder structure: definitions apart from the code
 
 Each piece of a library (an entry point) and each folder of `tools/` splits its files by kind into folders. Interfaces, types, constants and Angular tokens are not declared next to the logic: they live in their own files and the code imports them. Tests sit next to the file they test, with `.spec` before the extension.
+
+When two public functions share a contract, the tests of that contract go in the spec of the internal function they both use, not repeated in each public spec. Each public function keeps its own cases and one short test that it follows the shared contract. For example, `convert-keys.function.spec.ts` tests the key conversion that `toCamelCaseKeys` and `toSnakeCaseKeys` share.
 
 | Folder          | Holds                                                  | Suffix                                                |
 | :-------------- | :----------------------------------------------------- | :---------------------------------------------------- |
@@ -676,9 +678,23 @@ export class FoundryUtilsError extends Error {
 
 Checked by: ESLint (`prefer-as-const` off and `jsdoc/require-jsdoc` skips `override readonly name`, only in `errors/`).
 
+### An `is...` function that throws
+
+`isSameDay` throws `RangeError` with an invalid date or a year outside 1-9999, and its JSDoc has a `@throws`. Why: it is not a guard for unvalidated data like the other `is...` functions; it compares two dates, as `compareDays` does, and a wrong answer for an invalid date would hide the bug.
+
+```ts
+/**
+ * Tells whether two dates fall on the same local day.
+ * @throws {RangeError} When a date is invalid or outside 1-9999.
+ */
+export function isSameDay(first: Date, second: Date): boolean {}
+```
+
+Checked by: the list `NEVER_THROWING_NAME_EXCEPTIONS` in `tools/lint/constants/never-throwing-names.constant.ts`, which `check-text` reads.
+
 ### Function names that do not start with a verb
 
-Three kinds of function keep a name that does not start with a verb: `main()` of the scripts of `tools/`, the names of the approved designs (`deepClone`, and the option `customEquality` of `isDeepEqual`), and the lifecycle hooks of Angular (`ngOnInit`...). Why: `main()` is the entry point of every script, the designs have frozen the public names, and Angular fixes the names of its hooks.
+Three kinds of function keep a name that does not start with a verb: `main()` of the scripts of `tools/`, the names of the approved designs (`deepClone`, `localDateTimeToDate`, and the option `customEquality` of `isDeepEqual`), and the lifecycle hooks of Angular (`ngOnInit`...). Why: `main()` is the entry point of every script, the designs have frozen the public names, and Angular fixes the names of its hooks.
 
 ```ts
 export function deepClone<T>(value: T): T {}
