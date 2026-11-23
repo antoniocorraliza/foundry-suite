@@ -1,21 +1,14 @@
 import type { FoundryObjectPath, ɵValueKind } from '@antoniocorraliza/foundry-utils';
-import { ɵgetOwnDataEntries, ɵgetValueKind, ɵisOptionsValue } from '@antoniocorraliza/foundry-utils';
+import { ɵgetOwnDataEntries, ɵgetValueKind, ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ARRAY_MODES } from '../constants/array-modes.constant';
 import type { DifferenceWalk } from '../interfaces/difference-walk.interface';
 import type { FoundryDeepEqualOptions } from '../interfaces/foundry-deep-equal-options.interface';
 import type { FoundryObjectDifference } from '../interfaces/foundry-object-difference.interface';
-import type { ArrayMode } from '../types/array-mode.type';
 import type { CustomEquality } from '../types/custom-equality.type';
 import { areValuesEqual } from './are-values-equal.function';
 
-function getArrayMode(options: unknown): ArrayMode {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of getObjectDifferences must be an object');
-  const mode: unknown = options?.['arrays'] ?? 'atomic';
-  if (mode === 'atomic' || mode === 'byIndex') return mode;
-  throw new TypeError(`[foundry-utils]: unknown arrays option ${String(mode)}`);
-}
-
-function getCustomEquality(options: unknown): CustomEquality | null {
-  const customEquality: unknown = (options as Readonly<Record<string, unknown>> | undefined)?.['customEquality'];
+function parseCustomEquality(options: Readonly<Record<string, unknown>> | undefined): CustomEquality | null {
+  const customEquality: unknown = options?.['customEquality'];
   if (customEquality === undefined) return null;
   if (typeof customEquality !== 'function') throw new TypeError('[foundry-utils]: the customEquality option must be a function');
   return customEquality as CustomEquality;
@@ -55,11 +48,12 @@ function compareEntries(walk: DifferenceWalk, previous: object, current: object,
 function compareItems(walk: DifferenceWalk, previous: unknown, current: unknown, path: FoundryObjectPath): void {
   const previousItems: ReadonlyArray<unknown> = previous as ReadonlyArray<unknown>;
   const currentItems: ReadonlyArray<unknown> = current as ReadonlyArray<unknown>;
-  Array.from({ length: Math.max(previousItems.length, currentItems.length) }, (_item, index) => index).forEach((index) => {
+  const length: number = Math.max(previousItems.length, currentItems.length);
+  for (let index: number = 0; index < length; index++) {
     if (index >= currentItems.length) walk.differences.push(createRemovedDifference([...path, index], previousItems[index]));
     else if (index >= previousItems.length) walk.differences.push(createAddedDifference([...path, index], currentItems[index]));
     else compareValues(walk, previousItems[index], currentItems[index], [...path, index]);
-  });
+  }
 }
 
 function compareValues(walk: DifferenceWalk, previous: unknown, current: unknown, path: FoundryObjectPath): void {
@@ -91,9 +85,10 @@ export function getObjectDifferences(
   current: unknown,
   options?: { readonly arrays?: 'atomic' | 'byIndex' } & FoundryDeepEqualOptions,
 ): ReadonlyArray<FoundryObjectDifference> {
+  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of getObjectDifferences must be an object');
   const walk: DifferenceWalk = {
-    arrayMode: getArrayMode(options),
-    customEquality: getCustomEquality(options),
+    arrayMode: ɵparseEnumOption({ options, name: 'arrays', allowedValues: ARRAY_MODES, fallback: 'atomic' }),
+    customEquality: parseCustomEquality(options),
     differences: [],
     visited: new WeakMap<object, WeakSet<object>>(),
   };

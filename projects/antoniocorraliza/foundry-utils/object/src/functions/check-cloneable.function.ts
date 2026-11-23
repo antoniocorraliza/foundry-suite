@@ -1,6 +1,8 @@
 import { ɵgetValueKind, ɵgetValueTag } from '@antoniocorraliza/foundry-utils';
 import { FoundryCloneError } from '../errors/foundry-clone.error';
 import type { CloneLocation } from '../interfaces/clone-location.interface';
+import { readMapEntries } from './read-map-entries.function';
+import { readSetValues } from './read-set-values.function';
 
 function throwCloneError(location: CloneLocation, description: string): never {
   throw new FoundryCloneError({
@@ -44,15 +46,13 @@ function checkValue(value: unknown, location: CloneLocation, visited: WeakSet<ob
       checkOwnProperties(value, location, visited);
       return;
     case 'map':
-      Array.from(Map.prototype.entries.call(value) as Iterable<[unknown, unknown]>).forEach(([key, entry]) => {
+      readMapEntries(value).forEach(([key, entry]) => {
         checkValue(key, { path: location.path, place: location.place ?? 'Map key' }, visited);
         checkValue(entry, { path: location.path, place: location.place ?? 'Map value' }, visited);
       });
       return;
     case 'set':
-      Array.from(Set.prototype.values.call(value) as Iterable<unknown>).forEach((item) =>
-        checkValue(item, { path: location.path, place: location.place ?? 'Set element' }, visited),
-      );
+      readSetValues(value).forEach((item) => checkValue(item, { path: location.path, place: location.place ?? 'Set element' }, visited));
       return;
     case 'date':
     case 'regExp':

@@ -1,4 +1,6 @@
 import { ɵdefineOwnProperty, ɵgetOwnDataEntries, ɵgetValueKind } from '@antoniocorraliza/foundry-utils';
+import { readMapEntries } from './read-map-entries.function';
+import { readSetValues } from './read-set-values.function';
 
 function copyContainer(value: object, copies: Map<object, unknown>): unknown {
   switch (ɵgetValueKind(value)) {
@@ -19,15 +21,13 @@ function copyContainer(value: object, copies: Map<object, unknown>): unknown {
     case 'map': {
       const copy: Map<unknown, unknown> = new Map<unknown, unknown>();
       copies.set(value, copy);
-      Array.from(Map.prototype.entries.call(value) as Iterable<[unknown, unknown]>).forEach(([key, entry]) =>
-        copy.set(copyValueWith(key, copies), copyValueWith(entry, copies)),
-      );
+      readMapEntries(value).forEach(([key, entry]) => copy.set(copyValueWith(key, copies), copyValueWith(entry, copies)));
       return copy;
     }
     case 'set': {
       const copy: Set<unknown> = new Set<unknown>();
       copies.set(value, copy);
-      Array.from(Set.prototype.values.call(value) as Iterable<unknown>).forEach((item) => copy.add(copyValueWith(item, copies)));
+      readSetValues(value).forEach((item) => copy.add(copyValueWith(item, copies)));
       return copy;
     }
     case 'date':

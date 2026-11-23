@@ -7,8 +7,6 @@ export type ɵIsLongerThan<
   ? Text extends ''
     ? false
     : true
-  : Text extends `${infer First}${infer Rest}`
-    ? First extends ''
-      ? false
-      : ɵIsLongerThan<Rest, Limit, [...Counted, unknown]>
+  : Text extends `${string}${infer Rest}`
+    ? ɵIsLongerThan<Rest, Limit, [...Counted, unknown]>
     : false;

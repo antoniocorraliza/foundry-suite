@@ -1,9 +1,11 @@
 import type { ɵValueKind } from '@antoniocorraliza/foundry-utils';
-import { ɵgetOwnDataEntries, ɵgetValueKind, ɵgetValueTag } from '@antoniocorraliza/foundry-utils';
+import { ɵgetOwnDataEntries, ɵgetValueKind, ɵgetValueTag, ɵreadRegExpSource } from '@antoniocorraliza/foundry-utils';
 import type { CompareValues } from '../types/compare-values.type';
 import type { CustomEquality } from '../types/custom-equality.type';
+import { readMapEntries } from './read-map-entries.function';
 import { readMapSize } from './read-map-size.function';
 import { readSetSize } from './read-set-size.function';
+import { readSetValues } from './read-set-values.function';
 
 function getBytes(value: ArrayBuffer | ArrayBufferView): Uint8Array {
   return ArrayBuffer.isView(value) ? new Uint8Array(value.buffer, value.byteOffset, value.byteLength) : new Uint8Array(value);
@@ -16,7 +18,7 @@ function areBytesEqual(first: ArrayBuffer | ArrayBufferView, second: ArrayBuffer
 }
 
 function getRegExpParts(value: object): string {
-  const source: unknown = Object.getOwnPropertyDescriptor(RegExp.prototype, 'source')?.get?.call(value);
+  const source: unknown = ɵreadRegExpSource(value);
   const flags: unknown = Object.getOwnPropertyDescriptor(RegExp.prototype, 'flags')?.get?.call(value);
   return `${String(source)}/${String(flags)}`;
 }
@@ -30,7 +32,13 @@ function areEntriesEqual(first: object, second: object, compare: CompareValues):
   );
 }
 
-function areSameKind(first: object, second: object, kind: ɵValueKind, compare: CompareValues): boolean {
+function areItemsEqual(first: ReadonlyArray<unknown>, second: ReadonlyArray<unknown>, compare: CompareValues): boolean {
+  if (first.length !== second.length) return false;
+  for (let index: number = 0; index < first.length; index++) if (!compare(first[index], second[index])) return false;
+  return true;
+}
+
+function areSameKindValuesEqual(first: object, second: object, kind: ɵValueKind, compare: CompareValues): boolean {
   switch (kind) {
     case 'date':
       return Object.is(Date.prototype.getTime.call(first), Date.prototype.getTime.call(second));
@@ -38,25 +46,20 @@ function areSameKind(first: object, second: object, kind: ɵValueKind, compare: 
       return getRegExpParts(first) === getRegExpParts(second);
     case 'map': {
       if (readMapSize(first) !== readMapSize(second)) return false;
-      const firstEntries: Array<[unknown, unknown]> = Array.from(Map.prototype.entries.call(first) as Iterable<[unknown, unknown]>);
-      return firstEntries.every(
+      return readMapEntries(first).every(
         ([key, value]) => Map.prototype.has.call(second, key) && compare(value, Map.prototype.get.call(second, key)),
       );
     }
     case 'set': {
       if (readSetSize(first) !== readSetSize(second)) return false;
-      const firstItems: Array<unknown> = Array.from(Set.prototype.values.call(first) as Iterable<unknown>);
-      return firstItems.every((item) => Set.prototype.has.call(second, item));
+      return readSetValues(first).every((item) => Set.prototype.has.call(second, item));
     }
     case 'arrayBuffer':
       return areBytesEqual(first as ArrayBuffer, second as ArrayBuffer);
     case 'view':
       return ɵgetValueTag(first) === ɵgetValueTag(second) && areBytesEqual(first as ArrayBufferView, second as ArrayBufferView);
-    case 'array': {
-      const firstItems: ReadonlyArray<unknown> = first as ReadonlyArray<unknown>;
-      const secondItems: ReadonlyArray<unknown> = second as ReadonlyArray<unknown>;
-      return firstItems.length === secondItems.length && Array.from(firstItems).every((item, index) => compare(item, secondItems[index]));
-    }
+    case 'array':
+      return areItemsEqual(first as ReadonlyArray<unknown>, second as ReadonlyArray<unknown>, compare);
     case 'plainObject':
       return areEntriesEqual(first, second, compare);
     default:
@@ -78,7 +81,7 @@ export function areValuesEqual(first: unknown, second: unknown, customEquality: 
     if (seen.has(right)) return true;
     seen.add(right);
     visited.set(left, seen);
-    return areSameKind(left, right, kind, compare);
+    return areSameKindValuesEqual(left, right, kind, compare);
   }
   return compare(first, second);
 }

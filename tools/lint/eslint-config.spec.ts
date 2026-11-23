@@ -284,6 +284,18 @@ describe.skipIf(IS_ESLINT_MISSING)('names of observables', () => {
 describe.skipIf(IS_ESLINT_MISSING)('loops over lists', () => {
   const message: string = 'Lists are walked with array methods';
 
+  it('accepts a for loop with an index', async () => {
+    const code: string = [
+      'export function getTotal(first: ReadonlyArray<number>, second: ReadonlyArray<number>): number {',
+      '  let total: number = 0;',
+      '  for (let index: number = 0; index < first.length; index++) total += (first[index] ?? 0) * (second[index] ?? 0);',
+      '  return total;',
+      '}',
+      '',
+    ].join('\n');
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
+  });
+
   it('accepts array methods, and loops that await or stop early', async () => {
     const code: string = [
       'export async function process(items: ReadonlyArray<string>): Promise<string | null> {',
@@ -303,18 +315,17 @@ describe.skipIf(IS_ESLINT_MISSING)('loops over lists', () => {
     expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([]);
   });
 
-  it('rejects for...of, for and for...in loops that only walk the list', async () => {
+  it('rejects for...of and for...in loops that only walk the list', async () => {
     const code: string = [
       'export function totals(items: ReadonlyArray<number>, counts: Readonly<Record<string, number>>): number {',
       '  let total: number = 0;',
       '  for (const item of items) total += item;',
-      '  for (let index: number = 0; index < items.length; index++) total += items[index] ?? 0;',
       '  for (const name in counts) total += counts[name] ?? 0;',
       '  return total;',
       '}',
       '',
     ].join('\n');
-    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([3, 4, 5]);
+    expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([3, 4]);
   });
 });
 

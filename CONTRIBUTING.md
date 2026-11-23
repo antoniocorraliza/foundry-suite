@@ -459,7 +459,7 @@ export function loadItems(): Array<Item> {}
 export const loadItems = (): Array<Item> => [];
 ```
 
-Lists are walked with array methods (`forEach`, `map`, `filter`, `reduce`...). A `for...of` loop only when an array method does not fit: to `await` inside it or to stop early (`break`, `return`).
+Lists are walked with array methods (`forEach`, `map`, `filter`, `reduce`...). A `for...of` loop only when an array method does not fit: to `await` inside it or to stop early (`break`, `return`). A `for` loop with an index is an exception (see Exceptions).
 
 ```ts
 // Yes
@@ -480,7 +480,7 @@ private readonly items: Array<Item> = [];
 readonly #items: Array<Item> = [];
 ```
 
-Checked by: ESLint `no-restricted-syntax` (top-level constants whose value is a function; `for...of`, `for` and `for...in` loops without `await`, `break` or `return` inside; any `#` name). A `return` or `break` inside a nested callback also lets a loop through: review.
+Checked by: ESLint `no-restricted-syntax` (top-level constants whose value is a function; `for...of` and `for...in` loops without `await`, `break` or `return` inside; any `#` name). A `return` or `break` inside a nested callback also lets a loop through: review.
 
 ### 16. Angular
 
@@ -588,6 +588,16 @@ readonly disabled: InputSignal<boolean> = input(false);
 ```
 
 Checked by: ESLint and `tools/lint/check-text.ts` skip the exported declarations of `projects/`, but still check their function bodies and their private and protected members. Something exported only for another internal file, or exported with a separate `export { x }`, is seen as public: review.
+
+### Loops with an index
+
+A `for` loop with an index is used only to walk two arrays in parallel, or when what matters is the index itself. Why: with an array method, the index of the second array is read from the callback of the first, or a list of indices is built only to walk it.
+
+```ts
+for (let index: number = 0; index < first.length; index++) if (!compare(first[index], second[index])) return false;
+```
+
+Checked by: ESLint accepts any `for` loop with an index; the review checks that it is one of these cases.
 
 ### Functional interceptors, guards and resolvers
 
