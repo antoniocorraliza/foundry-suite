@@ -356,6 +356,8 @@ Checked by: Prettier joins a signature that fits; `tools/lint/check-text.ts` rej
 
 Each piece of a library (an entry point) and each folder of `tools/` splits its files by kind into folders. Interfaces, types, constants and Angular tokens are not declared next to the logic: they live in their own files and the code imports them. Tests sit next to the file they test, with `.spec` before the extension.
 
+When two public functions share a contract, the tests of that contract go in the spec of the internal function they both use, not repeated in each public spec. Each public function keeps its own cases and one short test that it follows the shared contract. For example, `convert-keys.function.spec.ts` tests the key conversion that `toCamelCaseKeys` and `toSnakeCaseKeys` share.
+
 | Folder          | Holds                                                  | Suffix                                                |
 | :-------------- | :----------------------------------------------------- | :---------------------------------------------------- |
 | `interfaces/`   | interfaces                                             | `.interface.ts`                                       |
