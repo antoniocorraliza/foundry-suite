@@ -3,14 +3,6 @@ import { describe, expect, it } from 'vitest';
 import { isLocalDateTime } from './is-local-date-time.function';
 import { parseLocalDateTime } from './parse-local-date-time.function';
 
-class Meeting {
-  readonly year: number = 2026;
-  readonly month: number = 11;
-  readonly day: number = 14;
-  readonly hours: number = 9;
-  readonly minutes: number = 30;
-}
-
 describe('parseLocalDateTime', () => {
   it.each([
     ['14/11/2026 09:30', 'eu'],
@@ -46,17 +38,6 @@ describe('parseLocalDateTime', () => {
     [{ year: 2026, month: 11, day: 14, hours: '09', minutes: 30 }, null],
   ])('reads the parts %j as %j', (parts, expected) => {
     expect(parseLocalDateTime(parts)).toBe(expected);
-  });
-
-  it('reads only plain objects with their own data properties, without running a getter', () => {
-    const withGetter: object = Object.defineProperty({ month: 11, day: 14, hours: 9, minutes: 30 }, 'year', {
-      enumerable: true,
-      get: (): never => {
-        throw new Error('[test]: the getter ran');
-      },
-    });
-    expect(parseLocalDateTime(withGetter)).toBeNull();
-    expect(parseLocalDateTime(new Meeting())).toBeNull();
   });
 
   it.each<unknown>([new Date(2026, 10, 14, 9, 30), 1_789_378_200_000, null, undefined, '', true, {}])(

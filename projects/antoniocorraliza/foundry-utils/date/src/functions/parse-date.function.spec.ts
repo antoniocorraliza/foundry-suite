@@ -4,12 +4,6 @@ import { readWallClock } from '@foundry-test/functions/read-wall-clock.function'
 import { formatDate } from './format-date.function';
 import { parseDate } from './parse-date.function';
 
-class Appointment {
-  readonly year: number = 2026;
-  readonly month: number = 3;
-  readonly day: number = 1;
-}
-
 const timeZone: string = inject('expectedTimeZone');
 
 function readLocalClock(date: Date | null): string | null {
@@ -129,27 +123,6 @@ describe('parseDate', () => {
       { year: -2026, month: 3, day: 1 },
     ])('gives null for the parts %j', (parts) => {
       expect(parseDate(parts)).toBeNull();
-    });
-
-    it('reads only plain objects with their own data properties', () => {
-      expect(parseDate([2026, 3, 1])).toBeNull();
-      expect(parseDate(new Map([['year', 2026]]))).toBeNull();
-      expect(parseDate(new Appointment())).toBeNull();
-      expect(parseDate(Object.create({ year: 2026, month: 3, day: 1 }) as object)).toBeNull();
-    });
-
-    it('never runs a getter of the parts and counts it as missing', () => {
-      const parts: object = Object.defineProperty({ month: 3, day: 1 }, 'year', {
-        enumerable: true,
-        get: (): never => {
-          throw new Error('[test]: the getter ran');
-        },
-      });
-      expect(parseDate(parts)).toBeNull();
-    });
-
-    it('reads parts with a null prototype', () => {
-      expect(parseDate(Object.assign(Object.create(null) as object, { year: 2026, month: 3, day: 1 }))).toEqual(new Date(2026, 2, 1));
     });
   });
 

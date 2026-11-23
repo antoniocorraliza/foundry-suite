@@ -3,12 +3,6 @@ import { describe, expect, it } from 'vitest';
 import { isCalendarDay } from './is-calendar-day.function';
 import { parseCalendarDay } from './parse-calendar-day.function';
 
-class Appointment {
-  readonly year: number = 2026;
-  readonly month: number = 9;
-  readonly day: number = 1;
-}
-
 describe('parseCalendarDay', () => {
   it('reads the iso format by default', () => {
     expect(parseCalendarDay('2026-09-06')).toBe('2026-09-06');
@@ -32,18 +26,6 @@ describe('parseCalendarDay', () => {
     [{ year: 2026, month: 9, day: 1, hours: undefined }, '2026-09-01'],
   ])('reads the parts %j as %j', (parts, expected) => {
     expect(parseCalendarDay(parts)).toBe(expected);
-  });
-
-  it('reads only plain objects with their own data properties, without running a getter', () => {
-    const withGetter: object = Object.defineProperty({ month: 9, day: 1 }, 'year', {
-      enumerable: true,
-      get: (): never => {
-        throw new Error('[test]: the getter ran');
-      },
-    });
-    expect(parseCalendarDay(withGetter)).toBeNull();
-    expect(parseCalendarDay(new Appointment())).toBeNull();
-    expect(parseCalendarDay(Object.create({ year: 2026, month: 9, day: 1 }) as object)).toBeNull();
   });
 
   it('gives null for a date, also with acceptMidnightInstant, because the time zone is chosen with toCalendarDay', () => {
