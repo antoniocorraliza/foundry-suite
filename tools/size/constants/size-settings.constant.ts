@@ -1,4 +1,5 @@
 import type { FoundryPackageFolder } from '../../packages/types/foundry-package-folder.type.ts';
+import type { SizeFigures } from '../interfaces/size-figures.interface.ts';
 import type { SizeTarget } from '../types/size-target.type.ts';
 import type { SizeTool } from '../types/size-tool.type.ts';
 
@@ -14,3 +15,4 @@ export const DEFAULT_SIZE_TARGETS: Readonly<Record<FoundryPackageFolder, SizeTar
   'foundry-ui': 'angular-app-with-forms',
 };
 export const ANGULAR_PACKAGES: ReadonlyArray<FoundryPackageFolder> = ['foundry-core', 'foundry-ui'];
+export const EMPTY_SIZE: SizeFigures = { raw: 0, gzip: 0 };

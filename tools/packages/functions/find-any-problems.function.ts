@@ -5,7 +5,7 @@ function readTarballFile(tarball: Tarball, path: string): string {
   return tarball.contents.get(path) ?? '';
 }
 
-export function checkAny(tarball: Tarball): Array<string> {
+export function findAnyProblems(tarball: Tarball): Array<string> {
   const problems: Array<string> = [];
   tarball.files
     .filter((path) => path.endsWith('.d.ts'))

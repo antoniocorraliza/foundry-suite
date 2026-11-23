@@ -2,7 +2,7 @@ import { PACKAGES_SOURCE_DIRECTORY } from '../constants/package-directories.cons
 import { NODE_ENGINE, REPOSITORY_URL } from '../constants/package-settings.constant.ts';
 import type { Tarball } from '../interfaces/tarball.interface.ts';
 
-export function checkManifest(tarball: Tarball): Array<string> {
+export function findManifestProblems(tarball: Tarball): Array<string> {
   const { manifest, foundryPackage } = tarball;
   const problems: Array<string> = [];
   if (manifest.name !== foundryPackage.name) problems.push(`"name" is "${manifest.name ?? ''}"`);

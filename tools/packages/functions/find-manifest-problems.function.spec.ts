@@ -4,7 +4,7 @@ import type { FoundryPackage } from '../interfaces/foundry-package.interface.ts'
 import type { PackageManifest } from '../interfaces/package-manifest.interface.ts';
 import type { Tarball } from '../interfaces/tarball.interface.ts';
 import type { FoundryPackageFolder } from '../types/foundry-package-folder.type.ts';
-import { checkManifest } from './check-manifest.function.ts';
+import { findManifestProblems } from './find-manifest-problems.function.ts';
 
 function createTarball(folder: FoundryPackageFolder, manifest: PackageManifest, contents: Readonly<Record<string, string>> = {}): Tarball {
   const foundryPackage: FoundryPackage | undefined = FOUNDRY_PACKAGES.find((candidate) => candidate.folder === folder);
@@ -20,9 +20,9 @@ const UTILS: PackageManifest = {
   repository: { url: 'git+https://github.com/antoniocorraliza/foundry-suite.git', directory: 'projects/antoniocorraliza/foundry-utils' },
 };
 
-describe('checkManifest', () => {
+describe('findManifestProblems', () => {
   it('accepts the expected manifest', () => {
-    expect(checkManifest(createTarball('foundry-utils', UTILS))).toEqual([]);
+    expect(findManifestProblems(createTarball('foundry-utils', UTILS))).toEqual([]);
   });
 
   it('reports each field that differs', () => {
@@ -33,7 +33,7 @@ describe('checkManifest', () => {
       sideEffects: true,
       repository: { url: 'x' },
     };
-    expect(checkManifest(createTarball('foundry-utils', manifest))).toEqual([
+    expect(findManifestProblems(createTarball('foundry-utils', manifest))).toEqual([
       '"type" must be "module"',
       '"engines.node" must be ">=22.12.0"',
       '"sideEffects" is true, expected false',

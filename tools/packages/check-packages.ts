@@ -4,14 +4,15 @@ import { tmpdir } from 'node:os';
 import { join, relative, sep } from 'node:path';
 import { FOUNDRY_PACKAGES } from './constants/foundry-packages.constant.ts';
 import { PACKAGES_DIST_DIRECTORY, PACKAGES_SOURCE_DIRECTORY } from './constants/package-directories.constant.ts';
-import { checkAny } from './functions/check-any.function.ts';
-import { checkDependencies } from './functions/check-dependencies.function.ts';
-import { checkExports } from './functions/check-exports.function.ts';
-import { checkLicense } from './functions/check-license.function.ts';
-import { checkManifest } from './functions/check-manifest.function.ts';
-import { checkNotices } from './functions/check-notices.function.ts';
-import { checkPeers } from './functions/check-peers.function.ts';
-import { checkTslib } from './functions/check-tslib.function.ts';
+import { findAnyProblems } from './functions/find-any-problems.function.ts';
+import { findDependencyProblems } from './functions/find-dependency-problems.function.ts';
+import { findExportProblems } from './functions/find-export-problems.function.ts';
+import { findLicenseProblems } from './functions/find-license-problems.function.ts';
+import { findManifestProblems } from './functions/find-manifest-problems.function.ts';
+import { findNoticeProblems } from './functions/find-notice-problems.function.ts';
+import { findPeerProblems } from './functions/find-peer-problems.function.ts';
+import { findTslibProblems } from './functions/find-tslib-problems.function.ts';
+import { listPackageNotes } from './functions/list-package-notes.function.ts';
 import type { FoundryPackage } from './interfaces/foundry-package.interface.ts';
 import type { NpmPackEntry } from './interfaces/npm-pack-entry.interface.ts';
 import type { PackageManifest } from './interfaces/package-manifest.interface.ts';
@@ -58,15 +59,16 @@ function main(): number {
     tarballs.forEach((tarball) => {
       console.log(`\n${tarball.foundryPackage.name}@${tarball.manifest.version ?? '?'} (${tarball.files.length} files)`);
       const sourceFiles: Array<string> = listFiles(join(PACKAGES_SOURCE_DIRECTORY, tarball.foundryPackage.folder));
+      listPackageNotes(tarball, sourceFiles).forEach((note) => console.log(`    - ${note}`));
       const results: Readonly<Record<string, Array<string>>> = {
-        exports: checkExports(tarball, sourceFiles),
-        license: checkLicense(tarball, license),
-        tslib: checkTslib(tarball),
-        any: checkAny(tarball),
-        dependencies: checkDependencies(tarball),
-        peers: checkPeers(tarball, versions),
-        manifest: checkManifest(tarball),
-        notices: checkNotices(tarball, sourceFiles),
+        exports: findExportProblems(tarball, sourceFiles),
+        license: findLicenseProblems(tarball, license),
+        tslib: findTslibProblems(tarball),
+        any: findAnyProblems(tarball),
+        dependencies: findDependencyProblems(tarball),
+        peers: findPeerProblems(tarball, versions),
+        manifest: findManifestProblems(tarball),
+        notices: findNoticeProblems(tarball, sourceFiles),
       };
       Object.entries(results).forEach(([rule, problems]) => {
         console.log(`  ${problems.length === 0 ? 'ok  ' : 'FAIL'} ${rule}`);

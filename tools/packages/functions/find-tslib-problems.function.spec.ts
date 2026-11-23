@@ -4,7 +4,7 @@ import type { FoundryPackage } from '../interfaces/foundry-package.interface.ts'
 import type { PackageManifest } from '../interfaces/package-manifest.interface.ts';
 import type { Tarball } from '../interfaces/tarball.interface.ts';
 import type { FoundryPackageFolder } from '../types/foundry-package-folder.type.ts';
-import { checkTslib } from './check-tslib.function.ts';
+import { findTslibProblems } from './find-tslib-problems.function.ts';
 
 function createTarball(folder: FoundryPackageFolder, manifest: PackageManifest, contents: Readonly<Record<string, string>> = {}): Tarball {
   const foundryPackage: FoundryPackage | undefined = FOUNDRY_PACKAGES.find((candidate) => candidate.folder === folder);
@@ -12,13 +12,13 @@ function createTarball(folder: FoundryPackageFolder, manifest: PackageManifest, 
   return { foundryPackage, files: Object.keys(contents).sort(), contents: new Map(Object.entries(contents)), manifest };
 }
 
-describe('checkTslib', () => {
+describe('findTslibProblems', () => {
   it('reports each line that imports tslib, statically or dynamically', () => {
     const files: Readonly<Record<string, string>> = {
       'fesm2022/a.mjs': "const x = 1;\nimport { __decorate } from 'tslib';",
       'fesm2022/b.mjs': "await import('tslib/modules/index.js');",
     };
-    expect(checkTslib(createTarball('foundry-core', {}, files))).toEqual([
+    expect(findTslibProblems(createTarball('foundry-core', {}, files))).toEqual([
       'fesm2022/a.mjs:2 imports tslib',
       'fesm2022/b.mjs:1 imports tslib',
     ]);
@@ -26,11 +26,11 @@ describe('checkTslib', () => {
 
   it('ignores tslib mentioned outside an import and files that are not code', () => {
     const files: Readonly<Record<string, string>> = { 'fesm2022/a.mjs': '// compiled without tslib', 'README.md': "import 'tslib';" };
-    expect(checkTslib(createTarball('foundry-core', {}, files))).toEqual([]);
+    expect(findTslibProblems(createTarball('foundry-core', {}, files))).toEqual([]);
   });
 
   it('reports tslib declared in a dependency field', () => {
-    expect(checkTslib(createTarball('foundry-core', { peerDependencies: { tslib: '^2.8.0' } }))).toEqual([
+    expect(findTslibProblems(createTarball('foundry-core', { peerDependencies: { tslib: '^2.8.0' } }))).toEqual([
       '"peerDependencies" declares tslib',
     ]);
   });

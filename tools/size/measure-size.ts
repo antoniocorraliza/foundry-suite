@@ -7,7 +7,7 @@ import { BASE_APP_COMPONENT, BASE_FORMS_APP_COMPONENT } from './constants/base-c
 import { BUNDLERS } from './constants/bundlers.constant.ts';
 import { PUBLIC_ERROR_CLASSES } from './constants/public-error-classes.constant.ts';
 import { SIZE_MEASUREMENTS } from './constants/size-measurements.constant.ts';
-import { SIZE_REFERENCE_PATH } from './constants/size-settings.constant.ts';
+import { EMPTY_SIZE, SIZE_REFERENCE_PATH } from './constants/size-settings.constant.ts';
 import { SIZE_TOOLS } from './constants/size-tools.constant.ts';
 import { buildAngularProbe } from './functions/build-angular-probe.function.ts';
 import { bundleWithEsbuild } from './functions/bundle-with-esbuild.function.ts';
@@ -73,8 +73,8 @@ function getBaseComponent(measurement: SizeMeasurement, repositoryRoot: string):
   return { path: join(repositoryRoot, component.path), className: component.className };
 }
 
-async function measureAll(measurable: ReadonlyArray<ResolvedMeasurement>, context: SizeRunContext): Promise<SizeReference> {
-  const { repositoryRoot, workDirectory, bundleRequest } = context;
+async function measureBundles(measurable: ReadonlyArray<ResolvedMeasurement>, context: SizeRunContext): Promise<SizeReference> {
+  const { bundleRequest } = context;
   const measured: Record<string, SizeToolFigures> = {};
   const bundleBases: Map<Bundler, SizeFigures> = new Map();
   for (const bundler of BUNDLERS) {
@@ -86,49 +86,61 @@ async function measureAll(measurable: ReadonlyArray<ResolvedMeasurement>, contex
       const probe: SizeFigures = measureContents([
         await bundle(bundler, { ...bundleRequest, source: createProbeSource(resolution.imports) }),
       ]);
-      figures[bundler] = getSizeDelta(probe, bundleBases.get(bundler) ?? { raw: 0, gzip: 0 });
+      figures[bundler] = getSizeDelta(probe, bundleBases.get(bundler) ?? EMPTY_SIZE);
     }
     measured[resolution.measurement.name] = figures;
   }
-  measurable
-    .filter((candidate) => candidate.measurement.target === 'stylesheets')
-    .forEach((resolution) => {
-      const files: Array<Buffer> = (resolution.measurement.files ?? []).map((file) =>
-        readFileSync(join(PACKAGES_DIST_DIRECTORY, resolution.measurement.packageFolder, file)),
-      );
-      measured[resolution.measurement.name] = { files: measureContents(files) };
-    });
+  return measured;
+}
+
+function measureStylesheets(measurable: ReadonlyArray<ResolvedMeasurement>): SizeReference {
+  return Object.fromEntries(
+    measurable
+      .filter((candidate) => candidate.measurement.target === 'stylesheets')
+      .map((resolution) => {
+        const files: Array<Buffer> = (resolution.measurement.files ?? []).map((file) =>
+          readFileSync(join(PACKAGES_DIST_DIRECTORY, resolution.measurement.packageFolder, file)),
+        );
+        return [resolution.measurement.name, { files: measureContents(files) }];
+      }),
+  );
+}
+
+async function measureAngularApps(measurable: ReadonlyArray<ResolvedMeasurement>, context: SizeRunContext): Promise<SizeReference> {
+  const { repositoryRoot, workDirectory } = context;
   const angularMeasurable: Array<ResolvedMeasurement> = measurable.filter((candidate) =>
     candidate.measurement.target.startsWith('angular'),
   );
-  const baseSources: Map<string, string> = new Map(
+  const baseComponents: Map<string, BaseComponent> = new Map(
     angularMeasurable.map((resolution) => {
       const baseComponent: BaseComponent = getBaseComponent(resolution.measurement, repositoryRoot);
-      return [baseComponent.className, createAngularProbeSource(baseComponent, [])];
+      return [baseComponent.className, baseComponent];
     }),
   );
-  const sources: Array<string> = [
-    ...baseSources.values(),
-    ...angularMeasurable.map((resolution) =>
+  const probeSources: Map<string, string> = new Map();
+  baseComponents.forEach((baseComponent) => probeSources.set(baseComponent.className, createAngularProbeSource(baseComponent, [])));
+  angularMeasurable.forEach((resolution) =>
+    probeSources.set(
+      resolution.measurement.name,
       createAngularProbeSource(getBaseComponent(resolution.measurement, repositoryRoot), resolution.imports),
     ),
-  ];
+  );
+  const probeNames: Array<string> = [...probeSources.keys()];
   const concurrency: number = Math.max(1, Math.floor(availableParallelism() / 2));
-  const outputs: Array<SizeFigures> = await runWithConcurrency(
-    sources.map((source, index) => async () => {
+  const figures: Array<SizeFigures> = await runWithConcurrency(
+    [...probeSources.values()].map((source, index) => async () => {
       const workspaceDirectory: string = join(workDirectory, `angular-${index}`);
       return measureContents(await buildAngularProbe({ source, workspaceDirectory, repositoryRoot }));
     }),
     concurrency,
   );
-  const baseFigures: Map<string, SizeFigures> = new Map(
-    [...baseSources.keys()].map((className, index) => [className, outputs[index] ?? { raw: 0, gzip: 0 }]),
+  const outputs: Map<string, SizeFigures> = new Map(probeNames.map((name, index) => [name, figures[index] ?? EMPTY_SIZE]));
+  return Object.fromEntries(
+    angularMeasurable.map((resolution) => {
+      const base: SizeFigures = outputs.get(getBaseComponent(resolution.measurement, repositoryRoot).className) ?? EMPTY_SIZE;
+      return [resolution.measurement.name, { angular: getSizeDelta(outputs.get(resolution.measurement.name) ?? base, base) }];
+    }),
   );
-  angularMeasurable.forEach((resolution, index) => {
-    const base: SizeFigures = baseFigures.get(getBaseComponent(resolution.measurement, repositoryRoot).className) ?? { raw: 0, gzip: 0 };
-    measured[resolution.measurement.name] = { angular: getSizeDelta(outputs[baseSources.size + index] ?? base, base) };
-  });
-  return measured;
 }
 
 async function findErrorNameProblems(builtEntries: ReadonlyArray<BuiltEntry>, context: SizeRunContext): Promise<Array<string>> {
@@ -203,23 +215,25 @@ async function main(): Promise<number> {
   };
   const context: SizeRunContext = { repositoryRoot, workDirectory, bundleRequest };
   try {
-    const measured: SizeReference = await measureAll(measurable, context);
+    const measured: SizeReference = {
+      ...(await measureBundles(measurable, context)),
+      ...measureStylesheets(measurable),
+      ...(await measureAngularApps(measurable, context)),
+    };
     printReport({ measured, measurements, pending });
-    const budget: Array<string> = measurable.flatMap((resolution) =>
+    const budgetProblems: Array<string> = measurable.flatMap((resolution) =>
       findBudgetProblems(resolution.measurement.name, measured[resolution.measurement.name] ?? {}, resolution.measurement.budget),
     );
-    const errorNames: Array<string> = await findErrorNameProblems(builtEntries, context);
-    let reference: Array<string> = [];
+    const errorNameProblems: Array<string> = await findErrorNameProblems(builtEntries, context);
+    const referenceProblems: Array<string> = isUpdate ? [] : findReferenceProblems(measured, readReference(SIZE_REFERENCE_PATH));
     if (isUpdate) {
       writeReference(SIZE_REFERENCE_PATH, measured);
       console.log(`[size]: ${SIZE_REFERENCE_PATH} updated; commit it with the change that moved the sizes`);
-    } else {
-      reference = findReferenceProblems(measured, readReference(SIZE_REFERENCE_PATH));
     }
-    printProblems('Over budget:', budget);
-    printProblems('Error names:', errorNames);
-    printProblems(`Different from ${SIZE_REFERENCE_PATH} (run \`npm run size:update\` and commit it):`, reference);
-    const failures: number = budget.length + errorNames.length + reference.length;
+    printProblems('Over budget:', budgetProblems);
+    printProblems('Error names:', errorNameProblems);
+    printProblems(`Different from ${SIZE_REFERENCE_PATH} (run \`npm run size:update\` and commit it):`, referenceProblems);
+    const failures: number = budgetProblems.length + errorNameProblems.length + referenceProblems.length;
     console.log(failures === 0 ? '\n[size]: ok' : `\n[size]: ${failures} problem(s)`);
     return failures === 0 ? 0 : 1;
   } finally {

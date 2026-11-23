@@ -5,7 +5,7 @@ function readTarballFile(tarball: Tarball, path: string): string {
   return tarball.contents.get(path) ?? '';
 }
 
-export function checkTslib(tarball: Tarball): Array<string> {
+export function findTslibProblems(tarball: Tarball): Array<string> {
   const problems: Array<string> = [];
   tarball.files
     .filter((path) => /\.(?:mjs|js|cjs|d\.ts)$/.test(path))

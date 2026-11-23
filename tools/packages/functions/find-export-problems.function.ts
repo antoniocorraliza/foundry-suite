@@ -16,7 +16,7 @@ function hasCssSideEffects(foundryPackage: FoundryPackage): boolean {
   return foundryPackage.sideEffects !== false && foundryPackage.sideEffects.some((pattern) => pattern.endsWith('.css'));
 }
 
-export function checkExports(tarball: Tarball, sourceFiles: ReadonlyArray<string>): Array<string> {
+export function findExportProblems(tarball: Tarball, sourceFiles: ReadonlyArray<string>): Array<string> {
   const problems: Array<string> = [];
   const { manifest, files, foundryPackage } = tarball;
   const exportsMap: Readonly<Record<string, unknown>> | undefined = manifest.exports;
@@ -39,7 +39,6 @@ export function checkExports(tarball: Tarball, sourceFiles: ReadonlyArray<string
       }
       const [prefix = '', suffix = ''] = stripDotSlash(target).split('*');
       const matches: Array<string> = files.filter((file) => file.startsWith(prefix) && file.endsWith(suffix));
-      console.log(`    - exports: ${subpath} matches ${matches.length} file(s) in the tarball`);
       const sourceFolder: string = prefix.slice(0, prefix.lastIndexOf('/') + 1);
       const hasSourceFolder: boolean = sourceFiles.some((file) => file.startsWith(sourceFolder));
       if (matches.length === 0 && hasCssSideEffects(foundryPackage) && hasSourceFolder) {

@@ -4,7 +4,7 @@ import type { FoundryPackage } from '../interfaces/foundry-package.interface.ts'
 import type { PackageManifest } from '../interfaces/package-manifest.interface.ts';
 import type { Tarball } from '../interfaces/tarball.interface.ts';
 import type { FoundryPackageFolder } from '../types/foundry-package-folder.type.ts';
-import { checkExports } from './check-exports.function.ts';
+import { findExportProblems } from './find-export-problems.function.ts';
 
 function createTarball(folder: FoundryPackageFolder, manifest: PackageManifest, contents: Readonly<Record<string, string>> = {}): Tarball {
   const foundryPackage: FoundryPackage | undefined = FOUNDRY_PACKAGES.find((candidate) => candidate.folder === folder);
@@ -22,17 +22,17 @@ const ROOT_ENTRY: PackageManifest = {
 };
 const ROOT_FILES: Readonly<Record<string, string>> = { 'fesm2022/package.mjs': '', 'types/package.d.ts': '' };
 
-describe('checkExports', () => {
+describe('findExportProblems', () => {
   beforeEach(() => {
     vi.spyOn(console, 'log').mockImplementation(() => undefined);
   });
 
   it('accepts a package whose entries are all exported and present', () => {
-    expect(checkExports(createTarball('foundry-core', ROOT_ENTRY, ROOT_FILES), ['ng-package.json'])).toEqual([]);
+    expect(findExportProblems(createTarball('foundry-core', ROOT_ENTRY, ROOT_FILES), ['ng-package.json'])).toEqual([]);
   });
 
   it('reports an entry point of the source that is missing from exports', () => {
-    const problems: Array<string> = checkExports(createTarball('foundry-core', ROOT_ENTRY, ROOT_FILES), [
+    const problems: Array<string> = findExportProblems(createTarball('foundry-core', ROOT_ENTRY, ROOT_FILES), [
       'configuration/ng-package.json',
       'ng-package.json',
     ]);
@@ -44,7 +44,7 @@ describe('checkExports', () => {
       ...ROOT_ENTRY,
       exports: { ...ROOT_ENTRY.exports, './extra': { types: './types/package.d.ts', default: './fesm2022/package.mjs' } },
     };
-    expect(checkExports(createTarball('foundry-core', manifest, ROOT_FILES), ['ng-package.json'])).toEqual([
+    expect(findExportProblems(createTarball('foundry-core', manifest, ROOT_FILES), ['ng-package.json'])).toEqual([
       'unexpected export "./extra" (no entry point and not in nonEntryExports)',
     ]);
   });
@@ -54,7 +54,7 @@ describe('checkExports', () => {
       ...ROOT_ENTRY,
       exports: { ...ROOT_ENTRY.exports, '.': { default: './missing.mjs', types: './types/package.d.ts' } },
     };
-    expect(checkExports(createTarball('foundry-core', manifest, ROOT_FILES), ['ng-package.json'])).toEqual([
+    expect(findExportProblems(createTarball('foundry-core', manifest, ROOT_FILES), ['ng-package.json'])).toEqual([
       'export ".": "types" must be the first condition',
       'export ".": "default" must be the last condition',
       'export "." -> "default": ./missing.mjs is not in the tarball',
@@ -62,7 +62,7 @@ describe('checkExports', () => {
   });
 
   it('reports module and typings that are not in the tarball', () => {
-    expect(checkExports(createTarball('foundry-core', ROOT_ENTRY, {}), ['ng-package.json'])).toContain(
+    expect(findExportProblems(createTarball('foundry-core', ROOT_ENTRY, {}), ['ng-package.json'])).toContain(
       '"module" (./fesm2022/package.mjs) is not in the tarball',
     );
   });
@@ -71,23 +71,23 @@ describe('checkExports', () => {
     const manifest: PackageManifest = { ...ROOT_ENTRY, exports: { ...ROOT_ENTRY.exports, './styles/*.css': './styles/*.css' } };
 
     it('passes without matching files while the source has no styles folder', () => {
-      expect(checkExports(createTarball('foundry-ui', manifest, ROOT_FILES), ['ng-package.json'])).toEqual([]);
+      expect(findExportProblems(createTarball('foundry-ui', manifest, ROOT_FILES), ['ng-package.json'])).toEqual([]);
     });
 
     it('fails without matching files once the source has a styles folder', () => {
-      expect(checkExports(createTarball('foundry-ui', manifest, ROOT_FILES), ['ng-package.json', 'styles/theme.css'])).toEqual([
+      expect(findExportProblems(createTarball('foundry-ui', manifest, ROOT_FILES), ['ng-package.json', 'styles/theme.css'])).toEqual([
         'pattern export "./styles/*.css" matches no file in the tarball, but the source has styles/',
       ]);
     });
 
     it('passes when the tarball has matching files', () => {
       const files: Readonly<Record<string, string>> = { ...ROOT_FILES, 'styles/theme.css': '' };
-      expect(checkExports(createTarball('foundry-ui', manifest, files), ['ng-package.json', 'styles/theme.css'])).toEqual([]);
+      expect(findExportProblems(createTarball('foundry-ui', manifest, files), ['ng-package.json', 'styles/theme.css'])).toEqual([]);
     });
 
     it('requires a pattern export to map to a pattern', () => {
       const fixed: PackageManifest = { ...ROOT_ENTRY, exports: { ...ROOT_ENTRY.exports, './styles/*.css': './styles/theme.css' } };
-      expect(checkExports(createTarball('foundry-ui', fixed, ROOT_FILES), ['ng-package.json'])).toEqual([
+      expect(findExportProblems(createTarball('foundry-ui', fixed, ROOT_FILES), ['ng-package.json'])).toEqual([
         'pattern export "./styles/*.css" must map to a pattern string',
       ]);
     });

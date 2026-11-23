@@ -5,7 +5,7 @@ function readTarballFile(tarball: Tarball, path: string): string {
   return tarball.contents.get(path) ?? '';
 }
 
-export function checkLicense(tarball: Tarball, rootLicense: string): Array<string> {
+export function findLicenseProblems(tarball: Tarball, rootLicense: string): Array<string> {
   const problems: Array<string> = [];
   if (tarball.manifest.license !== LICENSE_ID) problems.push(`"license" is "${tarball.manifest.license ?? ''}", not "${LICENSE_ID}"`);
   if (!tarball.files.includes('LICENSE')) {

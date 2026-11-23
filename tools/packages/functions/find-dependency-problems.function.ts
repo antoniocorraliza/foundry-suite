@@ -1,6 +1,6 @@
 import type { Tarball } from '../interfaces/tarball.interface.ts';
 
-export function checkDependencies(tarball: Tarball): Array<string> {
+export function findDependencyProblems(tarball: Tarball): Array<string> {
   const { manifest } = tarball;
   const problems: Array<string> = [];
   const dependencies: Array<string> = Object.keys(manifest.dependencies ?? {});
