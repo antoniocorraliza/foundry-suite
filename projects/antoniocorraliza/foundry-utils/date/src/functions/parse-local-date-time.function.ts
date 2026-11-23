@@ -9,24 +9,20 @@ import type { FoundryLocalDateTime } from '../types/foundry-local-date-time.type
 import { readDateParts } from './read-date-parts.function';
 import { readDateText } from './read-date-text.function';
 import { readTimeText } from './read-time-text.function';
-import { writeCivilDate } from './write-civil-date.function';
-
-function writeLocalDateTime(day: string, hours: number, minutes: number): FoundryLocalDateTime {
-  return `${day}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-}
+import { writeLocalDateTime } from './write-local-date-time.function';
 
 function readLocalDateTimeText(text: string, format: FoundryDateFormat): FoundryLocalDateTime | null {
   const reading: DateTextReading | null = readDateText(text, format);
   const time: TimeTextReading | null = reading === null ? null : readTimeText(reading.rest, format);
   if (reading === null || time === null || time.offsetMinutes !== null || !time.isWholeMinute) return null;
-  return writeLocalDateTime(writeCivilDate(reading.date), time.hours, time.minutes);
+  return writeLocalDateTime(reading.date, time.hours, time.minutes);
 }
 
 function readLocalDateTimeParts(value: unknown): FoundryLocalDateTime | null {
   const parts: DatePartsReading | null = readDateParts(value);
   const time: DatePartsReading['time'] = parts?.time ?? null;
   if (parts === null || time === null || time.writtenParts < 2 || time.seconds !== 0 || time.milliseconds !== 0) return null;
-  return writeLocalDateTime(writeCivilDate(parts.date), time.hours, time.minutes);
+  return writeLocalDateTime(parts.date, time.hours, time.minutes);
 }
 
 /**
