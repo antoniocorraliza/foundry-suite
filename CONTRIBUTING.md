@@ -165,6 +165,8 @@ Checked by: `tools/lint/check-text.ts` rejects `/** UPPERCASE */`; ESLint `no-re
 
 On variables, properties, parameters and return types. Every named function and method declares its return type, `void` included. Callbacks declare neither: the function that receives them already sets their types. Arrays are written `Array<T>` and `ReadonlyArray<T>`.
 
+Typing every variable, also where TypeScript could infer it, is a deliberate choice: the type is read where the variable is declared, without an editor.
+
 ```ts
 // Yes
 function clear(): void {}
@@ -286,6 +288,8 @@ Checked by: ESLint `curly` (`multi-line`).
 // Yes
 throw new Error('[strip-tslib]: unknown package folder "foundry-x"');
 ```
+
+The problem lists of the tools are an exception (see Exceptions).
 
 Checked by: ESLint `no-restricted-syntax`, on string literals and on the start of template literals.
 
@@ -681,6 +685,17 @@ export function deepClone<T>(value: T): T {}
 ```
 
 Checked by: the exception list `FUNCTION_NAME_EXCEPTIONS` in `eslint.config.mjs`. A public name of a later design that does not start with a verb is added there with its block.
+
+### Problem lists of the tools
+
+The reports of the scripts of `tools/` list one problem per line without `[who]: ...`: `path:line: rule: text` when the problem has a place in a file, or the indented lines under `ok` and `FAIL` of `check-packages` and `size`. The summary at the end and the other status messages keep `[who]: ...`. Why: editors and CI logs turn `path:line:` into a link to the line, and a prefix on every line of a report would only repeat the script.
+
+```text
+tools/size/README.md:12: sales word: Robust measurements of each entry.
+[check-text]: 1 problem(s), see CONTRIBUTING.md
+```
+
+Checked by: review. ESLint only sees messages written as text, and each problem line is built by the function that finds it.
 
 ### Names fixed by an outside format
 
