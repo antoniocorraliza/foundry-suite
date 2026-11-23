@@ -666,3 +666,47 @@ describe.skipIf(IS_ESLINT_MISSING)('function names', () => {
     expect(await findRuleLines(code, 'tools/probe/probe.spec.ts', ruleId)).toEqual([1]);
   });
 });
+
+describe.skipIf(IS_ESLINT_MISSING)('options of the library functions', () => {
+  const message: string = 'Options are read with the readers of the root';
+  const libraryFile: string = 'projects/antoniocorraliza/foundry-utils/date/src/functions/probe.function.ts';
+
+  it('rejects reading an option by hand, also through a cast or a destructuring', async () => {
+    const code: string = [
+      'export function readWeeks(options: Readonly<Record<string, unknown>> | undefined): number {',
+      "  const weeks: unknown = options?.['weeks'];",
+      "  const days: unknown = (options as Readonly<Record<string, unknown>>)['days'];",
+      '  const { months } = options ?? {};',
+      '  return Number(weeks) + Number(days) + Number(months);',
+      '}',
+      '',
+    ].join('\n');
+    expect(await findMessageLines(code, libraryFile, message)).toEqual([2, 3, 4]);
+  });
+
+  it('accepts the readers of the root and the options that keep their own reader', async () => {
+    const code: string = [
+      "import { ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';",
+      'export function readWeeks(options: Readonly<Record<string, unknown>> | undefined): number {',
+      "  const customEquality: unknown = options?.['customEquality'];",
+      "  const fields: unknown = (options as Readonly<Record<string, unknown>>)['fields'];",
+      "  return ɵparseIntegerOption({ options, name: 'weeks', minimum: 1 }) + Number(customEquality) + Number(fields);",
+      '}',
+      '',
+    ].join('\n');
+    expect(await findMessageLines(code, libraryFile, message)).toEqual([]);
+  });
+
+  it('leaves the tools and the specs alone', async () => {
+    const code: string = ["export const weeks: unknown = ({} as Readonly<Record<string, unknown>>)['weeks'];", ''].join('\n');
+    const reading: string = [
+      'export function readWeeks(options: Readonly<Record<string, unknown>>): unknown {',
+      "  return options['weeks'];",
+      '}',
+      '',
+    ].join('\n');
+    expect(await findMessageLines(code, libraryFile, message)).toEqual([]);
+    expect(await findMessageLines(reading, 'tools/probe/functions/read-weeks.function.ts', message)).toEqual([]);
+    expect(await findMessageLines(reading, `${libraryFile.replace('.ts', '.spec.ts')}`, message)).toEqual([]);
+  });
+});

@@ -239,8 +239,21 @@ const SERVICE_SELECTORS = forbid(
   ["CallExpression[callee.property.name='subscribe']"],
   'Services do not subscribe: they expose state with toSignal() and return the Observable for the rest.',
 );
+// Options that are not an enum, a boolean or an integer keep their own reader (see Exceptions in CONTRIBUTING.md).
+const OWN_READER_OPTIONS = '/^(?:customEquality|fields)$/';
+const OTHER_THAN_OWN_READER_OPTIONS = `:not([property.name=${OWN_READER_OPTIONS}]):not([property.value=${OWN_READER_OPTIONS}])`;
+const OPTION_SELECTORS = forbid(
+  [
+    `MemberExpression[object.name='options']${OTHER_THAN_OWN_READER_OPTIONS}`,
+    `MemberExpression[object.expression.name='options']${OTHER_THAN_OWN_READER_OPTIONS}`,
+    "VariableDeclarator[id.type='ObjectPattern'][init.name='options']",
+    "VariableDeclarator[id.type='ObjectPattern'][init.left.name='options']",
+  ],
+  'Options are read with the readers of the root: \u0275parseEnumOption, \u0275parseBooleanOption or \u0275parseIntegerOption.',
+);
 const LIBRARY_GENERAL_SELECTORS = [
   ...COMMON_SELECTORS,
+  ...OPTION_SELECTORS,
   ...LIBRARY_NAMING_SELECTORS,
   ...LIBRARY_NULL_SELECTORS,
   ...SUBJECT_SELECTORS,

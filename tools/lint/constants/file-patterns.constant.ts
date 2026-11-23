@@ -9,3 +9,4 @@ export const LOCKFILE: RegExp = /(?:^|\/)package-lock\.json$/;
 export const MARKDOWN_FILE: RegExp = /\.md$/;
 export const SPEC_FILE: RegExp = /\.(?:spec|test-d)\.ts$/;
 export const TYPESCRIPT_FILE: RegExp = /\.ts$/;
+export const LIBRARY_DEFINITION_FILE: RegExp = /^projects\/.*\/(?:constants|interfaces|types)\/[^/]+(?<!\.spec|\.test-d)\.ts$/;

@@ -17,7 +17,7 @@ function findMinuteMismatch(time: number): string | null {
   return localDateTimeToDate(utcText, { timeZone: 'utc' })?.getTime() === time ? null : `${date.toISOString()} does not come back in UTC`;
 }
 
-function findDayMismatch(day: string): string | null {
+function findMinuteMismatchOfDay(day: string): string | null {
   const first: number = Date.parse(day);
   const times: Array<number> = Array.from({ length: 1440 }, (_entry, minute) => first + minute * MINUTE_IN_MILLISECONDS);
   return findMismatches(times, findMinuteMismatch, 1)[0] ?? null;
@@ -25,6 +25,6 @@ function findDayMismatch(day: string): string | null {
 
 describe('localDateTimeToDate and toLocalDateTime on every minute from 2020 to 2030', () => {
   it('reads back each instant, with the later reading for the second of two repeated times, in every time zone', () => {
-    expect(findMismatches(listDaysOfYears(2020, 2030), findDayMismatch)).toEqual([]);
+    expect(findMismatches(listDaysOfYears(2020, 2030), findMinuteMismatchOfDay)).toEqual([]);
   });
 });

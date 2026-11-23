@@ -37,7 +37,7 @@ function findRoundTripMismatch(date: Date, options: RoundTripOptions): string | 
   return formatDate(parseDate(text, parseOptions), options) === text ? null : `${text} ${JSON.stringify(options)}`;
 }
 
-function findDayMismatch(day: string): string | null {
+function findRoundTripMismatchOfDay(day: string): string | null {
   const date: Date = new Date(Date.parse(day));
   date.setHours(13, 47, 29, 123);
   return findMismatches(ROUND_TRIP_OPTIONS, (options) => findRoundTripMismatch(date, options), 1)[0] ?? null;
@@ -45,6 +45,6 @@ function findDayMismatch(day: string): string | null {
 
 describe('parseDate and formatDate on every day from 2020 to 2030', () => {
   it('reads back what formatDate writes, truncated to its precision, in every format and mode', () => {
-    expect(findMismatches(listDaysOfYears(2020, 2030), findDayMismatch)).toEqual([]);
+    expect(findMismatches(listDaysOfYears(2020, 2030), findRoundTripMismatchOfDay)).toEqual([]);
   });
 });

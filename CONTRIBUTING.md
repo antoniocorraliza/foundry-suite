@@ -79,6 +79,8 @@ export function parseCalendarDay(text: string): FoundryCalendarDay | null {}
 export function parseCalendarDay(text: string): FoundryCalendarDay | null {}
 ```
 
+The JSDoc of the internal definitions (constants, types and interfaces) is a noun phrase, as the public types already are: "First year that the date functions read and write.", "Values of the `format` option.", not "Gives the...", "Holds the..." or "Lists the...". A computed type that works as a function of types may start with a verb ("Tells whether...", "Computes...").
+
 Checked by:
 
 - ESLint `eslint-plugin-jsdoc`, in `projects/`:
@@ -87,7 +89,7 @@ Checked by:
   - no types in tags (`no-types`) and no tag that only repeats its name (`informative-docs`);
   - `@param` names that exist, and descriptions in `@param` and `@returns`;
   - `@throws` when the body throws (`require-throws`), and a one-line `@example`.
-- `tools/lint/check-text.ts`: the sales words and the filler openings in any JSDoc line, and a `@throws` on an `is...` or `has...` function or method that is not in `NEVER_THROWING_NAME_EXCEPTIONS`.
+- `tools/lint/check-text.ts`: the sales words and the filler openings in any JSDoc line; a `@throws` on an `is...` or `has...` function or method that is not in `NEVER_THROWING_NAME_EXCEPTIONS`; and, in `constants/`, `interfaces/` and `types/` of `projects/`, a declaration JSDoc that opens with a template verb (`TEMPLATE_JSDOC_VERBS` in `tools/lint/constants/comment-patterns.constant.ts`: "Gives", "Holds", "Lists", "Names", "Sets"...).
 - Review: the number of sentences, that nothing repeats the types, `@throws` for the errors of the functions it calls, whether an `@example` is needed, English, and filler that the lists do not catch.
 
 ### 3. No process references
@@ -582,6 +584,35 @@ Templates and styles:
 
 Checked by: ESLint in `projects/`: `@angular-eslint/prefer-inject`, `no-output-on-prefix`, `prefer-host-metadata-property`, `component-max-inline-declarations` (no inline template or styles), `consistent-component-styles` (`styleUrl`), `template/prefer-control-flow`, and `no-restricted-syntax` (`@Input()`, `@Output()` and `outputFromObservable()`; `subscribe()` in a `.service.ts`; `takeUntil()` and `takeUntilDestroyed()` without the `DestroyRef`; an error callback in `subscribe()`). `tools/lint/check-text.ts`: a class with `@Component`, `@Directive`, `@Injectable` or `@Pipe` in a file without its suffix (in the whole repository); `ngClass`, `ngStyle` and the `async` pipe in the templates of `projects/`; CSS classes that are not camelCase in templates (`class="..."` and `[class.name]`) and in the style sheets of the components. Review: the `// INJECTORS` and `// HANDLERS` sections, `protected` for what only the template uses, the `on` prefix of the handlers, the subscription inside a named method, `takeUntilDestroyed` when the Observable does not complete, `DestroyRef.onDestroy` for what is not an Observable, the element class plus state classes, and the keys of `[class]="{ ... }"`.
 
+### 17. Options of the library functions
+
+The options of a library function are read with the readers of the root, which check the value and throw with one message format: `ɵparseEnumOption` (a value of a closed list), `ɵparseBooleanOption` and `ɵparseIntegerOption`. Never by hand, with `options?.['weeks']` and a cast. An option of another kind keeps its own reader (see Exceptions). The three readers take `null` as a missing option.
+
+```ts
+// Yes
+const weeks: number = ɵparseIntegerOption({ options, name: 'weeks', minimum: 1, maximum: MAX_CALENDAR_WEEKS, fallback: 1 });
+
+// No
+const weeks: number = (options?.['weeks'] as number | undefined) ?? 1;
+```
+
+Checked by: ESLint `no-restricted-syntax` in `projects/` (not in spec files): reading a property of `options`, also through a cast, and destructuring `options`.
+
+### 18. Test helpers and references
+
+A test helper that appears in more than one spec file goes to a shared file: to `tools/vitest/functions/`, imported with `@foundry-test`, when specs of more than one entry or tool use it; to `functions/` of its tool when only one tool of `tools/` uses it (`tools/packages/functions/create-tarball.function.ts`). Each shared helper has its own test. Before writing a helper, look for it there first.
+
+The test of a reference that the specs compare with (`findInstantsWithWallClock`, `listClockChangeDays`), or of a helper that depends on the time zone, runs where it does something, not only in UTC: a reference that finds nothing lets the walks that use it pass without checking anything. The spec that walks the clock change days also checks, in the time zones that change the clock, that the list is not empty.
+
+```ts
+// Yes
+it.runIf(timeZone !== 'UTC')('finds clock change days to walk in a time zone that moves its clock', () => {
+  expect(listClockChangeDays(2020, 2030)).not.toEqual([]);
+});
+```
+
+Checked by: `tools/lint/check-text.ts` reports a top-level function declared in more than one spec file. Review: where a shared helper goes, and the time zones where a reference is tested.
+
 ## Exceptions
 
 Every rule above applies everywhere except in these cases. Each one says why, and what checks it.
@@ -596,6 +627,16 @@ readonly disabled: InputSignal<boolean> = input(false);
 ```
 
 Checked by: ESLint and `tools/lint/check-text.ts` skip the exported declarations of `projects/`, but still check their function bodies and their private and protected members. Something exported only for another internal file, or exported with a separate `export { x }`, is seen as public: review.
+
+### Options with their own reader
+
+Two options are not an enum, a boolean or an integer, and keep their own reader: `customEquality`, the only option that is a function, and `fields` of `hasEmptyValue`, a list of texts. Why: their readers differ by contract. `isDeepEqual` and `hasEmptyValue` never throw, so their readers ignore a wrong value; `getObjectDifferences` throws `TypeError` when `customEquality` is not a function.
+
+```ts
+const customEquality: unknown = options?.['customEquality'];
+```
+
+Checked by: ESLint skips these two property names when it looks for options read by hand; any other option read in the same files is still checked.
 
 ### Loops with an index
 
