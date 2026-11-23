@@ -18,7 +18,7 @@ const FUNCTION_NAMES: Array<string> = Object.entries(entry)
   .map(([name]) => name);
 
 describe('public API of the object entry', () => {
-  it('exports exactly the functions and classes of the design', () => {
+  it('exports exactly these names', () => {
     expect(Object.keys(entry).sort()).toEqual([
       'FoundryCloneError',
       'deepClone',

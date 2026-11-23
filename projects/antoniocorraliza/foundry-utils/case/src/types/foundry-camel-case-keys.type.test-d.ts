@@ -65,7 +65,7 @@ describe('FoundryCamelCaseKeys', () => {
     expectTypeOf<FoundryCamelCaseKeys<{ owner_user: Owner }>>().toEqualTypeOf<{ ownerUser: Owner }>();
   });
 
-  it('maps a class without methods, as documented, although the value is not converted at run time', () => {
+  it('types a class without methods as converted, although the value is kept by reference at run time', () => {
     expectTypeOf<FoundryCamelCaseKeys<{ owner_user: DataOnly }>>().toEqualTypeOf<{ ownerUser: { firstName: string } }>();
   });
 

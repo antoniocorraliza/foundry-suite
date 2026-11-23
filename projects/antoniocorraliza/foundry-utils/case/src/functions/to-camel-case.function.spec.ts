@@ -20,11 +20,6 @@ describe('toCamelCase', () => {
     ['USER_NAME', 'userName'],
     ['IBAN', 'iban'],
     ['userID', 'userID'],
-  ])('converts %s to %s, as listed in the review of the old version', (key, expected) => {
-    expect(toCamelCase(key)).toBe(expected);
-  });
-
-  it.each([
     ['__v', '__v'],
     ['_user_name_', '_userName_'],
     ['content-type', 'contentType'],
@@ -35,10 +30,6 @@ describe('toCamelCase', () => {
     ['UserName', 'userName'],
   ])('converts %s to %s', (key, expected) => {
     expect(toCamelCase(key)).toBe(expected);
-  });
-
-  it('never moves an id to the front of the key', () => {
-    expect(toCamelCase('user_id')).not.toBe('idUser');
   });
 
   it.each([

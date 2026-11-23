@@ -6,8 +6,8 @@ export interface FoundryObjectDifference {
   readonly path: FoundryObjectPath;
   /** Whether the value was added, removed or changed. */
   readonly kind: 'added' | 'removed' | 'changed';
-  /** The value before; `undefined` when it was added. */
+  /** The value before, or `undefined` when it was added. */
   readonly previous: unknown;
-  /** The value after; `undefined` when it was removed. */
+  /** The value after, or `undefined` when it was removed. */
   readonly current: unknown;
 }

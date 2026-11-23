@@ -4,7 +4,7 @@ import { convertKeys } from './convert-keys.function';
 import { toCamelCase } from './to-camel-case.function';
 
 /**
- * Returns a copy with the keys of its plain objects converted to camelCase, in depth; other objects are kept by reference.
+ * Returns a copy with the keys of its plain objects converted to camelCase, in depth. Other objects are kept by reference.
  * @throws {FoundryKeyCollisionError} When two keys of one object convert to the same key.
  * @throws {FoundryCircularReferenceError} When the value contains a cycle.
  * @throws {TypeError} When the options are not an object or have an unknown value.

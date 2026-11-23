@@ -49,7 +49,7 @@ function copyValueWith(value: unknown, copies: Map<object, unknown>): unknown {
   return copy;
 }
 
-/** Copies a value already checked by `checkCloneable`, keeping its cycles and shared references; blobs and files by reference. */
+/** Copies a value already checked by `checkCloneable`, keeping its cycles and shared references, and its blobs and files by reference. */
 export function copyValue(value: unknown): unknown {
   return copyValueWith(value, new Map<object, unknown>());
 }

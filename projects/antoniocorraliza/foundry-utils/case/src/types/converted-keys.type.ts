@@ -25,6 +25,6 @@ type ConvertedValue<T, Case extends KeyCase, Depth extends ReadonlyArray<unknown
         : { [Key in keyof T as ConvertedKey<Key, Case>]: ConvertedKeys<T[Key], Case, [...Depth, unknown]> }
   : T;
 
-/** Computes the result of the key conversion of a value; shared by both directions. */
+/** Computes the result of the key conversion of a value in either direction. */
 export type ConvertedKeys<T, Case extends KeyCase, Depth extends ReadonlyArray<unknown> = []> =
   ɵIsAny<T> extends true ? T : unknown extends T ? unknown : ConvertedValue<T, Case, Depth>;

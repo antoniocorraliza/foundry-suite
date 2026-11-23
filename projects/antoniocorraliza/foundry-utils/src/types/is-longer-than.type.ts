@@ -1,4 +1,4 @@
-/** Tells whether a text type has more characters than the limit; for internal use of the entries. */
+/** Tells whether a text type has more characters than the limit. */
 export type ɵIsLongerThan<
   Text extends string,
   Limit extends number,

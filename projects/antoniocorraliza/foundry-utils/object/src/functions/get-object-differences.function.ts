@@ -30,12 +30,12 @@ function isFirstVisit(walk: DifferenceWalk, previous: object, current: object): 
 }
 
 function createAddedDifference(path: FoundryObjectPath, current: unknown): FoundryObjectDifference {
-  // eslint-disable-next-line no-restricted-syntax -- the design gives undefined as the previous value of an added value
+  // eslint-disable-next-line no-restricted-syntax -- an added value has no previous value
   return { path, kind: 'added', previous: undefined, current };
 }
 
 function createRemovedDifference(path: FoundryObjectPath, previous: unknown): FoundryObjectDifference {
-  // eslint-disable-next-line no-restricted-syntax -- the design gives undefined as the current value of a removed value
+  // eslint-disable-next-line no-restricted-syntax -- a removed value has no current value
   return { path, kind: 'removed', previous, current: undefined };
 }
 

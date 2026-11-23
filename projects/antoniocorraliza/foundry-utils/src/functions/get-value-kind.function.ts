@@ -33,7 +33,7 @@ function getTaggedObjectKind(value: object, tag: string): ɵValueKind {
 
 /**
  * Classifies a value by its tag and, for the types whose internal slots are read, by a brand check that a faked tag
- * cannot pass; for internal use of the entries.
+ * cannot pass.
  */
 export function ɵgetValueKind(value: unknown): ɵValueKind {
   if (typeof value === 'function') return 'function';

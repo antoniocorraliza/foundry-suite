@@ -36,7 +36,7 @@ function clean(value: unknown, path: FoundryObjectPath, ancestors: ReadonlyArray
 }
 
 /**
- * Returns a copy without `null` and `undefined` properties, in depth; dates, files and other objects are kept as they are.
+ * Returns a copy without `null` and `undefined` properties, in depth. Dates, files and other objects are kept as they are.
  * @throws {FoundryCircularReferenceError} When the value contains a cycle.
  * @throws {TypeError} When the options are not an object or have an unknown value.
  */
