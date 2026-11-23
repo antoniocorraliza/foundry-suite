@@ -39,7 +39,7 @@ describe('toInstantRange', () => {
   });
 
   it('lets the end of the last day of the range fall in the year 10000', () => {
-    expect(catchThrown(() => toInstantRange('9999-12-31'))).toBeNull();
+    expect(() => toInstantRange('9999-12-31')).not.toThrow();
     expect(toInstantRange('9999-12-31', { timeZone: 'utc' }).endExclusive.getUTCFullYear()).toBe(10000);
   });
 

@@ -166,7 +166,7 @@ describe('public API of the date entry', () => {
     ]);
   });
 
-  it.each(SAMPLE_CALLS)('runs %s as a loose reference and returns no promise', (name, values) => {
+  it.each(SAMPLE_CALLS)('returns no promise from %s', (name, values) => {
     const looseFunction: LooseFunction = entry[name] as LooseFunction;
     const result: unknown = looseFunction(...values);
     expect(result instanceof Promise || typeof (result as { then?: unknown } | null)?.then === 'function').toBe(false);

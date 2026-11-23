@@ -55,7 +55,7 @@ const TEXT_FUNCTIONS: ReadonlyArray<[string, () => unknown]> = [
   ['toUtcCalendarDateString with a day', () => toUtcCalendarDateString('2026-09-06')],
 ];
 
-describe('convertCalendarDayToEpochDay', () => {
+describe('readCalendarDay', () => {
   describe('through isCalendarDay', () => {
     it.each(['2026-09-06', '0001-01-01', '9999-12-31', '2024-02-29', '2000-02-29'])('accepts the canonical day %j', (day) => {
       expect(isCalendarDay(day)).toBe(true);

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { MAXIMUM_MISMATCHES } from '@foundry-test/constants/maximum-mismatches.constant';
 import { visitCivilDays } from '@foundry-test/functions/visit-civil-days.function';
 import type { FoundryDateFormat } from '../types/foundry-date-format.type';
 import { addCalendarDays } from './add-calendar-days.function';
@@ -10,8 +11,6 @@ import { isCalendarDay } from './is-calendar-day.function';
 import { parseCalendarDay } from './parse-calendar-day.function';
 
 const FORMATS: ReadonlyArray<FoundryDateFormat> = ['iso', 'eu', 'us'];
-
-const MAXIMUM_MISMATCHES: number = 10;
 
 function findDayMismatch(day: string, index: number, weekday: number, previousDay: string | null): string | null {
   if (!isCalendarDay(day) || parseCalendarDay(day) !== day) return `${day} is not read as canonical`;
@@ -28,7 +27,7 @@ function findDayMismatch(day: string, index: number, weekday: number, previousDa
   return unreadFormat === undefined ? null : `${day} does not come back in ${unreadFormat}`;
 }
 
-describe('convertCalendarDayToEpochDay on every day of the range', () => {
+describe('readCalendarDay on every day of the range', () => {
   it('agrees with a reference that counts day by day, from 0001-01-01 to 9999-12-31, in every time zone', () => {
     const mismatches: Array<string> = [];
     let previousDay: string | null = null;

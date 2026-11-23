@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { MINUTE_IN_MILLISECONDS } from '@foundry-test/constants/time-units.constant';
+import { findMismatches } from '@foundry-test/functions/find-mismatches.function';
+import { listDaysOfYears } from '@foundry-test/functions/list-days-of-years.function';
 import { localDateTimeToDate } from './local-date-time-to-date.function';
 import { toLocalDateTime } from './to-local-date-time.function';
-
-const MINUTE_IN_MILLISECONDS: number = 60_000;
-
-const MAXIMUM_MISMATCHES: number = 10;
 
 function findMinuteMismatch(time: number): string | null {
   const date: Date = new Date(time);
@@ -18,18 +17,14 @@ function findMinuteMismatch(time: number): string | null {
   return localDateTimeToDate(utcText, { timeZone: 'utc' })?.getTime() === time ? null : `${date.toISOString()} does not come back in UTC`;
 }
 
+function findMinuteMismatchOfDay(day: string): string | null {
+  const first: number = Date.parse(day);
+  const times: Array<number> = Array.from({ length: 1440 }, (_entry, minute) => first + minute * MINUTE_IN_MILLISECONDS);
+  return findMismatches(times, findMinuteMismatch, 1)[0] ?? null;
+}
+
 describe('localDateTimeToDate and toLocalDateTime on every minute from 2020 to 2030', () => {
   it('reads back each instant, with the later reading for the second of two repeated times, in every time zone', () => {
-    const first: number = Date.UTC(2020, 0, 1);
-    const count: number = (Date.UTC(2031, 0, 1) - first) / MINUTE_IN_MILLISECONDS;
-    const mismatches: Array<string> = [];
-    Array.from({ length: count / 1440 }, (_entry, day) => day).some((day) =>
-      Array.from({ length: 1440 }, (_entry, minute) => first + (day * 1440 + minute) * MINUTE_IN_MILLISECONDS).some((time) => {
-        const mismatch: string | null = findMinuteMismatch(time);
-        if (mismatch !== null) mismatches.push(mismatch);
-        return mismatches.length >= MAXIMUM_MISMATCHES;
-      }),
-    );
-    expect(mismatches).toEqual([]);
+    expect(findMismatches(listDaysOfYears(2020, 2030), findMinuteMismatchOfDay)).toEqual([]);
   });
 });

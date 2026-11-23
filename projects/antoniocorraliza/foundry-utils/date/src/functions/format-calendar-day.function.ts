@@ -9,7 +9,7 @@ import { getCalendarDayParts } from './get-calendar-day-parts.function';
 import { writeDateText } from './write-date-text.function';
 
 /**
- * Writes a calendar day in the requested format, or returns `null` for `null`.
+ * Writes a calendar day in the requested format.
  * @throws {RangeError} When the day is not canonical.
  * @throws {TypeError} When the options are not an object or have an unknown value.
  */

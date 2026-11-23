@@ -4,7 +4,9 @@ import type { CivilDate } from '../interfaces/civil-date.interface';
 import type { DateTextReading } from '../interfaces/date-text-reading.interface';
 import type { TimeTextReading } from '../interfaces/time-text-reading.interface';
 import type { FoundryDateFormat } from '../types/foundry-date-format.type';
+import type { TimestampUnit } from '../types/timestamp-unit.type';
 import { convertEpochDayToCivilDate } from './convert-epoch-day-to-civil-date.function';
+import { convertTimestampToMilliseconds } from './convert-timestamp-to-milliseconds.function';
 import { readDateText } from './read-date-text.function';
 import { readTimeText } from './read-time-text.function';
 
@@ -25,12 +27,7 @@ function readMidnightText(text: string, format: FoundryDateFormat): CivilDate | 
  * Reads the day of a value sent as a midnight: the day written in a text whose time is 00:00, or the UTC day of a timestamp at UTC midnight.
  * Returns `null` for any other value.
  */
-export function readMidnightInstant(
-  value: unknown,
-  format: FoundryDateFormat,
-  timestampUnit: 'milliseconds' | 'seconds',
-): CivilDate | null {
+export function readMidnightInstant(value: string | number, format: FoundryDateFormat, timestampUnit: TimestampUnit): CivilDate | null {
   if (typeof value === 'string') return readMidnightText(value, format);
-  if (typeof value !== 'number') return null;
-  return readMidnightTimestamp(timestampUnit === 'seconds' ? value * 1000 : value);
+  return readMidnightTimestamp(convertTimestampToMilliseconds(value, timestampUnit));
 }

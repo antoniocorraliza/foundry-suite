@@ -1,5 +1,5 @@
 import { ɵgetOwnDataEntries, ɵisPlainObject } from '@antoniocorraliza/foundry-utils';
-import { TIME_PART_MAXIMUMS, TIME_PART_NAMES } from '../constants/date-part-names.constant';
+import { TIME_PARTS } from '../constants/time-parts.constant';
 import type { CivilDate } from '../interfaces/civil-date.interface';
 import type { DatePartsReading } from '../interfaces/date-parts-reading.interface';
 import type { PartsTime } from '../interfaces/parts-time.interface';
@@ -10,12 +10,12 @@ function isTimePartInRange(value: unknown, maximum: number): boolean {
 }
 
 function readPartsTime(entries: ReadonlyMap<string, unknown>): PartsTime | null {
-  const values: Array<unknown> = TIME_PART_NAMES.map((name) => entries.get(name));
+  const values: Array<unknown> = TIME_PARTS.map((part) => entries.get(part.name));
   const writtenParts: number = values.filter((value) => value !== undefined).length;
-  const isComplete: boolean = values.every((value, index) => index < writtenParts === (value !== undefined));
-  const isInRange: boolean = values.every((value, index) => isTimePartInRange(value, TIME_PART_MAXIMUMS[index] ?? 0));
+  const isComplete: boolean = values.slice(writtenParts).every((value) => value === undefined);
+  const isInRange: boolean = TIME_PARTS.every((part) => isTimePartInRange(entries.get(part.name), part.maximum));
   if (!isComplete || !isInRange) return null;
-  const [hours = 0, minutes = 0, seconds = 0, milliseconds = 0] = values.map((value) => (typeof value === 'number' ? value : 0));
+  const [hours = 0, minutes = 0, seconds = 0, milliseconds = 0] = values.filter((value) => typeof value === 'number');
   return { hours, minutes, seconds, milliseconds, writtenParts };
 }
 

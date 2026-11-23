@@ -1,4 +1,5 @@
 import { describe, expect, inject, it } from 'vitest';
+import { listDaysOfYears } from '@foundry-test/functions/list-days-of-years.function';
 import { readWallClock } from '@foundry-test/functions/read-wall-clock.function';
 import type { FoundryInstantRange } from '../interfaces/foundry-instant-range.interface';
 import { endOfDay } from './end-of-day.function';
@@ -9,8 +10,6 @@ import { toInstantRange } from './to-instant-range.function';
 type FindStartOfDay = () => Date | null;
 
 const timeZone: string = inject('expectedTimeZone');
-
-const DAY_IN_MILLISECONDS: number = 86_400_000;
 
 const STARTS_OF_SEPTEMBER_SIXTH: Readonly<Record<string, string>> = {
   'Europe/Madrid': '2026-09-05T22:00:00.000Z',
@@ -35,14 +34,6 @@ const STARTS_OF_SEPTEMBER_SIXTH_FINDERS: ReadonlyArray<[string, FindStartOfDay]>
   ['toInstantRange', () => toInstantRange('2026-09-06').start],
 ];
 
-function listDaysBetweenYears(firstYear: number, lastYear: number): Array<string> {
-  const first: number = Date.UTC(firstYear, 0, 1);
-  const last: number = Date.UTC(lastYear, 11, 31);
-  return Array.from({ length: (last - first) / DAY_IN_MILLISECONDS + 1 }, (_entry, index) =>
-    new Date(first + index * DAY_IN_MILLISECONDS).toISOString().slice(0, 10),
-  );
-}
-
 function isFirstInstantOfDay(date: Date, day: string): boolean {
   return readWallClock(date).startsWith(day) && !readWallClock(new Date(date.getTime() - 1)).startsWith(day);
 }
@@ -65,7 +56,7 @@ describe('getStartOfLocalDay', () => {
   });
 
   it('agrees on the frontier between days through every function, every day from 2020 to 2030', () => {
-    const mismatches: Array<string> = listDaysBetweenYears(2020, 2030).filter((day) => {
+    const mismatches: Array<string> = listDaysOfYears(2020, 2030).filter((day) => {
       const start: Date | null = parseDate(day);
       if (start === null || !isFirstInstantOfDay(start, day)) return true;
       const end: Date = endOfDay(start);

@@ -26,7 +26,7 @@ projects/antoniocorraliza/<package>/<entry>/src/*.spec.ts      (tests next to th
 - ng-packagr finds the folder by its `ng-package.json`, builds `@antoniocorraliza/<package>/<entry>` and writes the `exports` map of the published `package.json`. Never write `exports` by hand for an entry point; only for files that are not entries, such as the UI style sheets.
 - In development, the base `tsconfig.json` maps `@antoniocorraliza/<package>` and `@antoniocorraliza/<package>/*` to the source (`src/public-api.ts`), and the tests resolve them the same way through Vite aliases (`tools/vitest/functions/add-source-aliases.function.ts`), so a change is seen without a build. The build of each package (`tsconfig.lib.prod.json`) maps them to `dist/`, so UI is compiled against the built Utils, as an app would be. `check:packages`, `size` and the consumer apps also work on `dist/`.
 - Between packages, import by package name (`@antoniocorraliza/foundry-utils/date`), never with a relative path: a relative path copies the code into the other package.
-- Each package has one empty entry that proves the template: `foundry-utils/date`, `foundry-core/configuration` and `foundry-ui/icon`.
+- Core and UI each keep one empty entry that proves the template: `foundry-core/configuration` and `foundry-ui/icon`.
 
 ## Build order
 

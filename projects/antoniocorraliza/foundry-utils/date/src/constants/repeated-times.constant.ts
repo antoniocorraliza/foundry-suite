@@ -1,2 +1,2 @@
-/** Lists the values of the `repeatedTime` option. */
+/** Values of the `repeatedTime` option. */
 export const REPEATED_TIMES = ['earlier', 'later'] as const;

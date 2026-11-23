@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { DAY_IN_MILLISECONDS } from '@foundry-test/constants/time-units.constant';
+import { createLocalTestDate } from '@foundry-test/functions/create-local-test-date.function';
+import { listDaysOfYears } from '@foundry-test/functions/list-days-of-years.function';
 import type { FoundryIsoWeek } from '../interfaces/foundry-iso-week.interface';
 import { getIsoWeek } from './get-iso-week.function';
-
-const DAY_IN_MILLISECONDS: number = 86_400_000;
 
 function findIsoWeekByThursday(year: number, month: number, day: number): FoundryIsoWeek {
   const time: number = Date.UTC(year, month, day);
@@ -13,10 +14,8 @@ function findIsoWeekByThursday(year: number, month: number, day: number): Foundr
 
 describe('getIsoWeek on every day from 2020 to 2030', () => {
   it('agrees with the Thursday rule for the local day', () => {
-    const first: number = Date.UTC(2020, 0, 1);
-    const count: number = (Date.UTC(2030, 11, 31) - first) / DAY_IN_MILLISECONDS + 1;
-    const mismatches: Array<string> = Array.from({ length: count }, (_entry, index) => new Date(first + index * DAY_IN_MILLISECONDS))
-      .map((utcDay) => new Date(utcDay.getUTCFullYear(), utcDay.getUTCMonth(), utcDay.getUTCDate(), 12))
+    const mismatches: Array<string> = listDaysOfYears(2020, 2030)
+      .map((day) => createLocalTestDate(day))
       .filter((date) => {
         const expected: FoundryIsoWeek = findIsoWeekByThursday(date.getFullYear(), date.getMonth(), date.getDate());
         const week: FoundryIsoWeek = getIsoWeek(date);

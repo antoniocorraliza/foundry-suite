@@ -37,18 +37,18 @@
   },
   "utils (root)": {
     "esbuild": {
-      "raw": 2816,
-      "gzip": 1159
+      "raw": 3401,
+      "gzip": 1327
     },
     "rollup": {
-      "raw": 2642,
-      "gzip": 1108
+      "raw": 3211,
+      "gzip": 1265
     }
   },
   "utils/case": {
     "esbuild": {
       "raw": 3300,
-      "gzip": 1419
+      "gzip": 1420
     },
     "rollup": {
       "raw": 3201,
@@ -67,88 +67,88 @@
   },
   "utils/date": {
     "esbuild": {
-      "raw": 18746,
-      "gzip": 5936
+      "raw": 19105,
+      "gzip": 5949
     },
     "rollup": {
-      "raw": 18372,
-      "gzip": 5715
+      "raw": 18693,
+      "gzip": 5789
     }
   },
   "utils/date: addCalendarDays + compareCalendarDays + formatCalendarDay": {
     "esbuild": {
-      "raw": 2456,
-      "gzip": 1121
+      "raw": 2524,
+      "gzip": 1161
     },
     "rollup": {
-      "raw": 2425,
-      "gzip": 1068
+      "raw": 2424,
+      "gzip": 1075
     }
   },
   "utils/date: getFirstDayOfWeek": {
     "esbuild": {
-      "raw": 1082,
-      "gzip": 669
+      "raw": 1261,
+      "gzip": 764
     },
     "rollup": {
-      "raw": 1075,
-      "gzip": 659
+      "raw": 1169,
+      "gzip": 693
     }
   },
   "utils/date: parseCalendarDay": {
     "esbuild": {
-      "raw": 4106,
-      "gzip": 1805
+      "raw": 4481,
+      "gzip": 1901
     },
     "rollup": {
-      "raw": 4091,
-      "gzip": 1767
+      "raw": 4410,
+      "gzip": 1836
     }
   },
   "utils/date: parseDate": {
     "esbuild": {
-      "raw": 6064,
-      "gzip": 2480
+      "raw": 6451,
+      "gzip": 2553
     },
     "rollup": {
-      "raw": 6028,
-      "gzip": 2407
+      "raw": 6408,
+      "gzip": 2506
     }
   },
   "utils/date: parseDate + formatDate": {
     "esbuild": {
-      "raw": 7865,
-      "gzip": 2931
+      "raw": 8255,
+      "gzip": 3000
     },
     "rollup": {
-      "raw": 7828,
-      "gzip": 2847
+      "raw": 8202,
+      "gzip": 2944
     }
   },
   "utils/date: parseLocalDateTime + localDateTimeToDate": {
     "esbuild": {
-      "raw": 5358,
-      "gzip": 2196
+      "raw": 5528,
+      "gzip": 2265
     },
     "rollup": {
-      "raw": 5353,
-      "gzip": 2162
+      "raw": 5437,
+      "gzip": 2182
     }
   },
   "utils/object": {
     "esbuild": {
-      "raw": 10530,
-      "gzip": 3535
+      "raw": 10632,
+      "gzip": 3528
     },
     "rollup": {
-      "raw": 10364,
-      "gzip": 3404
+      "raw": 10466,
+      "gzip": 3403
     }
   },
   "utils/object: isDeepEqual": {
     "esbuild": {
       "raw": 3159,
-      "gzip": 1123
+      "gzip": 1124
     },
     "rollup": {
       "raw": 3121,
@@ -157,12 +157,12 @@
   },
   "utils: every entry": {
     "esbuild": {
-      "raw": 31210,
-      "gzip": 9702
+      "raw": 31549,
+      "gzip": 9740
     },
     "rollup": {
-      "raw": 30682,
-      "gzip": 9319
+      "raw": 30985,
+      "gzip": 9391
     }
   }
 }

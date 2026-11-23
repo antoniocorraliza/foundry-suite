@@ -12,3 +12,19 @@ export const SECTION_MARKERS = [
   'VALIDATIONS',
   'AUXILIARY FUNCTIONS',
 ] as const;
+// The openings of a template JSDoc; a computed type that works as a function of types may start with another verb ("Tells whether...").
+export const TEMPLATE_JSDOC_VERBS: ReadonlyArray<string> = [
+  'Chooses',
+  'Contains',
+  'Defines',
+  'Describes',
+  'Gives',
+  'Holds',
+  'Keeps',
+  'Lists',
+  'Matches',
+  'Names',
+  'Represents',
+  'Sets',
+  'Stores',
+];

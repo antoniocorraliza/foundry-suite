@@ -6,10 +6,6 @@ import { parseDate } from './parse-date.function';
 
 const timeZone: string = inject('expectedTimeZone');
 
-function readLocalClock(date: Date | null): string | null {
-  return date === null ? null : readWallClock(date);
-}
-
 describe('parseDate', () => {
   describe('dates', () => {
     it('returns a copy of a valid date, never the same object', () => {
@@ -81,7 +77,7 @@ describe('parseDate', () => {
       [{ year: 2026, month: 3, day: 1, hours: undefined }, '2026-03-01T00:00:00.000'],
       [{ year: 2026, month: 9, day: 7, weekday: 1, name: 'x' }, '2026-09-07T00:00:00.000'],
     ])('reads %j as local %s, with the missing lower parts at zero', (parts, expected) => {
-      expect(readLocalClock(parseDate(parts))).toBe(expected);
+      expect(readWallClock(parseDate(parts))).toBe(expected);
     });
 
     it('reads parts as UTC when asked', () => {
@@ -133,12 +129,12 @@ describe('parseDate', () => {
     });
 
     it('reads the iso format by default', () => {
-      expect(readLocalClock(parseDate('2026-03-01'))).toBe(readLocalClock(parseDate('2026-03-01', { format: 'iso' })));
+      expect(readWallClock(parseDate('2026-03-01'))).toBe(readWallClock(parseDate('2026-03-01', { format: 'iso' })));
       expect(parseDate('01/03/2026')).toBeNull();
     });
 
     it.each(['2026-07-01T10:00:00+02:00', '2026-07-01T10:00:00+0200', '2026-07-01T10:00:00+02', '2026-07-01T08:00:00Z'])(
-      'subtracts a positive offset to reach UTC in %s',
+      'reads %s as 08:00 UTC',
       (text) => {
         expect(parseDate(text)?.toISOString()).toBe('2026-07-01T08:00:00.000Z');
       },
@@ -154,11 +150,11 @@ describe('parseDate', () => {
       ['14-11-2026 09:30:15', '2026-11-14T09:30:15.000'],
       ['14.11.2026 09:30:15.123', '2026-11-14T09:30:15.123'],
     ])('reads the eu text %j with its local time', (text, expected) => {
-      expect(readLocalClock(parseDate(text, { format: 'eu' }))).toBe(expected);
+      expect(readWallClock(parseDate(text, { format: 'eu' }))).toBe(expected);
     });
 
     it('reads the us text with its local time', () => {
-      expect(readLocalClock(parseDate('11/14/2026 09:30', { format: 'us' }))).toBe('2026-11-14T09:30:00.000');
+      expect(readWallClock(parseDate('11/14/2026 09:30', { format: 'us' }))).toBe('2026-11-14T09:30:00.000');
     });
 
     it.each([

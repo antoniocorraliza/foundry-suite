@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { findInstantsWithWallClock } from '@foundry-test/functions/find-instants-with-wall-clock.function';
 import { listClockChangeDays } from '@foundry-test/functions/list-clock-change-days.function';
+import { listTimesOfDay } from '@foundry-test/functions/list-times-of-day.function';
 import { localDateTimeToDate } from './local-date-time-to-date.function';
 import { parseDate } from './parse-date.function';
-
-function listQuarterHourTexts(day: string): Array<string> {
-  return Array.from(
-    { length: 96 },
-    (_entry, index) => `${day}T${String(Math.floor(index / 4)).padStart(2, '0')}:${String((index % 4) * 15).padStart(2, '0')}`,
-  );
-}
 
 describe('findLaterLocalDate in a time zone whose clock moves back 30 minutes', () => {
   it('runs with an offset of 10 hours and a half after the clock moves back', () => {
     expect(new Date('2026-04-04T15:00:00.000Z').getTimezoneOffset()).toBe(-630);
+  });
+
+  it('finds clock change days, and compares with a reference that finds both instants of a repeated half hour and none of a skipped one', () => {
+    expect(listClockChangeDays(2020, 2030)).not.toEqual([]);
+    expect(findInstantsWithWallClock('2026-04-05T01:45')).toEqual([Date.UTC(2026, 3, 4, 14, 45), Date.UTC(2026, 3, 4, 15, 15)]);
+    expect(findInstantsWithWallClock('2026-10-04T02:15')).toEqual([]);
   });
 
   it('gives the second reading of a time in the repeated half hour', () => {
@@ -37,7 +37,7 @@ describe('findLaterLocalDate in a time zone whose clock moves back 30 minutes', 
 
   it('gives the first and the last instant of each written time, every quarter hour of the clock change days', () => {
     const mismatches: Array<string> = listClockChangeDays(2020, 2030)
-      .flatMap(listQuarterHourTexts)
+      .flatMap((day) => listTimesOfDay(15).map((time) => `${day}T${time}`))
       .filter((text) => {
         const instants: Array<number> = findInstantsWithWallClock(text);
         return (

@@ -14,7 +14,7 @@ import { writeDateText } from './write-date-text.function';
 import { writeTimeText } from './write-time-text.function';
 
 /**
- * Writes a date as text, or returns `null` for `null`.
+ * Writes a date as text.
  * @throws {RangeError} When the date is invalid or its year is outside 1-9999.
  * @throws {TypeError} When the options are not an object or have an unknown value.
  */

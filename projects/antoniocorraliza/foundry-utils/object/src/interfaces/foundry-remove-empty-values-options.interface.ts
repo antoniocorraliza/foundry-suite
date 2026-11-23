@@ -1,4 +1,4 @@
-/** Chooses what `removeEmptyValues` removes besides `null` and `undefined` properties. */
+/** Options of `removeEmptyValues`: what it removes besides `null` and `undefined` properties. */
 export interface FoundryRemoveEmptyValuesOptions {
   /** Removes empty strings too; `false` by default. */
   readonly removeEmptyStrings?: boolean;

@@ -1,20 +1,17 @@
-import { REGION_LETTERS } from '../constants/cldr-settings.constant.ts';
-
-function listTwoLetterRegions(): Array<string> {
-  const letters: Array<string> = [...REGION_LETTERS];
-  return letters.flatMap((first) => letters.map((second) => `${first}${second}`));
-}
+import { listTwoLetterRegions } from './list-two-letter-regions.function.ts';
 
 export function createFirstDayOfWeekSource(readFirstDay: (region: string) => number | null, cldrVersion: string): string {
-  const regions: Array<string> = listTwoLetterRegions();
-  const rows: Array<string> = Array.from({ length: 7 }, (_entry, weekday) =>
-    weekday === 1 ? '' : regions.filter((region) => readFirstDay(region) === weekday).join(''),
-  );
+  const rows: Array<string> = listTwoLetterRegions().flatMap((region) => {
+    const firstDay: number | null = readFirstDay(region);
+    return firstDay === null || firstDay === 1 ? [] : [`  ${region}: ${firstDay},`];
+  });
   return [
-    `/** Lists the regions whose week starts on each weekday, from Sunday (0) to Saturday (6), in CLDR ${cldrVersion}; Monday is the default. */`,
-    'export const FIRST_DAY_OF_WEEK_REGIONS: ReadonlyArray<string> = [',
-    ...rows.map((row) => `  '${row}',`),
-    '];',
+    "import type { FoundryWeekday } from '../types/foundry-weekday.type';",
+    '',
+    `/** First day of the week of each region whose week does not start on Monday, in CLDR ${cldrVersion}. */`,
+    'export const FIRST_DAY_OF_WEEK_BY_REGION: Readonly<Record<string, FoundryWeekday>> = {',
+    ...rows,
+    '};',
     '',
   ].join('\n');
 }

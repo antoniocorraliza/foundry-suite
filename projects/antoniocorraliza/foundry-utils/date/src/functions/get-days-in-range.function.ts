@@ -1,4 +1,4 @@
-import { ɵisOptionsValue } from '@antoniocorraliza/foundry-utils';
+import { ɵisOptionsValue, ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';
 import { buildLocalDays } from './build-local-days.function';
 import { getEpochDayOfDate } from './get-epoch-day-of-date.function';
 
@@ -9,12 +9,9 @@ import { getEpochDayOfDate } from './get-epoch-day-of-date.function';
  */
 export function getDaysInRange(start: Date, end: Date, options?: { readonly stepInDays?: number }): Array<Date> {
   if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of getDaysInRange must be an object');
-  const step: unknown = options?.['stepInDays'] ?? 1;
-  if (!Number.isInteger(step) || (step as number) < 1) {
-    throw new RangeError(`[foundry-utils]: stepInDays must be a positive integer, got ${String(step)}`);
-  }
+  const step: number = ɵparseIntegerOption({ options, name: 'stepInDays', minimum: 1, fallback: 1 });
   const startEpochDay: number = getEpochDayOfDate(start);
   const endEpochDay: number = getEpochDayOfDate(end);
   if (startEpochDay > endEpochDay) throw new RangeError('[foundry-utils]: the start of the range is after its end');
-  return buildLocalDays(startEpochDay, Math.floor((endEpochDay - startEpochDay) / (step as number)) + 1, step as number);
+  return buildLocalDays(startEpochDay, Math.floor((endEpochDay - startEpochDay) / step) + 1, step);
 }
