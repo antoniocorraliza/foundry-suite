@@ -1,7 +1,8 @@
 import ts from 'typescript';
+import { NEVER_THROWING_NAME, NEVER_THROWING_NAME_EXCEPTIONS } from '../constants/never-throwing-names.constant.ts';
 
 function isNeverThrowingName(name: string): boolean {
-  return /^\u0275?(?:is|has)[A-Z]/.test(name);
+  return NEVER_THROWING_NAME.test(name) && !NEVER_THROWING_NAME_EXCEPTIONS.includes(name);
 }
 
 export function findThrowsProblems(path: string, text: string): Array<string> {

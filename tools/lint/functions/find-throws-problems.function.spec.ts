@@ -43,4 +43,17 @@ describe('findThrowsProblems', () => {
       'a.ts:13: hasKey never throws, so its JSDoc has no @throws',
     ]);
   });
+
+  it('accepts @throws on isSameDay, which compares two dates instead of guarding unvalidated data', () => {
+    const source: string = [
+      '/**',
+      ' * Tells whether two dates fall on the same local day.',
+      ' * @throws {RangeError} When a date is invalid or outside 1-9999.',
+      ' */',
+      'export function isSameDay(): boolean {',
+      '  return false;',
+      '}',
+    ].join('\n');
+    expect(findThrowsProblems('a.ts', source)).toEqual([]);
+  });
 });
