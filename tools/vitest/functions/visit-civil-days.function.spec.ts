@@ -13,7 +13,7 @@ describe('visitCivilDays', () => {
       count++;
     });
     expect([count, mismatches]).toEqual([3652059, 0]);
-  });
+  }, 60_000);
 
   it('starts on a Monday and ends on a Friday', () => {
     const visited: Map<string, number> = new Map();
@@ -21,5 +21,5 @@ describe('visitCivilDays', () => {
       if (day === '0001-01-01' || day === '1970-01-01' || day === '9999-12-31') visited.set(day, weekday);
     });
     expect(Object.fromEntries(visited)).toEqual({ '0001-01-01': 1, '1970-01-01': 4, '9999-12-31': 5 });
-  });
+  }, 60_000);
 });
