@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { freezeAndSnapshot } from '../../../../../../tools/vitest/functions/freeze-and-snapshot.function';
-import type { FrozenSnapshot } from '../../../../../../tools/vitest/interfaces/frozen-snapshot.interface';
+import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
+import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { FoundryCloneError } from '../errors/foundry-clone.error';
 import { deepClone } from './deep-clone.function';
 
@@ -8,14 +9,10 @@ class Ticket {
   constructor(readonly id: string) {}
 }
 
-function cloneError(value: unknown): FoundryCloneError | null {
-  try {
-    deepClone(value);
-  } catch (error) {
-    if (error instanceof FoundryCloneError) return error;
-    throw error;
-  }
-  return null;
+function getCloneError(value: unknown): unknown {
+  const error: unknown = catchThrown(() => deepClone(value));
+  expect(error).toBeInstanceOf(FoundryCloneError);
+  return error;
 }
 
 describe('deepClone', () => {
@@ -69,8 +66,8 @@ describe('deepClone', () => {
     expect(clone.first).not.toBe(shared);
   });
 
-  it('throws on a function instead of dropping it, and never turns dates into text', () => {
-    const error: FoundryCloneError | null = cloneError({
+  it('throws on a function instead of dropping it', () => {
+    const error: unknown = getCloneError({
       due: new Date(2026, 0, 1),
       run(): number {
         return 1;
@@ -80,7 +77,7 @@ describe('deepClone', () => {
   });
 
   it('throws on a class instance with the class name and the path', () => {
-    expect(cloneError({ items: [{}, {}, { owner: new Ticket('t1') }] })).toMatchObject({
+    expect(getCloneError({ items: [{}, {}, { owner: new Ticket('t1') }] })).toMatchObject({
       path: ['items', 2, 'owner'],
       valueDescription: 'class Ticket',
     });
@@ -92,29 +89,29 @@ describe('deepClone', () => {
     ['a weak set', new WeakSet(), 'WeakSet'],
     ['a symbol', Symbol('s'), 'symbol'],
   ])('throws on %s', (label, value, valueDescription) => {
-    expect(cloneError({ value })).toMatchObject({ path: ['value'], valueDescription });
+    expect(getCloneError({ value })).toMatchObject({ path: ['value'], valueDescription });
   });
 
   it('throws on a symbol key, an accessor and a non-enumerable property', () => {
-    expect(cloneError({ [Symbol('s')]: 1 })).toMatchObject({ path: [], valueDescription: 'symbol key' });
+    expect(getCloneError({ [Symbol('s')]: 1 })).toMatchObject({ path: [], valueDescription: 'symbol key' });
     const withAccessor: object = {};
     Object.defineProperty(withAccessor, 'computed', { enumerable: true, get: (): number => 1 });
-    expect(cloneError({ inner: withAccessor })).toMatchObject({ path: ['inner', 'computed'], valueDescription: 'accessor' });
+    expect(getCloneError({ inner: withAccessor })).toMatchObject({ path: ['inner', 'computed'], valueDescription: 'accessor' });
     const withHidden: object = {};
     Object.defineProperty(withHidden, 'hidden', { value: 1, enumerable: false });
-    expect(cloneError(withHidden)).toMatchObject({ path: ['hidden'], valueDescription: 'non-enumerable' });
+    expect(getCloneError(withHidden)).toMatchObject({ path: ['hidden'], valueDescription: 'non-enumerable' });
   });
 
   it('looks inside maps and sets and says where the value was', () => {
-    expect(cloneError({ lookup: new Map([[new Ticket('t1'), 1]]) })).toMatchObject({
+    expect(getCloneError({ lookup: new Map([[new Ticket('t1'), 1]]) })).toMatchObject({
       path: ['lookup'],
       valueDescription: 'class Ticket (Map key)',
     });
-    expect(cloneError({ lookup: new Map([['k', (): number => 1]]) })).toMatchObject({
+    expect(getCloneError({ lookup: new Map([['k', (): number => 1]]) })).toMatchObject({
       path: ['lookup'],
       valueDescription: 'function (Map value)',
     });
-    expect(cloneError({ tags: new Set([new Error('[test]: failure')]) })).toMatchObject({
+    expect(getCloneError({ tags: new Set([new Error('[test]: failure')]) })).toMatchObject({
       path: ['tags'],
       valueDescription: 'Error (Set element)',
     });

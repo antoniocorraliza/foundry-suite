@@ -1,7 +1,8 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { freezeAndSnapshot } from '../../../../../../tools/vitest/functions/freeze-and-snapshot.function';
-import type { FrozenSnapshot } from '../../../../../../tools/vitest/interfaces/frozen-snapshot.interface';
+import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
+import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
+import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { deepClone } from './deep-clone.function';
 import { isDeepEqual } from './is-deep-equal.function';
 
@@ -11,12 +12,6 @@ class Point {
 
 class FakeDate {
   readonly [Symbol.toStringTag]: string = 'Date';
-}
-
-class Unrelated {}
-
-function createObjectWithTag(tag: string): object {
-  return Object.defineProperty(new Unrelated(), Symbol.toStringTag, { value: tag });
 }
 
 describe('isDeepEqual', () => {
@@ -91,18 +86,20 @@ describe('isDeepEqual', () => {
 
   it('asks customEquality first for every pair, and uses the default rule when it returns undefined', () => {
     const pairs: Array<[unknown, unknown]> = [];
-    const isEqual: boolean = isDeepEqual(
-      { point: new Point(1), count: 1 },
-      { point: new Point(1), count: 1 },
-      {
-        customEquality: (first, second) => {
-          pairs.push([first, second]);
-          return first instanceof Point && second instanceof Point ? first.x === second.x : undefined;
-        },
+    const first: { point: Point; count: number } = { point: new Point(1), count: 1 };
+    const second: { point: Point; count: number } = { point: new Point(1), count: 1 };
+    const isEqual: boolean = isDeepEqual(first, second, {
+      customEquality: (first, second) => {
+        pairs.push([first, second]);
+        return first instanceof Point && second instanceof Point ? first.x === second.x : undefined;
       },
-    );
+    });
     expect(isEqual).toBe(true);
-    expect(pairs.some(([first]) => first === 1)).toBe(true);
+    expect(pairs).toEqual([
+      [first, second],
+      [first.point, second.point],
+      [1, 1],
+    ]);
   });
 
   it('lets an error thrown by customEquality go through', () => {
@@ -132,7 +129,7 @@ describe('isDeepEqual', () => {
   it.each(['Map', 'Set', 'RegExp', 'ArrayBuffer'])(
     'takes an object that fakes the tag of a %s for another object, without throwing',
     (tag) => {
-      expect(isDeepEqual(createObjectWithTag(tag), createObjectWithTag(tag))).toBe(false);
+      expect(isDeepEqual(createObjectWithFakeTag(tag), createObjectWithFakeTag(tag))).toBe(false);
     },
   );
 

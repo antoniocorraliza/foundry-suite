@@ -55,6 +55,7 @@ const FUNCTION_VERBS = [
   'bundle',
   'can',
   'capitalize',
+  'catch',
   'check',
   'clamp',
   'clean',
@@ -403,7 +404,10 @@ export default defineConfig([
       'no-restricted-syntax': ['error', ...GENERAL_SELECTORS, ...NAMED_OBJECT_TYPES, ...CODE_FILE_SELECTORS],
       '@typescript-eslint/consistent-type-imports': 'error',
       // One inner list: the groups keep their order but are not separated by blank lines.
-      'simple-import-sort/imports': ['error', { groups: [['^\\u0000', '^node:', '^@?\\w', '^@antoniocorraliza(?:/|$)', '^\\.']] }],
+      'simple-import-sort/imports': [
+        'error',
+        { groups: [['^\\u0000', '^node:', '^@?\\w', '^@antoniocorraliza(?:/|$)', '^@foundry-test(?:/|$)', '^\\.']] },
+      ],
       '@typescript-eslint/array-type': ['error', { default: 'generic' }],
       '@typescript-eslint/naming-convention': [
         'error',

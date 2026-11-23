@@ -1,6 +1,5 @@
 import { describe, expectTypeOf, it } from 'vitest';
 import { toCamelCaseKeys } from '../functions/to-camel-case-keys.function';
-import { toSnakeCaseKeys } from '../functions/to-snake-case-keys.function';
 import type { FoundryCamelCaseKeys } from './foundry-camel-case-keys.type';
 
 class Owner {
@@ -21,12 +20,9 @@ interface TicketDto {
   readonly line_items: ReadonlyArray<{ readonly unit_price: number }>;
 }
 
-type Nested<Depth extends Array<unknown>> = Depth['length'] extends 12
+type Nested<Levels extends number, Depth extends Array<unknown> = []> = Depth['length'] extends Levels
   ? { leaf_value: string }
-  : { next_level: Nested<[...Depth, unknown]> };
-type DeepNested<Depth extends Array<unknown>> = Depth['length'] extends 20
-  ? { leaf_value: string }
-  : { next_level: DeepNested<[...Depth, unknown]> };
+  : { next_level: Nested<Levels, [...Depth, unknown]> };
 type Dig<T, Depth extends Array<unknown>> = Depth['length'] extends 20
   ? T
   : T extends { readonly nextLevel: infer Next }
@@ -50,7 +46,7 @@ describe('FoundryCamelCaseKeys', () => {
   });
 
   it('leaves built-in objects as they are', () => {
-    expectTypeOf(toSnakeCaseKeys({ dueDate: new Date() })).toEqualTypeOf<{ due_date: Date }>();
+    expectTypeOf(toCamelCaseKeys({ due_date: new Date() })).toEqualTypeOf<{ dueDate: Date }>();
     expectTypeOf<FoundryCamelCaseKeys<{ a_b: Map<string, number> }>>().toEqualTypeOf<{ aB: Map<string, number> }>();
     expectTypeOf<FoundryCamelCaseKeys<{ a_b: Set<string> }>>().toEqualTypeOf<{ aB: Set<string> }>();
     expectTypeOf<FoundryCamelCaseKeys<{ a_b: File }>>().toEqualTypeOf<{ aB: File }>();
@@ -87,12 +83,12 @@ describe('FoundryCamelCaseKeys', () => {
   it('compiles a 60-character key and a 12-level object without an excessive depth error', () => {
     type SixtyKey = 'this_key_has_exactly_sixty_characters_for_the_compiler_test_';
     expectTypeOf<FoundryCamelCaseKeys<Record<SixtyKey, number>>>().toHaveProperty('thisKeyHasExactlySixtyCharactersForTheCompilerTest_');
-    expectTypeOf<FoundryCamelCaseKeys<Nested<[]>>>().toHaveProperty('nextLevel');
+    expectTypeOf<FoundryCamelCaseKeys<Nested<12>>>().toHaveProperty('nextLevel');
   });
 
   it('maps a 12-level object to the leaf and types what lies beyond 16 levels as unknown', () => {
-    expectTypeOf<Dig<FoundryCamelCaseKeys<Nested<[]>>, []>>().toEqualTypeOf<{ leafValue: string }>();
-    expectTypeOf<Dig<FoundryCamelCaseKeys<DeepNested<[]>>, []>>().toBeUnknown();
+    expectTypeOf<Dig<FoundryCamelCaseKeys<Nested<12>>, []>>().toEqualTypeOf<{ leafValue: string }>();
+    expectTypeOf<Dig<FoundryCamelCaseKeys<Nested<20>>, []>>().toBeUnknown();
   });
 
   it('does not compile as a callback of map, which would pass the index as options', () => {

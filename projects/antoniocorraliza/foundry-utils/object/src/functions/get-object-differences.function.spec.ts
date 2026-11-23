@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
-import { freezeAndSnapshot } from '../../../../../../tools/vitest/functions/freeze-and-snapshot.function';
-import type { FrozenSnapshot } from '../../../../../../tools/vitest/interfaces/frozen-snapshot.interface';
+import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
+import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import type { FoundryDeepEqualOptions } from '../interfaces/foundry-deep-equal-options.interface';
 import type { FoundryObjectDifference } from '../interfaces/foundry-object-difference.interface';
 import { getObjectDifferences } from './get-object-differences.function';

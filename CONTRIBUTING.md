@@ -291,7 +291,7 @@ Checked by: ESLint `no-restricted-syntax`, on string literals and on the start o
 
 ### 10. Imports
 
-In groups, in this order: side-effect imports, Node built-ins, packages, `@antoniocorraliza`, relative paths. Alphabetical inside each group. No blank lines between the groups.
+In groups, in this order: side-effect imports, Node built-ins, packages, `@antoniocorraliza`, `@foundry-test` (the test helpers of `tools/vitest/`, only in spec files), relative paths. Alphabetical inside each group. No blank lines between the groups.
 
 ```ts
 // Yes
