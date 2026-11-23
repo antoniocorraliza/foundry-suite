@@ -1,4 +1,4 @@
-import { FIRST_DAY_OF_WEEK_REGIONS } from '../constants/first-day-of-week.cldr.constant';
+import { FIRST_DAY_OF_WEEK_BY_REGION } from '../constants/first-day-of-week.cldr.constant';
 import { WEEKDAY_KEYWORDS } from '../constants/weekday-keywords.constant';
 import type { FoundryWeekday } from '../types/foundry-weekday.type';
 import { readUnicodeKeyword } from './read-unicode-keyword.function';
@@ -17,14 +17,9 @@ function findRegion(locale: Intl.Locale): string | null {
   return locale.region ?? locale.maximize().region ?? null;
 }
 
-function splitRegionCodes(regions: string): Array<string> {
-  const codes: Array<string> = regions.match(/[A-Z]{2}/g) ?? [];
-  return codes;
-}
-
 function findWeekdayOfRegion(region: string | null): FoundryWeekday {
-  const weekday: number = FIRST_DAY_OF_WEEK_REGIONS.findIndex((regions) => region !== null && splitRegionCodes(regions).includes(region));
-  return (weekday === -1 ? 1 : weekday) as FoundryWeekday;
+  if (region === null) return 1;
+  return FIRST_DAY_OF_WEEK_BY_REGION[region] ?? 1;
 }
 
 /**

@@ -76,7 +76,6 @@ const FUNCTION_VERBS = [
   'dismiss',
   'download',
   'emit',
-  'end',
   'enter',
   'escape',
   'filter',
@@ -120,7 +119,6 @@ const FUNCTION_VERBS = [
   'sleep',
   'sort',
   'split',
-  'start',
   'strip',
   'throw',
   'to',
@@ -135,7 +133,7 @@ const FUNCTION_VERBS = [
   'write',
 ];
 // main(), the names of the Utils design and Angular's lifecycle hooks keep their names; object literal keys are not checked.
-const FUNCTION_NAME_EXCEPTIONS = '^(?:main|deepClone|customEquality|localDateTimeToDate|ng[A-Z]\\w*)$';
+const FUNCTION_NAME_EXCEPTIONS = '^(?:main|deepClone|customEquality|endOfDay|localDateTimeToDate|startOfDay|ng[A-Z]\\w*)$';
 const FUNCTION_NAME = `^\\u0275?(?:${FUNCTION_VERBS.join('|')})(?![a-z])`;
 const FUNCTION_NAME_MESSAGE = 'Functions start with a verb of FUNCTION_VERBS in eslint.config.mjs (getEntryFiles, not entryFiles).';
 const FUNCTION_NAME_SELECTORS = [

@@ -50,7 +50,7 @@ function findFirstInstantWithWallClock(text: string): number | null {
   return instants.length === 0 ? null : Math.min(...instants);
 }
 
-describe('buildLocalDate', () => {
+describe('buildZonedDate', () => {
   describe.each(BUILDERS)('through $name', ({ build, buildInUtc }) => {
     it('builds the written local time', () => {
       const date: Date | null = build('2026-11-14T09:30');

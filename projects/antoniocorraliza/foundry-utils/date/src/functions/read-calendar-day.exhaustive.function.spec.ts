@@ -28,7 +28,7 @@ function findDayMismatch(day: string, index: number, weekday: number, previousDa
   return unreadFormat === undefined ? null : `${day} does not come back in ${unreadFormat}`;
 }
 
-describe('convertCalendarDayToEpochDay on every day of the range', () => {
+describe('readCalendarDay on every day of the range', () => {
   it('agrees with a reference that counts day by day, from 0001-01-01 to 9999-12-31, in every time zone', () => {
     const mismatches: Array<string> = [];
     let previousDay: string | null = null;

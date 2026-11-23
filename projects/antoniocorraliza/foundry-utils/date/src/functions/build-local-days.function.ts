@@ -1,13 +1,12 @@
 import { MAX_LISTED_DAYS } from '../constants/date-limits.constant';
 import type { FoundryCalendarDay } from '../types/foundry-calendar-day.type';
 import { convertEpochDayToCalendarDay } from './convert-epoch-day-to-calendar-day.function';
-import { getLocalEpochDay } from './get-local-epoch-day.function';
-import { getStartOfLocalDay } from './get-start-of-local-day.function';
+import { findStartOfExistingDay } from './find-start-of-existing-day.function';
 
 function buildLocalDay(epochDay: number): Date {
   const day: FoundryCalendarDay = convertEpochDayToCalendarDay(epochDay);
-  const start: Date = getStartOfLocalDay(epochDay);
-  if (getLocalEpochDay(start) !== epochDay) throw new RangeError(`[foundry-utils]: the local time zone skips the day ${day}`);
+  const start: Date | null = findStartOfExistingDay(epochDay, 'local');
+  if (start === null) throw new RangeError(`[foundry-utils]: the local time zone skips the day ${day}`);
   return start;
 }
 

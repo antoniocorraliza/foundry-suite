@@ -67,72 +67,72 @@
   },
   "utils/date": {
     "esbuild": {
-      "raw": 18716,
-      "gzip": 5883
+      "raw": 19105,
+      "gzip": 5949
     },
     "rollup": {
-      "raw": 18343,
-      "gzip": 5738
+      "raw": 18693,
+      "gzip": 5789
     }
   },
   "utils/date: addCalendarDays + compareCalendarDays + formatCalendarDay": {
     "esbuild": {
-      "raw": 2506,
-      "gzip": 1152
+      "raw": 2524,
+      "gzip": 1161
     },
     "rollup": {
-      "raw": 2422,
-      "gzip": 1066
+      "raw": 2424,
+      "gzip": 1075
     }
   },
   "utils/date: getFirstDayOfWeek": {
     "esbuild": {
-      "raw": 1156,
-      "gzip": 738
+      "raw": 1261,
+      "gzip": 764
     },
     "rollup": {
-      "raw": 1075,
-      "gzip": 659
+      "raw": 1169,
+      "gzip": 693
     }
   },
   "utils/date: parseCalendarDay": {
     "esbuild": {
-      "raw": 4191,
-      "gzip": 1835
+      "raw": 4481,
+      "gzip": 1901
     },
     "rollup": {
-      "raw": 4136,
-      "gzip": 1764
+      "raw": 4410,
+      "gzip": 1836
     }
   },
   "utils/date: parseDate": {
     "esbuild": {
-      "raw": 6120,
-      "gzip": 2480
+      "raw": 6451,
+      "gzip": 2553
     },
     "rollup": {
-      "raw": 6087,
-      "gzip": 2428
+      "raw": 6408,
+      "gzip": 2506
     }
   },
   "utils/date: parseDate + formatDate": {
     "esbuild": {
-      "raw": 7924,
-      "gzip": 2922
+      "raw": 8255,
+      "gzip": 3000
     },
     "rollup": {
-      "raw": 7881,
-      "gzip": 2848
+      "raw": 8202,
+      "gzip": 2944
     }
   },
   "utils/date: parseLocalDateTime + localDateTimeToDate": {
     "esbuild": {
-      "raw": 5419,
-      "gzip": 2243
+      "raw": 5528,
+      "gzip": 2265
     },
     "rollup": {
-      "raw": 5353,
-      "gzip": 2163
+      "raw": 5437,
+      "gzip": 2182
     }
   },
   "utils/object": {
@@ -157,12 +157,12 @@
   },
   "utils: every entry": {
     "esbuild": {
-      "raw": 31164,
-      "gzip": 9662
+      "raw": 31549,
+      "gzip": 9740
     },
     "rollup": {
-      "raw": 30617,
-      "gzip": 9308
+      "raw": 30985,
+      "gzip": 9391
     }
   }
 }

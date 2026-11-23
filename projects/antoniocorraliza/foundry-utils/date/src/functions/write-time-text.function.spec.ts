@@ -1,20 +1,18 @@
 import { describe, expect, it } from 'vitest';
+import { CLOCK_PRECISIONS } from '../constants/clock-precisions.constant';
+import type { ClockPrecision } from '../types/clock-precision.type';
 import type { FoundryTimeZoneMode } from '../types/foundry-time-zone-mode.type';
 import { formatDate } from './format-date.function';
 import { formatLocalDateTime } from './format-local-date-time.function';
 import { formatTime } from './format-time.function';
 import { toIsoStringWithOffset } from './to-iso-string-with-offset.function';
 
-type TimePrecision = 'minutes' | 'seconds' | 'milliseconds';
-
-type WriteTime = (date: Date, precision: TimePrecision, timeZone: FoundryTimeZoneMode) => string;
+type WriteTime = (date: Date, precision: ClockPrecision, timeZone: FoundryTimeZoneMode) => string;
 
 interface TimeWriter {
   readonly name: string;
   readonly write: WriteTime;
 }
-
-const PRECISIONS: ReadonlyArray<TimePrecision> = ['minutes', 'seconds', 'milliseconds'];
 
 const DAY_IN_MILLISECONDS: number = 86_400_000;
 
@@ -34,7 +32,7 @@ function listInstantsOfYear(year: number, stepInMinutes: number): Array<Date> {
 
 describe('writeTimeText', () => {
   describe.each(WRITERS)('through $name', ({ write }) => {
-    it.each<[TimePrecision, string]>([
+    it.each<[ClockPrecision, string]>([
       ['minutes', '09:30'],
       ['seconds', '09:30:15'],
       ['milliseconds', '09:30:15.042'],
@@ -42,7 +40,7 @@ describe('writeTimeText', () => {
       expect(write(new Date(2026, 2, 1, 9, 30, 15, 42), precision, 'local')).toBe(expected);
     });
 
-    it.each<[TimePrecision, string]>([
+    it.each<[ClockPrecision, string]>([
       ['minutes', '09:30'],
       ['seconds', '09:30:59'],
       ['milliseconds', '09:30:59.999'],
@@ -50,7 +48,7 @@ describe('writeTimeText', () => {
       expect(write(new Date(2026, 2, 1, 9, 30, 59, 999), precision, 'local')).toBe(expected);
     });
 
-    it.each<[TimePrecision, string]>([
+    it.each<[ClockPrecision, string]>([
       ['minutes', '00:05'],
       ['seconds', '00:05:07'],
       ['milliseconds', '00:05:07.003'],
@@ -58,7 +56,7 @@ describe('writeTimeText', () => {
       expect(write(new Date(2026, 2, 1, 0, 5, 7, 3), precision, 'local')).toBe(expected);
     });
 
-    it.each<[TimePrecision, string]>([
+    it.each<[ClockPrecision, string]>([
       ['minutes', '08:30Z'],
       ['seconds', '08:30:15Z'],
       ['milliseconds', '08:30:15.042Z'],
@@ -69,7 +67,7 @@ describe('writeTimeText', () => {
 
   it('writes the same time through formatTime and formatDate, every 97 minutes of 2026', () => {
     const mismatches: Array<string> = listInstantsOfYear(2026, 97).flatMap((date) =>
-      PRECISIONS.flatMap((precision) =>
+      CLOCK_PRECISIONS.flatMap((precision) =>
         (['local', 'utc'] as const)
           .filter((timeZone) => formatTime(date, { precision, timeZone }) !== formatDate(date, { time: precision, timeZone }).slice(11))
           .map((timeZone) => `${date.toISOString()} ${precision} ${timeZone}`),

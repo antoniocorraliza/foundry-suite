@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { localDateTimeToDate } from './local-date-time-to-date.function';
 import { parseDate } from './parse-date.function';
 
-describe('buildLocalDate in a time zone that skips a whole day', () => {
+describe('buildZonedDate in a time zone that skips a whole day', () => {
   it.each<[string, () => Date | null]>([
     ['parseDate with an iso day', () => parseDate('2011-12-30')],
     ['parseDate with an eu day', () => parseDate('30/12/2011', { format: 'eu' })],

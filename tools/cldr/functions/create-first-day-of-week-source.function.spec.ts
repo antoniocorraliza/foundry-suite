@@ -8,10 +8,11 @@ import { readEngineFirstDay } from './read-engine-first-day.function.ts';
 const FAKE_FIRST_DAYS: Readonly<Record<string, number>> = { US: 0, MX: 0, ES: 1, MV: 5, EG: 6, AE: 1 };
 
 describe('createFirstDayOfWeekSource', () => {
-  it('writes the regions of each weekday in alphabetical order, leaving Monday empty', () => {
+  it('writes the regions whose week does not start on Monday, in alphabetical order, with their first day', () => {
     const source: string = createFirstDayOfWeekSource((region) => FAKE_FIRST_DAYS[region] ?? null, '48');
-    expect(source).toContain('in CLDR 48;');
-    expect(source.split('\n').slice(2, 9)).toEqual(["  'MXUS',", "  '',", "  '',", "  '',", "  '',", "  'MV',", "  'EG',"]);
+    expect(source).toContain('in CLDR 48.');
+    expect(source.split('\n').slice(4, 8)).toEqual(['  EG: 6,', '  MV: 5,', '  MX: 0,', '  US: 0,']);
+    expect(source.split('\n')[8]).toBe('};');
   });
 
   it('generates the table that is in the repository from the CLDR data of Node', () => {
