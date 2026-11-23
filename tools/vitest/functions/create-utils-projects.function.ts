@@ -15,7 +15,7 @@ function listSpecsForTimeZone(timeZone: string): Array<string> {
 }
 
 export function createUtilsProjects(environment: TestEnvironment): Array<TestProjectInlineConfiguration> {
-  const otherEnvironmentSpecs: Array<string> = ['**/*.apia.*spec.ts', '**/*.jsdom.*spec.ts'];
+  const otherEnvironmentSpecs: Array<string> = ['**/*.apia.*spec.ts', '**/*.lord-howe.*spec.ts', '**/*.jsdom.*spec.ts'];
   return [
     ...UTILS_TIME_ZONES.flatMap((timeZone) =>
       createTypescriptNodeProjects({
@@ -29,6 +29,11 @@ export function createUtilsProjects(environment: TestEnvironment): Array<TestPro
       name: 'utils-apia',
       timeZones: ['Pacific/Apia'],
       include: [`${UTILS_DIRECTORY}/**/*.apia.*spec.ts`],
+    }),
+    ...createTypescriptNodeProjects({
+      name: 'utils-lord-howe',
+      timeZones: ['Australia/Lord_Howe'],
+      include: [`${UTILS_DIRECTORY}/**/*.lord-howe.*spec.ts`],
     }),
     createTypescriptJsdomProject({ name: 'utils-jsdom', include: [`${UTILS_DIRECTORY}/**/*.jsdom.*spec.ts`] }),
     createTypescriptTypesProject({ name: 'utils-types', include: [`${UTILS_DIRECTORY}/**/*.test-d.ts`] }),

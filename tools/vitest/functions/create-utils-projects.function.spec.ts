@@ -34,7 +34,13 @@ describe('createUtilsProjects', () => {
   });
 
   it('runs the specs of a day that the time zone skips only in that time zone', () => {
-    expect(listProjectsRunning(`${UTILS}/date/src/functions/get-days-in-range.apia.function.spec.ts`)).toEqual(['utils-apia:Pacific-Apia']);
+    expect(listProjectsRunning(`${UTILS}/date/src/functions/build-local-days.apia.function.spec.ts`)).toEqual(['utils-apia:Pacific-Apia']);
+  });
+
+  it('runs the specs of a repeated half hour only in a time zone whose offset changes by 30 minutes', () => {
+    expect(listProjectsRunning(`${UTILS}/date/src/functions/find-later-local-date.lord-howe.function.spec.ts`)).toEqual([
+      'utils-lord-howe:Australia-Lord_Howe',
+    ]);
   });
 
   it.each([
