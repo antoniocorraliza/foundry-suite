@@ -1,6 +1,7 @@
 import { describe, expect, inject, it } from 'vitest';
 import { findInstantsWithWallClock } from '@foundry-test/functions/find-instants-with-wall-clock.function';
 import { listClockChangeDays } from '@foundry-test/functions/list-clock-change-days.function';
+import { listTimesOfDay } from '@foundry-test/functions/list-times-of-day.function';
 import { readWallClock } from '@foundry-test/functions/read-wall-clock.function';
 import type { FoundryDateParts } from '../interfaces/foundry-date-parts.interface';
 import { localDateTimeToDate } from './local-date-time-to-date.function';
@@ -35,31 +36,30 @@ const BUILDERS: ReadonlyArray<LocalDateBuilder> = [
   },
 ];
 
-function listTimesOfDay(stepInMinutes: number): Array<string> {
-  return Array.from({ length: 1440 / stepInMinutes }, (_entry, index) => index * stepInMinutes).map(
-    (minutes) => `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`,
-  );
-}
-
 function listCheckedDays(): Array<string> {
   return [...new Set<string>([...listClockChangeDays(2020, 2030), '2026-09-06'])];
 }
 
-function findFirstInstantWithWallClock(text: string): number | null {
-  const instants: Array<number> = findInstantsWithWallClock(text);
-  return instants.length === 0 ? null : Math.min(...instants);
-}
-
 describe('buildZonedDate', () => {
+  it.runIf(timeZone !== 'UTC')('finds clock change days to walk in a time zone that moves its clock', () => {
+    expect(listClockChangeDays(2020, 2030)).not.toEqual([]);
+  });
+
+  it.runIf(timeZone === 'Europe/Madrid')(
+    'compares with a reference that finds two instants for a repeated time and none for a skipped one',
+    () => {
+      expect(findInstantsWithWallClock('2026-10-25T02:30')).toEqual([Date.UTC(2026, 9, 25, 0, 30), Date.UTC(2026, 9, 25, 1, 30)]);
+      expect(findInstantsWithWallClock('2026-03-29T02:30')).toEqual([]);
+    },
+  );
+
   describe.each(BUILDERS)('through $name', ({ build, buildInUtc }) => {
     it('builds the written local time', () => {
-      const date: Date | null = build('2026-11-14T09:30');
-      expect(date === null ? null : readWallClock(date)).toBe('2026-11-14T09:30:00.000');
+      expect(readWallClock(build('2026-11-14T09:30'))).toBe('2026-11-14T09:30:00.000');
     });
 
     it('builds the years 1 to 99 as those years, never as 1900 and later', () => {
-      const date: Date | null = build('0050-01-01T10:00');
-      expect(date === null ? null : readWallClock(date)).toBe('0050-01-01T10:00:00.000');
+      expect(readWallClock(build('0050-01-01T10:00'))).toBe('0050-01-01T10:00:00.000');
     });
 
     it('builds the written time as UTC when asked, in every time zone', () => {
@@ -71,7 +71,7 @@ describe('buildZonedDate', () => {
     it('gives null for a written time the clock skips and the first instant for a repeated one, every quarter hour of the clock change days', () => {
       const mismatches: Array<string> = listCheckedDays()
         .flatMap((day) => listTimesOfDay(15).map((time) => `${day}T${time}`))
-        .filter((text) => (build(text)?.getTime() ?? null) !== findFirstInstantWithWallClock(text));
+        .filter((text) => (build(text)?.getTime() ?? null) !== (findInstantsWithWallClock(text).at(0) ?? null));
       expect(mismatches).toEqual([]);
     });
 

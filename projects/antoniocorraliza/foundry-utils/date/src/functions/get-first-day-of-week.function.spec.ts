@@ -1,6 +1,7 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { runWithoutWeekData } from '@foundry-test/functions/run-without-week-data.function';
 import { getFirstDayOfWeek } from './get-first-day-of-week.function';
 
 const LOCALE_CASES: ReadonlyArray<[string, number]> = [
@@ -37,22 +38,6 @@ const LOCALE_CASES: ReadonlyArray<[string, number]> = [
   ['EN-us', 0],
   ['und', 0],
 ];
-
-function runWithoutWeekData<T>(action: () => T): T {
-  const prototype: object = Intl.Locale.prototype;
-  const descriptors: Array<[string, PropertyDescriptor | undefined]> = ['weekInfo', 'getWeekInfo'].map((key) => [
-    key,
-    Object.getOwnPropertyDescriptor(prototype, key),
-  ]);
-  descriptors.forEach(([key]) => Reflect.deleteProperty(prototype, key));
-  try {
-    return action();
-  } finally {
-    descriptors.forEach(([key, descriptor]) => {
-      if (descriptor !== undefined) Object.defineProperty(prototype, key, descriptor);
-    });
-  }
-}
 
 describe('getFirstDayOfWeek', () => {
   it.each(LOCALE_CASES)('gives for %s the weekday %i', (locale, expected) => {

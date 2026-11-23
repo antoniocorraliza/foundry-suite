@@ -1,5 +1,6 @@
 import { describe, expect, inject, it } from 'vitest';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { listInstantsOfYear } from '@foundry-test/functions/list-instants-of-year.function';
 import { readWallClock } from '@foundry-test/functions/read-wall-clock.function';
 import type { FoundryDateParts } from '../interfaces/foundry-date-parts.interface';
 import type { FoundryTimeZoneMode } from '../types/foundry-time-zone-mode.type';
@@ -25,17 +26,9 @@ function writeDateParts(date: Date, mode: FoundryTimeZoneMode): string {
   return `${day}T${time}.${String(parts.milliseconds).padStart(3, '0')}`;
 }
 
-function listInstantsOfYear(year: number, stepInMinutes: number): Array<Date> {
-  const first: number = Date.UTC(year, 0, 1);
-  return Array.from(
-    { length: (365 * 1440) / stepInMinutes },
-    (_entry, index) => new Date(first + index * stepInMinutes * 60_000 + index * 7),
-  );
-}
-
 describe('getZonedParts', () => {
   it('reads the same local and UTC day through every function, every 433 minutes of 2026', () => {
-    const mismatches: Array<string> = listInstantsOfYear(2026, 433).flatMap((date) => {
+    const mismatches: Array<string> = listInstantsOfYear(2026, 433, 7).flatMap((date) => {
       const local: string = readWallClock(date);
       const utc: string = date.toISOString().slice(0, 23);
       const checks: Array<boolean> = [
@@ -69,14 +62,14 @@ describe('getZonedParts', () => {
       () => {
         const date: Date = new Date('0001-01-01T00:00:00.000Z');
         expect(catchThrown(() => readDay(date, 'local'))).toBeInstanceOf(RangeError);
-        expect(catchThrown(() => readDay(date, 'utc'))).toBeNull();
+        expect(() => readDay(date, 'utc')).not.toThrow();
       },
     );
 
     it.runIf(timeZone === 'UTC')('reads the first instant of the year 1 in both modes', () => {
       const date: Date = new Date('0001-01-01T00:00:00.000Z');
-      expect(catchThrown(() => readDay(date, 'local'))).toBeNull();
-      expect(catchThrown(() => readDay(date, 'utc'))).toBeNull();
+      expect(() => readDay(date, 'local')).not.toThrow();
+      expect(() => readDay(date, 'utc')).not.toThrow();
     });
   });
 

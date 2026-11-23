@@ -11,4 +11,8 @@ describe('readWallClock', () => {
     date.setFullYear(50);
     expect(readWallClock(date)).toBe('0050-01-01T10:00:00.000');
   });
+
+  it('returns null for null', () => {
+    expect(readWallClock(null)).toBeNull();
+  });
 });

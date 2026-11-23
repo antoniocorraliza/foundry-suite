@@ -3,7 +3,7 @@ import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { getCalendarWeek } from './get-calendar-week.function';
 
 describe('getCalendarWeek', () => {
-  it('starts on the Monday of the week by default, without looking at any language', () => {
+  it('starts on the Monday of the week by default', () => {
     const week: Array<Date> = getCalendarWeek(new Date(2026, 8, 3, 15, 30));
     expect(week).toHaveLength(7);
     expect(week[0]).toEqual(new Date(2026, 7, 31));

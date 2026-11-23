@@ -22,10 +22,7 @@ const STARTS_OF_MARCH_FIRST: Readonly<Record<string, string>> = {
 const READERS: ReadonlyArray<MidnightReader> = [
   {
     name: 'parseDate with calendarDate',
-    read: (value, timestampUnit) => {
-      const date: Date | null = parseDate(value, { calendarDate: true, timestampUnit });
-      return date === null ? null : readWallClock(date).slice(0, 10);
-    },
+    read: (value, timestampUnit) => readWallClock(parseDate(value, { calendarDate: true, timestampUnit }))?.slice(0, 10) ?? null,
   },
   {
     name: 'parseCalendarDay with acceptMidnightInstant',

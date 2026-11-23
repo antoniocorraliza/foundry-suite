@@ -1,9 +1,4 @@
-import { REGION_LETTERS } from '../constants/cldr-settings.constant.ts';
-
-function listTwoLetterRegions(): Array<string> {
-  const letters: Array<string> = [...REGION_LETTERS];
-  return letters.flatMap((first) => letters.map((second) => `${first}${second}`));
-}
+import { listTwoLetterRegions } from './list-two-letter-regions.function.ts';
 
 export function createFirstDayOfWeekSource(readFirstDay: (region: string) => number | null, cldrVersion: string): string {
   const rows: Array<string> = listTwoLetterRegions().flatMap((region) => {

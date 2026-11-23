@@ -60,8 +60,11 @@ describe('formatDate', () => {
     },
   );
 
-  it.each(['iso', 'eu', 'us'] as const)('writes a text that parseDate reads back in %s', (format) => {
+  it('writes the day and month of a day read without leading zeros with two digits', () => {
     expect(formatDate(parseDate('1/3/2026', { format: 'eu' }), { format: 'eu' })).toBe('01/03/2026');
+  });
+
+  it.each(['iso', 'eu', 'us'] as const)('writes a text that parseDate reads back in %s', (format) => {
     const text: string = formatDate(new Date(2026, 2, 1, 9, 30, 15, 42), { format, time: 'milliseconds' });
     expect(formatDate(parseDate(text, { format }), { format, time: 'milliseconds' })).toBe(text);
   });

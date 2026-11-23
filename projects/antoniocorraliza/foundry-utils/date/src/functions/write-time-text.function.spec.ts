@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { listInstantsOfYear } from '@foundry-test/functions/list-instants-of-year.function';
 import { CLOCK_PRECISIONS } from '../constants/clock-precisions.constant';
 import type { ClockPrecision } from '../types/clock-precision.type';
 import type { FoundryTimeZoneMode } from '../types/foundry-time-zone-mode.type';
@@ -14,8 +15,6 @@ interface TimeWriter {
   readonly write: WriteTime;
 }
 
-const DAY_IN_MILLISECONDS: number = 86_400_000;
-
 const WRITERS: ReadonlyArray<TimeWriter> = [
   { name: 'formatTime', write: (date, precision, timeZone) => formatTime(date, { precision, timeZone }) },
   {
@@ -23,12 +22,6 @@ const WRITERS: ReadonlyArray<TimeWriter> = [
     write: (date, precision, timeZone) => formatDate(date, { time: precision, timeZone }).slice(11),
   },
 ];
-
-function listInstantsOfYear(year: number, stepInMinutes: number): Array<Date> {
-  const first: number = Date.UTC(year, 0, 1);
-  const count: number = (365 * DAY_IN_MILLISECONDS) / (stepInMinutes * 60_000);
-  return Array.from({ length: count }, (_entry, index) => new Date(first + index * stepInMinutes * 60_000 + index * 1_001));
-}
 
 describe('writeTimeText', () => {
   describe.each(WRITERS)('through $name', ({ write }) => {
@@ -66,7 +59,7 @@ describe('writeTimeText', () => {
   });
 
   it('writes the same time through formatTime and formatDate, every 97 minutes of 2026', () => {
-    const mismatches: Array<string> = listInstantsOfYear(2026, 97).flatMap((date) =>
+    const mismatches: Array<string> = listInstantsOfYear(2026, 97, 1001).flatMap((date) =>
       CLOCK_PRECISIONS.flatMap((precision) =>
         (['local', 'utc'] as const)
           .filter((timeZone) => formatTime(date, { precision, timeZone }) !== formatDate(date, { time: precision, timeZone }).slice(11))

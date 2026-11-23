@@ -19,10 +19,7 @@ const READERS: ReadonlyArray<PartsReader> = [
   {
     name: 'parseDate',
     parts: { year: 2026, month: 3, day: 1 },
-    read: (value) => {
-      const date: Date | null = parseDate(value);
-      return date === null ? null : readWallClock(date);
-    },
+    read: (value) => readWallClock(parseDate(value)),
     expected: '2026-03-01T00:00:00.000',
   },
   { name: 'parseCalendarDay', parts: { year: 2026, month: 9, day: 1 }, read: (value) => parseCalendarDay(value), expected: '2026-09-01' },

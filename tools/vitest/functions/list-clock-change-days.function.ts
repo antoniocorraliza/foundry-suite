@@ -1,19 +1,14 @@
-function readLocalDay(time: number): string {
-  const date: Date = new Date(time);
-  return [date.getFullYear(), date.getMonth() + 1, date.getDate()]
-    .map((part, index) => String(part).padStart(index === 0 ? 4 : 2, '0'))
-    .join('-');
-}
+import { DAY_IN_MILLISECONDS } from '../constants/time-units.constant';
+import { listDaysOfYears } from './list-days-of-years.function';
+import { readWallClock } from './read-wall-clock.function';
 
 /** Lists the local days, as `'YYYY-MM-DD'`, around each change of the UTC offset of the process between two years. */
 export function listClockChangeDays(firstYear: number, lastYear: number): Array<string> {
-  const dayInMilliseconds: number = 86_400_000;
-  const first: number = Date.UTC(firstYear, 0, 1);
-  const last: number = Date.UTC(lastYear, 11, 31);
   const days: Set<string> = new Set<string>();
-  Array.from({ length: (last - first) / dayInMilliseconds + 1 }, (_entry, index) => first + index * dayInMilliseconds)
-    .filter((time) => new Date(time).getTimezoneOffset() !== new Date(time + dayInMilliseconds).getTimezoneOffset())
-    .flatMap((time) => [time, time + dayInMilliseconds / 2, time + dayInMilliseconds])
-    .forEach((time) => days.add(readLocalDay(time)));
+  listDaysOfYears(firstYear, lastYear)
+    .map((day) => Date.parse(day))
+    .filter((time) => new Date(time).getTimezoneOffset() !== new Date(time + DAY_IN_MILLISECONDS).getTimezoneOffset())
+    .flatMap((time) => [time, time + DAY_IN_MILLISECONDS / 2, time + DAY_IN_MILLISECONDS])
+    .forEach((time) => days.add(readWallClock(new Date(time)).slice(0, 10)));
   return [...days].sort();
 }

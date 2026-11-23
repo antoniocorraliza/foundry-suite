@@ -117,7 +117,7 @@ describe('types of the date entry', () => {
     expectTypeOf(['2026-09-06'].sort(compareCalendarDays)).toEqualTypeOf<Array<string>>();
   });
 
-  it('rejects the values the design leaves out', () => {
+  it('rejects values outside the option types', () => {
     // @ts-expect-error formatTime always writes a time
     formatTime(new Date(), { precision: 'none' });
     // @ts-expect-error repeatedTime is earlier or later

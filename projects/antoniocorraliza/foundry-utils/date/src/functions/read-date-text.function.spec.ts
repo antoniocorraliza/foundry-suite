@@ -19,10 +19,7 @@ function addTimeAfterDate(text: string): string {
 const READERS: ReadonlyArray<DayReader> = [
   {
     name: 'parseDate',
-    read: (text, format) => {
-      const date: Date | null = parseDate(text, { format });
-      return date === null ? null : readWallClock(date).slice(0, 10);
-    },
+    read: (text, format) => readWallClock(parseDate(text, { format }))?.slice(0, 10) ?? null,
   },
   { name: 'parseCalendarDay', read: (text, format) => parseCalendarDay(text, { format }) },
   { name: 'parseLocalDateTime', read: (text, format) => parseLocalDateTime(addTimeAfterDate(text), { format })?.slice(0, 10) ?? null },

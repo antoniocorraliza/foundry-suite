@@ -13,10 +13,7 @@ interface TimeReader {
 const READERS: ReadonlyArray<TimeReader> = [
   {
     name: 'parseDate',
-    read: (text) => {
-      const date: Date | null = parseDate(text);
-      return date === null ? null : readWallClock(date).slice(0, 16);
-    },
+    read: (text) => readWallClock(parseDate(text))?.slice(0, 16) ?? null,
   },
   { name: 'parseLocalDateTime', read: (text) => parseLocalDateTime(text) },
 ];
@@ -59,8 +56,7 @@ describe('readTimeText', () => {
       ['2026-11-14T09:30:15.123456', '2026-11-14T09:30:15.123'],
       ['2026-11-14T09:30:15.999999999', '2026-11-14T09:30:15.999'],
     ])('keeps up to three decimals of %j and truncates the rest', (text, expected) => {
-      const date: Date | null = parseDate(text);
-      expect(date === null ? null : readWallClock(date)).toBe(expected);
+      expect(readWallClock(parseDate(text))).toBe(expected);
     });
 
     it('truncates the last millisecond of a day instead of rounding it into the next day', () => {

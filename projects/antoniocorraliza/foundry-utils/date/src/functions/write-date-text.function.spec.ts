@@ -1,4 +1,5 @@
 import { describe, expect, inject, it } from 'vitest';
+import { createLocalTestDate } from '@foundry-test/functions/create-local-test-date.function';
 import type { FoundryFormatCalendarDayOptions } from '../interfaces/foundry-format-calendar-day-options.interface';
 import { formatCalendarDay } from './format-calendar-day.function';
 import { formatDate } from './format-date.function';
@@ -15,15 +16,8 @@ interface DayWriter {
 
 const timeZone: string = inject('expectedTimeZone');
 
-function createLocalNoon(day: string): Date {
-  const [year, month, dayOfMonth]: Array<number> = day.split('-').map(Number);
-  const date: Date = new Date(2000, 0, 1, 12);
-  date.setFullYear(year ?? 0, (month ?? 0) - 1, dayOfMonth ?? 0);
-  return date;
-}
-
 const WRITERS: ReadonlyArray<DayWriter> = [
-  { name: 'formatDate', write: (day, options) => formatDate(createLocalNoon(day), options) },
+  { name: 'formatDate', write: (day, options) => formatDate(createLocalTestDate(day), options) },
   { name: 'formatCalendarDay', write: (day, options) => formatCalendarDay(day, options) },
   { name: 'formatLocalDateTime', write: (day, options) => formatLocalDateTime([day, '21:30'].join('T'), options).slice(0, 10) },
 ];
@@ -53,11 +47,11 @@ describe('writeDateText', () => {
   });
 
   it('writes a four-digit year in the UTC calendar date', () => {
-    expect(toUtcCalendarDateString(createLocalNoon('0050-01-01'))).toBe('0050-01-01T00:00:00.000Z');
+    expect(toUtcCalendarDateString(createLocalTestDate('0050-01-01'))).toBe('0050-01-01T00:00:00.000Z');
     expect(toUtcCalendarDateString('0050-01-01')).toBe('0050-01-01T00:00:00.000Z');
   });
 
   it.runIf(timeZone === 'UTC')('writes a four-digit year in the text with offset', () => {
-    expect(toIsoStringWithOffset(createLocalNoon('0050-01-01'))).toBe('0050-01-01T12:00:00.000+00:00');
+    expect(toIsoStringWithOffset(createLocalTestDate('0050-01-01'))).toBe('0050-01-01T12:00:00.000+00:00');
   });
 });
