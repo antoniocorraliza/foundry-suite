@@ -1,7 +1,6 @@
 import type { TestProjectInlineConfiguration } from 'vitest/config';
-import { SMOKE_DIRECTORY } from '../constants/smoke-directory.constant.ts';
+import { SMOKE_DIRECTORY, UTILS_DIRECTORY } from '../constants/test-paths.constant.ts';
 import { UTILS_BROWSER_SPECS } from '../constants/utils-browser-specs.constant.ts';
-import { UTILS_DIRECTORY } from '../constants/utils-directory.constant.ts';
 import type { TestEnvironment } from '../interfaces/test-environment.interface.ts';
 import { createBrowserProjects } from './create-browser-projects.function.ts';
 import { createTypescriptJsdomProject } from './create-typescript-jsdom-project.function.ts';

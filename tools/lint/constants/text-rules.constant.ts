@@ -1,9 +1,5 @@
 import type { TextRule } from '../interfaces/text-rule.interface.ts';
-import { LIBRARY_CODE_FILE } from './library-code-file.constant.ts';
-import { LIBRARY_STYLE_FILE } from './library-style-file.constant.ts';
-import { LIBRARY_TEMPLATE_FILE } from './library-template-file.constant.ts';
-import { MARKDOWN_FILE } from './markdown-file.constant.ts';
-import { TYPESCRIPT_FILE } from './typescript-file.constant.ts';
+import { LIBRARY_CODE_FILE, LIBRARY_STYLE_FILE, LIBRARY_TEMPLATE_FILE, MARKDOWN_FILE, TYPESCRIPT_FILE } from './file-patterns.constant.ts';
 
 export const TEXT_RULES: ReadonlyArray<TextRule> = [
   {

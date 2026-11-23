@@ -2,13 +2,12 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync
 import { availableParallelism, tmpdir } from 'node:os';
 import { join, relative, resolve, sep } from 'node:path';
 import { FOUNDRY_PACKAGES } from '../packages/constants/foundry-packages.constant.ts';
-import { PACKAGES_DIST_DIRECTORY } from '../packages/constants/packages-dist-directory.constant.ts';
-import { BASE_APP_COMPONENT } from './constants/base-app-component.constant.ts';
-import { BASE_FORMS_APP_COMPONENT } from './constants/base-forms-app-component.constant.ts';
+import { PACKAGES_DIST_DIRECTORY } from '../packages/constants/package-directories.constant.ts';
+import { BASE_APP_COMPONENT, BASE_FORMS_APP_COMPONENT } from './constants/base-components.constant.ts';
 import { BUNDLERS } from './constants/bundlers.constant.ts';
 import { PUBLIC_ERROR_CLASSES } from './constants/public-error-classes.constant.ts';
 import { SIZE_MEASUREMENTS } from './constants/size-measurements.constant.ts';
-import { SIZE_REFERENCE_PATH } from './constants/size-reference-path.constant.ts';
+import { SIZE_REFERENCE_PATH } from './constants/size-settings.constant.ts';
 import { SIZE_TOOLS } from './constants/size-tools.constant.ts';
 import { buildAngularProbe } from './functions/build-angular-probe.function.ts';
 import { bundleWithEsbuild } from './functions/bundle-with-esbuild.function.ts';

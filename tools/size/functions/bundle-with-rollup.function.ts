@@ -2,7 +2,7 @@ import type { Plugin, RollupBuild, RollupOutput } from 'rollup';
 import { rollup } from 'rollup';
 import type { MinifyOutput } from 'terser';
 import { minify } from 'terser';
-import { PROBE_MODULE } from '../constants/probe-module.constant.ts';
+import { PROBE_MODULE } from '../constants/size-settings.constant.ts';
 import type { BundleRequest } from '../interfaces/bundle-request.interface.ts';
 import type { ModuleResolution } from '../interfaces/module-resolution.interface.ts';
 import { resolveFoundrySpecifier } from './resolve-foundry-specifier.function.ts';

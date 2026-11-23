@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import type { Alias } from 'vite';
 import type { TestProjectInlineConfiguration } from 'vitest/config';
-import { PACKAGES_SOURCE_DIRECTORY } from '../../packages/constants/packages-source-directory.constant.ts';
+import { PACKAGES_SOURCE_DIRECTORY } from '../../packages/constants/package-directories.constant.ts';
 
 // Vite does not read the tsconfig paths, so the tests resolve the Foundry packages to their source, and @foundry-test to tools/vitest, with these aliases.
 function createSourceAliases(): Array<Alias> {

@@ -6,7 +6,7 @@ describe('findFileNameProblems', () => {
     expect(findFileNameProblems('tools/size/functions/get-entry-files.function.ts', 'export function getEntryFiles(): void {}')).toEqual(
       [],
     );
-    expect(findFileNameProblems('tools/ci/constants/commit-types.constant.ts', 'export const COMMIT_TYPES: number = 1;')).toEqual([]);
+    expect(findFileNameProblems('tools/ci/types/audit-severity.type.ts', 'export type AuditSeverity = string;')).toEqual([]);
     expect(
       findFileNameProblems(
         'projects/a/case/src/errors/foundry-key-collision.error.ts',
@@ -43,11 +43,27 @@ describe('findFileNameProblems', () => {
   });
 
   it('rejects a file that exports several names or none', () => {
-    const source: string = 'export const FIRST: number = 1;\nexport const SECOND: number = 2;';
-    expect(findFileNameProblems('tools/ci/constants/first.constant.ts', source)).toEqual([
-      'tools/ci/constants/first.constant.ts: a file exports one name, and this one exports 2 (FIRST, SECOND)',
+    const source: string = 'export function getFirst(): void {}\nexport function getSecond(): void {}';
+    expect(findFileNameProblems('tools/ci/functions/get-first.function.ts', source)).toEqual([
+      'tools/ci/functions/get-first.function.ts: a file exports one name, and this one exports 2 (getFirst, getSecond)',
     ]);
-    expect(findFileNameProblems('tools/ci/constants/first.constant.ts', 'const FIRST: number = 1;')).toHaveLength(1);
+    expect(findFileNameProblems('tools/ci/functions/get-first.function.ts', 'function getFirst(): void {}')).toHaveLength(1);
+  });
+
+  it('accepts a file of constants named after its topic, with one or more constants', () => {
+    const source: string = 'export const FIRST: number = 1;\nexport const SECOND = [1] as const;';
+    expect(findFileNameProblems('tools/ci/constants/commit-rules.constant.ts', source)).toEqual([]);
+  });
+
+  it('rejects a file of constants that exports something else or nothing', () => {
+    const source: string =
+      'export const FIRST: number = 1;\nexport function getFirst(): number {\n  return FIRST;\n}\nexport let SECOND: number = 2;';
+    expect(findFileNameProblems('tools/ci/constants/commit-rules.constant.ts', source)).toEqual([
+      'tools/ci/constants/commit-rules.constant.ts: a file of constants only exports constants, and this one also exports getFirst, SECOND',
+    ]);
+    expect(findFileNameProblems('tools/ci/constants/commit-rules.constant.ts', 'const FIRST: number = 1;')).toEqual([
+      'tools/ci/constants/commit-rules.constant.ts: a file of constants exports at least one constant',
+    ]);
   });
 
   it('rejects the Foundry prefix in an internal name', () => {

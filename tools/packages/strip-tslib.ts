@@ -1,8 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { FOUNDRY_PACKAGES } from './constants/foundry-packages.constant.ts';
-import { PACKAGES_DIST_DIRECTORY } from './constants/packages-dist-directory.constant.ts';
-import { PACKAGES_SOURCE_DIRECTORY } from './constants/packages-source-directory.constant.ts';
+import { PACKAGES_DIST_DIRECTORY, PACKAGES_SOURCE_DIRECTORY } from './constants/package-directories.constant.ts';
 import type { FoundryPackage } from './interfaces/foundry-package.interface.ts';
 import type { PackageManifest } from './interfaces/package-manifest.interface.ts';
 

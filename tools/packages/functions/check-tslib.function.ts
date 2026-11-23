@@ -1,4 +1,4 @@
-import { TSLIB_IMPORT } from '../constants/tslib-import.constant.ts';
+import { TSLIB_IMPORT } from '../constants/package-settings.constant.ts';
 import type { Tarball } from '../interfaces/tarball.interface.ts';
 
 function readTarballFile(tarball: Tarball, path: string): string {

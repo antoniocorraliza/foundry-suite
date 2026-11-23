@@ -1,5 +1,4 @@
-import { REVIEW_CODE } from '../constants/review-code.constant.ts';
-import { REVIEW_CODE_EXCEPTIONS } from '../constants/review-code-exceptions.constant.ts';
+import { REVIEW_CODE, REVIEW_CODE_EXCEPTIONS } from '../constants/review-codes.constant.ts';
 
 function escapeForPattern(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

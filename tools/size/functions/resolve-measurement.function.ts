@@ -1,4 +1,4 @@
-import { NOT_MEASURED_ENTRIES } from '../constants/not-measured-entries.constant.ts';
+import { NOT_MEASURED_ENTRIES } from '../constants/size-settings.constant.ts';
 import type { BuiltEntry } from '../interfaces/built-entry.interface.ts';
 import type { BuiltPackages } from '../interfaces/built-packages.interface.ts';
 import type { ResolvedImport } from '../interfaces/resolved-import.interface.ts';

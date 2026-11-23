@@ -1,5 +1,4 @@
-import { CLASS_DECORATOR } from '../constants/class-decorator.constant.ts';
-import { DECORATOR_SUFFIXES } from '../constants/decorator-suffixes.constant.ts';
+import { CLASS_DECORATOR, DECORATOR_SUFFIXES } from '../constants/folder-structure.constant.ts';
 
 export function findDecoratorSuffixProblems(path: string, text: string): Array<string> {
   return [...text.matchAll(CLASS_DECORATOR)]

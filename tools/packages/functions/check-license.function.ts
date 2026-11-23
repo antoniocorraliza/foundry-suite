@@ -1,4 +1,4 @@
-import { LICENSE_ID } from '../constants/license-id.constant.ts';
+import { LICENSE_ID } from '../constants/package-settings.constant.ts';
 import type { Tarball } from '../interfaces/tarball.interface.ts';
 
 function readTarballFile(tarball: Tarball, path: string): string {

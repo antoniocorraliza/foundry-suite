@@ -14,3 +14,20 @@ export const FOLDER_SUFFIXES: Readonly<Record<string, ReadonlyArray<string>>> = 
   tokens: ['.token.ts'],
   types: ['.type.ts'],
 };
+export const FOLDER_NAME_SUFFIXES: Readonly<Record<string, string>> = {
+  components: 'Component',
+  directives: 'Directive',
+  errors: 'Error',
+  guards: 'Guard',
+  interceptors: 'Interceptor',
+  pipes: 'Pipe',
+  resolvers: 'Resolver',
+  services: 'Service',
+};
+export const CLASS_DECORATOR: RegExp = /^@(Component|Directive|Injectable|Pipe)\(/gm;
+export const DECORATOR_SUFFIXES: Readonly<Record<string, string>> = {
+  Component: '.component.ts',
+  Directive: '.directive.ts',
+  Injectable: '.service.ts',
+  Pipe: '.pipe.ts',
+};

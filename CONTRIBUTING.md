@@ -112,7 +112,7 @@ it('returns the first instant of a day without midnight', () => {});
 it('U17: parseDate in Santiago', () => {});
 ```
 
-Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `describe`, `it` and `test` (read with the TypeScript parser). It looks for anything shaped like a code (capitals and digits joined by hyphens, or one to four capitals followed by one to three digits) and for decision numbers. Names that look like a code are listed as exceptions in `tools/lint/constants/review-code-exceptions.constant.ts` (`UTF-8`, `ISO-8601`, `ES2022`, `V8`, `F2`...): add one there when a real name is rejected.
+Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `describe`, `it` and `test` (read with the TypeScript parser). It looks for anything shaped like a code (capitals and digits joined by hyphens, or one to four capitals followed by one to three digits) and for decision numbers. Names that look like a code are listed as exceptions in `REVIEW_CODE_EXCEPTIONS` (`tools/lint/constants/review-codes.constant.ts`) (`UTF-8`, `ISO-8601`, `ES2022`, `V8`, `F2`...): add one there when a real name is rejected.
 
 ### 4. Only characters you can type
 
@@ -386,7 +386,9 @@ projects/antoniocorraliza/foundry-core/storage/
   src/tokens/foundry-storage-options.token.ts
 ```
 
-Each file is named after the one name it exports, in kebab-case, without the `ɵ` prefix and without the suffix of its folder (`Error`, `Component`, `Directive`, `Service`, `Pipe`, `Guard`, `Interceptor`, `Resolver`): `defineFoundryStorageKey` lives in `define-foundry-storage-key.function.ts`, `provideFoundryStorage` in `provide-foundry-storage.provider.ts`, `FoundryKeyCollisionError` in `foundry-key-collision.error.ts` and `COMMIT_TYPES` in `commit-types.constant.ts`. A file exports one name; the overloads of a function count as one. An internal name with `ɵ` does not take the `Foundry` prefix (`ɵgetValueKind`, not `ɵFoundryGetValueKind`).
+Each file is named after the one name it exports, in kebab-case, without the `ɵ` prefix and without the suffix of its folder (`Error`, `Component`, `Directive`, `Service`, `Pipe`, `Guard`, `Interceptor`, `Resolver`): `defineFoundryStorageKey` lives in `define-foundry-storage-key.function.ts`, `provideFoundryStorage` in `provide-foundry-storage.provider.ts`, `FoundryKeyCollisionError` in `foundry-key-collision.error.ts` and `COLLISION_MODES` in `collision-modes.constant.ts`. A file exports one name; the overloads of a function count as one.
+
+`constants/` is the exception: constants of one topic can share a file named after the topic (`commit-rules.constant.ts` holds `COMMIT_TYPES`, `COMMIT_SCOPES` and `COMMIT_TITLE`). A large constant, or one with a meaning of its own (a closed list with its type, a table of budgets), keeps its own file named after it. A file of `constants/` exports only constants. Functions, types, interfaces and errors stay one per file. An internal name with `ɵ` does not take the `Foundry` prefix (`ɵgetValueKind`, not `ɵFoundryGetValueKind`).
 
 A piece with an error class keeps it in `errors/`, like the HTTP client of Core: `src/errors/foundry-api.error.ts`.
 
@@ -404,8 +406,8 @@ In `tools/`, the scripts that Node runs stay at the root of their folder, with a
 ```
 tools/vitest/
   constants/angular-optimized-dependencies.constant.ts
-  constants/setup-directory.constant.ts
   constants/test-browsers.constant.ts
+  constants/test-paths.constant.ts
   functions/create-browser-projects.function.ts
   functions/create-typescript-node-projects.function.ts
   functions/read-test-environment.function.ts
@@ -434,7 +436,7 @@ export interface ProjectOptions {
 // No: an interface declared in projects.ts, next to the functions that use it
 ```
 
-Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/`, `tokens/` and `errors/` (only classes that extend an error, one per file with `max-classes-per-file`; an error class anywhere else is rejected), and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder, that it exports one name, that its name is that name in kebab-case, and that an internal name with `ɵ` does not take `Foundry`.
+Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/`, `tokens/` and `errors/` (only classes that extend an error, one per file with `max-classes-per-file`; an error class anywhere else is rejected), and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder, that it exports one name (in `constants/`, only constants), that its name is that name in kebab-case (outside `constants/`), and that an internal name with `ɵ` does not take `Foundry`. Review: that the constants of a shared file are of one topic.
 
 ### 14. Commits and pull requests
 
