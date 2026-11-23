@@ -680,7 +680,7 @@ Checked by: ESLint (`prefer-as-const` off and `jsdoc/require-jsdoc` skips `overr
 
 ### Function names that do not start with a verb
 
-Three kinds of function keep a name that does not start with a verb: `main()` of the scripts of `tools/`, the names of the approved designs (`deepClone`, and the option `customEquality` of `isDeepEqual`), and the lifecycle hooks of Angular (`ngOnInit`...). Why: `main()` is the entry point of every script, the designs have frozen the public names, and Angular fixes the names of its hooks.
+Three kinds of function keep a name that does not start with a verb: `main()` of the scripts of `tools/`, the names of the approved designs (`deepClone`, `localDateTimeToDate`, and the option `customEquality` of `isDeepEqual`), and the lifecycle hooks of Angular (`ngOnInit`...). Why: `main()` is the entry point of every script, the designs have frozen the public names, and Angular fixes the names of its hooks.
 
 ```ts
 export function deepClone<T>(value: T): T {}
