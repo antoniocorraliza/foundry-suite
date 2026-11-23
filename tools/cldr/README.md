@@ -6,7 +6,7 @@
 npm run generate:cldr
 ```
 
-It lists, for each weekday, the two-letter regions whose week starts on it; Monday, the default, is empty. Two tests guard it:
+It maps each two-letter region whose week does not start on Monday to its first day; any other region starts on Monday. Two tests guard it:
 
 - `tools/cldr/functions/create-first-day-of-week-source.function.spec.ts`: the generated text is the file in the repository.
 - `date/src/functions/get-first-day-of-week.node.function.spec.ts`: `getFirstDayOfWeek` agrees with the CLDR data of Node (`getWeekInfo()` or `weekInfo`) for every two-letter region. It runs on Node only (22 and 24): each browser updates CLDR at its own pace, and the table exists so that the result does not depend on it.

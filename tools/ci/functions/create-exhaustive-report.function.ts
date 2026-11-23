@@ -1,3 +1,5 @@
+import { basename } from 'node:path';
+import type { TimedSpecFile } from '../interfaces/timed-spec-file.interface.ts';
 import type { VitestJsonFile } from '../interfaces/vitest-json-file.interface.ts';
 import type { VitestJsonReport } from '../interfaces/vitest-json-report.interface.ts';
 
@@ -10,14 +12,16 @@ function formatSeconds(milliseconds: number): string {
 }
 
 export function createExhaustiveReport(report: VitestJsonReport, timeZone: string): Array<string> {
-  const files: Array<VitestJsonFile> = [...report.testResults].sort((first, second) => measureFile(second) - measureFile(first));
-  const total: number = files.reduce((sum, file) => sum + measureFile(file), 0);
+  const timedFiles: Array<TimedSpecFile> = report.testResults
+    .map((file) => ({ file, time: measureFile(file) }))
+    .sort((first, second) => second.time - first.time);
+  const total: number = timedFiles.reduce((sum, timedFile) => sum + timedFile.time, 0);
   return [
     `### Exhaustive date specs: ${timeZone}`,
     '',
     '| Spec | Result | Time |',
     '| :-- | :-- | --: |',
-    ...files.map((file) => `| ${file.name.split('/').pop() ?? file.name} | ${file.status} | ${formatSeconds(measureFile(file))} |`),
+    ...timedFiles.map(({ file, time }) => `| ${basename(file.name)} | ${file.status} | ${formatSeconds(time)} |`),
     `| **total** | | **${formatSeconds(total)}** |`,
     '',
   ];
