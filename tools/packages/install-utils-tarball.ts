@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { PACKAGES_DIST_DIRECTORY } from './constants/packages-dist-directory.constant.ts';
+import { PACKAGES_DIST_DIRECTORY } from './constants/package-directories.constant.ts';
 import type { NpmPackEntry } from './interfaces/npm-pack-entry.interface.ts';
 
 function packUtils(distDirectory: string, workDirectory: string): string {

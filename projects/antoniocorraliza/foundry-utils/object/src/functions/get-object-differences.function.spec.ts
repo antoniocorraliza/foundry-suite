@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
-import { freezeAndSnapshot } from '../../../../../../tools/vitest/functions/freeze-and-snapshot.function';
-import type { FrozenSnapshot } from '../../../../../../tools/vitest/interfaces/frozen-snapshot.interface';
+import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
+import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import type { FoundryDeepEqualOptions } from '../interfaces/foundry-deep-equal-options.interface';
 import type { FoundryObjectDifference } from '../interfaces/foundry-object-difference.interface';
 import { getObjectDifferences } from './get-object-differences.function';
@@ -116,7 +116,7 @@ describe('getObjectDifferences', () => {
     ).toEqual([['box']]);
   });
 
-  it('builds the payload of the documented recipe: complete first-level values and null for removed keys', () => {
+  it('builds a patch payload from the first key of each path: complete first-level values and null for removed keys', () => {
     const original: Record<string, unknown> = { title: 'A', dueDate: '2027-01-01', customer: { name: 'Ana', id: 1 }, notes: 'x' };
     const current: Record<string, unknown> = { title: 'A', dueDate: '2027-06-30', customer: { name: 'Eva', id: 1 } };
     const changedKeys: Set<string | number | undefined> = new Set(getObjectDifferences(original, current).map((change) => change.path[0]));

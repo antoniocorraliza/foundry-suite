@@ -1,8 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { FOUNDRY_PACKAGES } from './constants/foundry-packages.constant.ts';
-import { PACKAGES_DIST_DIRECTORY } from './constants/packages-dist-directory.constant.ts';
-import { PACKAGES_SOURCE_DIRECTORY } from './constants/packages-source-directory.constant.ts';
+import { PACKAGES_DIST_DIRECTORY, PACKAGES_SOURCE_DIRECTORY } from './constants/package-directories.constant.ts';
 import type { FoundryPackage } from './interfaces/foundry-package.interface.ts';
 import type { PackageManifest } from './interfaces/package-manifest.interface.ts';
 
@@ -24,8 +23,7 @@ function main(): number {
     return 1;
   }
 
-  // ng-packagr 21 adds tslib to dependencies whenever the source manifest does not declare it, even if no file
-  // imports it. The code is compiled with importHelpers: false, and check-packages proves that nothing imports tslib.
+  // ng-packagr 21 adds tslib to dependencies whenever the source manifest does not declare it, even if no file imports it.
   const distManifestPath: string = join(PACKAGES_DIST_DIRECTORY, foundryPackage.folder, 'package.json');
   const distManifest: PackageManifest = readManifest(distManifestPath);
   const { tslib, ...dependencies } = distManifest.dependencies ?? {};

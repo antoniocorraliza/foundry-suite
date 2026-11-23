@@ -79,7 +79,16 @@ export function parseCalendarDay(text: string): FoundryCalendarDay | null {}
 export function parseCalendarDay(text: string): FoundryCalendarDay | null {}
 ```
 
-Checked by: ESLint `eslint-plugin-jsdoc` in `projects/`: JSDoc required on everything exported (functions, classes, interfaces, types, constants, and the public methods and properties of exported classes; not on `private` or `protected` members), a function description that starts with a verb ending in "s" and not with "This", "A" or "Helper" (`match-description`), no types in tags (`no-types`), no tag that only repeats its name (`informative-docs`), `@param` names that exist, descriptions in `@param` and `@returns`, `@throws` when the body throws (`require-throws`) and a one-line `@example`. `tools/lint/check-text.ts` rejects the sales words and the filler openings in any JSDoc line, and a `@throws` on an `is...` or `has...` function or method. Review: the number of sentences, that nothing repeats the types, `@throws` for errors thrown by the functions it calls, whether an `@example` is needed, English and other filler that the lists do not catch.
+Checked by:
+
+- ESLint `eslint-plugin-jsdoc`, in `projects/`:
+  - JSDoc on everything exported: functions, classes, interfaces, types, constants, and the public methods and properties of exported classes (not `private` or `protected` members);
+  - a function description that starts with a verb ending in "s", and not with "This", "A" or "Helper" (`match-description`);
+  - no types in tags (`no-types`) and no tag that only repeats its name (`informative-docs`);
+  - `@param` names that exist, and descriptions in `@param` and `@returns`;
+  - `@throws` when the body throws (`require-throws`), and a one-line `@example`.
+- `tools/lint/check-text.ts`: the sales words and the filler openings in any JSDoc line, and a `@throws` on an `is...` or `has...` function or method.
+- Review: the number of sentences, that nothing repeats the types, `@throws` for the errors of the functions it calls, whether an `@example` is needed, English, and filler that the lists do not catch.
 
 ### 3. No process references
 
@@ -103,7 +112,7 @@ it('returns the first instant of a day without midnight', () => {});
 it('U17: parseDate in Santiago', () => {});
 ```
 
-Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `describe`, `it` and `test` (read with the TypeScript parser). It looks for anything shaped like a code (capitals and digits joined by hyphens, or one to four capitals followed by one to three digits) and for decision numbers. Names that look like a code are listed as exceptions in `tools/lint/constants/review-code-exceptions.constant.ts` (`UTF-8`, `ISO-8601`, `ES2022`, `V8`, `F2`...): add one there when a real name is rejected.
+Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `describe`, `it` and `test` (read with the TypeScript parser). It looks for anything shaped like a code (capitals and digits joined by hyphens, or one to four capitals followed by one to three digits) and for decision numbers. Names that look like a code are listed as exceptions in `REVIEW_CODE_EXCEPTIONS` (`tools/lint/constants/review-codes.constant.ts`) (`UTF-8`, `ISO-8601`, `ES2022`, `V8`, `F2`...): add one there when a real name is rejected.
 
 ### 4. Only characters you can type
 
@@ -155,6 +164,8 @@ Checked by: `tools/lint/check-text.ts` rejects `/** UPPERCASE */`; ESLint `no-re
 ### 6. Explicit types
 
 On variables, properties, parameters and return types. Every named function and method declares its return type, `void` included. Callbacks declare neither: the function that receives them already sets their types. Arrays are written `Array<T>` and `ReadonlyArray<T>`.
+
+Typing every variable, also where TypeScript could infer it, is a deliberate choice: the type is read where the variable is declared, without an editor.
 
 ```ts
 // Yes
@@ -278,11 +289,13 @@ Checked by: ESLint `curly` (`multi-line`).
 throw new Error('[strip-tslib]: unknown package folder "foundry-x"');
 ```
 
+The problem lists of the tools are an exception (see Exceptions).
+
 Checked by: ESLint `no-restricted-syntax`, on string literals and on the start of template literals.
 
 ### 10. Imports
 
-In groups, in this order: side-effect imports, Node built-ins, packages, `@antoniocorraliza`, relative paths. Alphabetical inside each group. No blank lines between the groups.
+In groups, in this order: side-effect imports, Node built-ins, packages, `@antoniocorraliza`, `@foundry-test` (the test helpers of `tools/vitest/`, only in spec files), relative paths. Alphabetical inside each group. No blank lines between the groups.
 
 ```ts
 // Yes
@@ -377,7 +390,9 @@ projects/antoniocorraliza/foundry-core/storage/
   src/tokens/foundry-storage-options.token.ts
 ```
 
-Each file is named after the one name it exports, in kebab-case, without the `ɵ` prefix and without the suffix of its folder (`Error`, `Component`, `Directive`, `Service`, `Pipe`, `Guard`, `Interceptor`, `Resolver`): `defineFoundryStorageKey` lives in `define-foundry-storage-key.function.ts`, `provideFoundryStorage` in `provide-foundry-storage.provider.ts`, `FoundryKeyCollisionError` in `foundry-key-collision.error.ts` and `COMMIT_TYPES` in `commit-types.constant.ts`. A file exports one name; the overloads of a function count as one. An internal name with `ɵ` does not take the `Foundry` prefix (`ɵgetValueKind`, not `ɵFoundryGetValueKind`).
+Each file is named after the one name it exports, in kebab-case, without the `ɵ` prefix and without the suffix of its folder (`Error`, `Component`, `Directive`, `Service`, `Pipe`, `Guard`, `Interceptor`, `Resolver`): `defineFoundryStorageKey` lives in `define-foundry-storage-key.function.ts`, `provideFoundryStorage` in `provide-foundry-storage.provider.ts`, `FoundryKeyCollisionError` in `foundry-key-collision.error.ts` and `COLLISION_MODES` in `collision-modes.constant.ts`. A file exports one name; the overloads of a function count as one.
+
+`constants/` is the exception: constants of one topic can share a file named after the topic (`commit-rules.constant.ts` holds `COMMIT_TYPES`, `COMMIT_SCOPES` and `COMMIT_TITLE`). A large constant, or one with a meaning of its own (a closed list with its type, a table of budgets), keeps its own file named after it. A file of `constants/` exports only constants. Functions, types, interfaces and errors stay one per file. An internal name with `ɵ` does not take the `Foundry` prefix (`ɵgetValueKind`, not `ɵFoundryGetValueKind`).
 
 A piece with an error class keeps it in `errors/`, like the HTTP client of Core: `src/errors/foundry-api.error.ts`.
 
@@ -395,8 +410,8 @@ In `tools/`, the scripts that Node runs stay at the root of their folder, with a
 ```
 tools/vitest/
   constants/angular-optimized-dependencies.constant.ts
-  constants/setup-directory.constant.ts
   constants/test-browsers.constant.ts
+  constants/test-paths.constant.ts
   functions/create-browser-projects.function.ts
   functions/create-typescript-node-projects.function.ts
   functions/read-test-environment.function.ts
@@ -425,7 +440,7 @@ export interface ProjectOptions {
 // No: an interface declared in projects.ts, next to the functions that use it
 ```
 
-Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/`, `tokens/` and `errors/` (only classes that extend an error, one per file with `max-classes-per-file`; an error class anywhere else is rejected), and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder, that it exports one name, that its name is that name in kebab-case, and that an internal name with `ɵ` does not take `Foundry`.
+Checked by: ESLint `no-restricted-syntax`, with different rules for code files and for `interfaces/`, `types/`, `constants/`, `tokens/` and `errors/` (only classes that extend an error, one per file with `max-classes-per-file`; an error class anywhere else is rejected), and an error on any inline object type; `tools/lint/check-text.ts` checks that each file has the suffix of its folder, that it exports one name (in `constants/`, only constants), that its name is that name in kebab-case (outside `constants/`), and that an internal name with `ɵ` does not take `Foundry`. Review: that the constants of a shared file are of one topic.
 
 ### 14. Commits and pull requests
 
@@ -450,7 +465,7 @@ export function loadItems(): Array<Item> {}
 export const loadItems = (): Array<Item> => [];
 ```
 
-Lists are walked with array methods (`forEach`, `map`, `filter`, `reduce`...). A `for...of` loop only when an array method does not fit: to `await` inside it or to stop early (`break`, `return`).
+Lists are walked with array methods (`forEach`, `map`, `filter`, `reduce`...). A `for...of` loop only when an array method does not fit: to `await` inside it or to stop early (`break`, `return`). A `for` loop with an index is an exception (see Exceptions).
 
 ```ts
 // Yes
@@ -471,7 +486,7 @@ private readonly items: Array<Item> = [];
 readonly #items: Array<Item> = [];
 ```
 
-Checked by: ESLint `no-restricted-syntax` (top-level constants whose value is a function; `for...of`, `for` and `for...in` loops without `await`, `break` or `return` inside; any `#` name). A `return` or `break` inside a nested callback also lets a loop through: review.
+Checked by: ESLint `no-restricted-syntax` (top-level constants whose value is a function; `for...of` and `for...in` loops without `await`, `break` or `return` inside; any `#` name). A `return` or `break` inside a nested callback also lets a loop through: review.
 
 ### 16. Angular
 
@@ -580,6 +595,16 @@ readonly disabled: InputSignal<boolean> = input(false);
 
 Checked by: ESLint and `tools/lint/check-text.ts` skip the exported declarations of `projects/`, but still check their function bodies and their private and protected members. Something exported only for another internal file, or exported with a separate `export { x }`, is seen as public: review.
 
+### Loops with an index
+
+A `for` loop with an index is used only to walk two arrays in parallel, or when what matters is the index itself. Why: with an array method, the index of the second array is read from the callback of the first, or a list of indices is built only to walk it.
+
+```ts
+for (let index: number = 0; index < first.length; index++) if (!compare(first[index], second[index])) return false;
+```
+
+Checked by: ESLint accepts any `for` loop with an index; the review checks that it is one of these cases.
+
 ### Functional interceptors, guards and resolvers
 
 They stay as a constant with the type that Angular expects, not as a `function`. Why: the type checks the signature, and the `.d.ts` stays as the design writes it.
@@ -660,6 +685,17 @@ export function deepClone<T>(value: T): T {}
 ```
 
 Checked by: the exception list `FUNCTION_NAME_EXCEPTIONS` in `eslint.config.mjs`. A public name of a later design that does not start with a verb is added there with its block.
+
+### Problem lists of the tools
+
+The reports of the scripts of `tools/` list one problem per line without `[who]: ...`: `path:line: rule: text` when the problem has a place in a file, or the indented lines under `ok` and `FAIL` of `check-packages` and `size`. The summary at the end and the other status messages keep `[who]: ...`. Why: editors and CI logs turn `path:line:` into a link to the line, and a prefix on every line of a report would only repeat the script.
+
+```text
+tools/size/README.md:12: sales word: Robust measurements of each entry.
+[check-text]: 1 problem(s), see CONTRIBUTING.md
+```
+
+Checked by: review. ESLint only sees messages written as text, and each problem line is built by the function that finds it.
 
 ### Names fixed by an outside format
 

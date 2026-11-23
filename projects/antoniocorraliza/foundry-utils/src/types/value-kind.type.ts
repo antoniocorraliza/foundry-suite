@@ -1,4 +1,4 @@
-/** Names how the functions of Utils treat a value; for internal use of the entries. */
+/** Names how the functions of Utils treat a value. */
 export type ɵValueKind =
   | 'primitive'
   | 'function'

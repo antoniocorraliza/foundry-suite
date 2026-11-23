@@ -1,7 +1,7 @@
-import type { ɵIsAny, ɵIsKeptAsIs } from '@antoniocorraliza/foundry-utils';
+import type { ɵIsAny, ɵIsKeptAsIs, ɵMaxTypeDepth } from '@antoniocorraliza/foundry-utils';
 
 type WithoutEmptyValue<T, RemoveArrayItems extends boolean, Depth extends ReadonlyArray<unknown>> = T extends object
-  ? Depth['length'] extends 16
+  ? Depth['length'] extends ɵMaxTypeDepth
     ? unknown
     : T extends ReadonlyArray<unknown>
       ? {

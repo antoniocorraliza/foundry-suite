@@ -1,0 +1,18 @@
+import type { FoundryPackageFolder } from '../../packages/types/foundry-package-folder.type.ts';
+import type { SizeFigures } from '../interfaces/size-figures.interface.ts';
+import type { SizeTarget } from '../types/size-target.type.ts';
+import type { SizeTool } from '../types/size-tool.type.ts';
+
+export const BYTES_PER_KILOBYTE: number = 1000;
+export const GZIP_LEVEL: number = 6;
+export const GZIP_BUDGET_TOOLS: ReadonlyArray<SizeTool> = ['angular', 'esbuild', 'files'];
+export const NOT_MEASURED_ENTRIES: ReadonlyArray<string> = ['testing'];
+export const SIZE_REFERENCE_PATH: string = 'tools/size/size-reference.json';
+export const PROBE_MODULE: string = '\0foundry-size-probe';
+export const DEFAULT_SIZE_TARGETS: Readonly<Record<FoundryPackageFolder, SizeTarget>> = {
+  'foundry-utils': 'bundle',
+  'foundry-core': 'angular-app',
+  'foundry-ui': 'angular-app-with-forms',
+};
+export const ANGULAR_PACKAGES: ReadonlyArray<FoundryPackageFolder> = ['foundry-core', 'foundry-ui'];
+export const EMPTY_SIZE: SizeFigures = { raw: 0, gzip: 0 };

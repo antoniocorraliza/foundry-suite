@@ -1,7 +1,5 @@
 import ts from 'typescript';
-import { DIRECTIVE_WITH_REASON } from '../constants/directive-with-reason.constant.ts';
-import { PURE_ANNOTATION } from '../constants/pure-annotation.constant.ts';
-import { SECTION_MARKERS } from '../constants/section-markers.constant.ts';
+import { DIRECTIVE_WITH_REASON, PURE_ANNOTATION, SECTION_MARKERS } from '../constants/comment-patterns.constant.ts';
 
 function isAllowedComment(comment: string): boolean {
   if (comment.startsWith('/**') && comment !== '/**/') return true;

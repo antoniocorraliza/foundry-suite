@@ -1,2 +1,2 @@
-/** Describes bytes given as input; unlike `BufferSource`, it exists without the DOM types. */
+/** Describes bytes given as input. Unlike `BufferSource`, it exists without the DOM types. */
 export type FoundryBinaryInput = ArrayBuffer | ArrayBufferView;

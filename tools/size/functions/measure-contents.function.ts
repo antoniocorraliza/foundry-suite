@@ -1,5 +1,5 @@
 import { gzipSync } from 'node:zlib';
-import { GZIP_LEVEL } from '../constants/gzip-level.constant.ts';
+import { GZIP_LEVEL } from '../constants/size-settings.constant.ts';
 import type { SizeFigures } from '../interfaces/size-figures.interface.ts';
 
 export function measureContents(contents: ReadonlyArray<string | Uint8Array>): SizeFigures {

@@ -1,6 +1,6 @@
 import type { TestProjectInlineConfiguration } from 'vitest/config';
 import { ANGULAR_OPTIMIZED_DEPENDENCIES } from '../constants/angular-optimized-dependencies.constant.ts';
-import { SETUP_DIRECTORY } from '../constants/setup-directory.constant.ts';
+import { SETUP_DIRECTORY } from '../constants/test-paths.constant.ts';
 import type { AngularNodeProjectOptions } from '../interfaces/angular-node-project-options.interface.ts';
 import { createAngularPlugin } from './create-angular-plugin.function.ts';
 

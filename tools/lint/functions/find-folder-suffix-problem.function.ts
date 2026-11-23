@@ -1,4 +1,4 @@
-import { FOLDER_SUFFIXES } from '../constants/folder-suffixes.constant.ts';
+import { FOLDER_SUFFIXES } from '../constants/folder-structure.constant.ts';
 
 export function findFolderSuffixProblem(path: string): string | null {
   const segments: Array<string> = path.split('/');

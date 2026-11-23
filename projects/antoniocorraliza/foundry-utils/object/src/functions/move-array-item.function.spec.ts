@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { freezeAndSnapshot } from '../../../../../../tools/vitest/functions/freeze-and-snapshot.function';
-import type { FrozenSnapshot } from '../../../../../../tools/vitest/interfaces/frozen-snapshot.interface';
+import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
+import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { moveArrayItem } from './move-array-item.function';
 
 describe('moveArrayItem', () => {

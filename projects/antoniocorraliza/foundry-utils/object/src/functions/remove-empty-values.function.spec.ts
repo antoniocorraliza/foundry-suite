@@ -1,16 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { FoundryCircularReferenceError } from '@antoniocorraliza/foundry-utils';
-import { freezeAndSnapshot } from '../../../../../../tools/vitest/functions/freeze-and-snapshot.function';
-import type { FrozenSnapshot } from '../../../../../../tools/vitest/interfaces/frozen-snapshot.interface';
+import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
+import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
+import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { removeEmptyValues } from './remove-empty-values.function';
 
 class Ticket {}
-
-class Unrelated {}
-
-function createTaggedObject(tag: string): object {
-  return Object.defineProperty(new Unrelated(), Symbol.toStringTag, { value: tag });
-}
 
 describe('removeEmptyValues', () => {
   it('removes null and undefined properties in depth without changing the input', () => {
@@ -105,21 +101,22 @@ describe('removeEmptyValues', () => {
     expect(Object.getPrototypeOf(removeEmptyValues(Object.assign(Object.create(null) as object, { a: 1 })))).toBe(Object.prototype);
   });
 
-  it('copies an object used in two places, and throws on a cycle with its path', () => {
+  it('copies an object used in two places, without taking it for a cycle', () => {
     const shared: { a: number; b: null } = { a: 1, b: null };
     const result: { first: object; second: object } = removeEmptyValues({ first: shared, second: shared }) as {
       first: object;
       second: object;
     };
     expect(result).toEqual({ first: { a: 1 }, second: { a: 1 } });
+    expect(result.first).not.toBe(result.second);
+  });
+
+  it('throws a circular reference error with the path that points back', () => {
     const value: { inner: { back?: unknown } } = { inner: {} };
     value.inner.back = value;
-    expect(() => removeEmptyValues(value)).toThrow(FoundryCircularReferenceError);
-    try {
-      removeEmptyValues(value);
-    } catch (error) {
-      expect(error).toMatchObject({ path: ['inner', 'back'] });
-    }
+    const error: unknown = catchThrown(() => removeEmptyValues(value));
+    expect(error).toBeInstanceOf(FoundryCircularReferenceError);
+    expect(error).toMatchObject({ path: ['inner', 'back'] });
   });
 
   it('rejects options that are not an object or options that are not booleans', () => {
@@ -134,7 +131,7 @@ describe('removeEmptyValues', () => {
   it.each(['Date', 'Map', 'Set', 'RegExp', 'ArrayBuffer', 'Array', 'Object'])(
     'keeps an object that fakes the tag of %s by reference, with every option',
     (tag) => {
-      const fake: object = createTaggedObject(tag);
+      const fake: object = createObjectWithFakeTag(tag);
       const result: Record<string, unknown> = removeEmptyValues(
         { due: fake },
         { removeEmptyStrings: true, removeEmptyCollections: true, removeEmptyArrayItems: true },

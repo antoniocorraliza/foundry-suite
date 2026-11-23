@@ -1,6 +1,5 @@
 import ts from 'typescript';
-import { LIBRARY_TYPESCRIPT_FILE } from '../constants/library-typescript-file.constant.ts';
-import { SPEC_FILE } from '../constants/spec-file.constant.ts';
+import { LIBRARY_TYPESCRIPT_FILE, SPEC_FILE } from '../constants/file-patterns.constant.ts';
 import type { ArrowFunctionDeclaration } from '../interfaces/arrow-function-declaration.interface.ts';
 
 function isExported(node: ts.Node): boolean {

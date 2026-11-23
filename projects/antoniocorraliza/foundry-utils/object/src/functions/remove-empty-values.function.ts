@@ -1,9 +1,15 @@
 import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
-import { FoundryCircularReferenceError, ɵdefineOwnProperty, ɵgetOwnDataEntries, ɵisPlainObject } from '@antoniocorraliza/foundry-utils';
+import {
+  FoundryCircularReferenceError,
+  ɵdefineOwnProperty,
+  ɵgetOwnDataEntries,
+  ɵisOptionsValue,
+  ɵisPlainObject,
+} from '@antoniocorraliza/foundry-utils';
 import type { EmptyValuesCleaning } from '../interfaces/empty-values-cleaning.interface';
 import type { FoundryRemoveEmptyValuesOptions } from '../interfaces/foundry-remove-empty-values-options.interface';
 import type { FoundryWithoutEmptyValues } from '../types/foundry-without-empty-values.type';
-import { readCleaning } from './read-cleaning.function';
+import { parseCleaning } from './parse-cleaning.function';
 
 function isEmptyCollection(value: unknown): boolean {
   if (Array.isArray(value)) return value.length === 0;
@@ -18,17 +24,15 @@ function isRemovedProperty(original: unknown, cleaned: unknown, cleaning: EmptyV
 
 function clean(value: unknown, path: FoundryObjectPath, ancestors: ReadonlyArray<object>, cleaning: EmptyValuesCleaning): unknown {
   if (!Array.isArray(value) && !ɵisPlainObject(value)) return value;
-  const object: object = value as object;
-  if (ancestors.includes(object)) throw new FoundryCircularReferenceError({ path });
-  const inner: ReadonlyArray<object> = [...ancestors, object];
-  if (Array.isArray(object)) {
-    return (object as ReadonlyArray<unknown>)
-      .map((item, index) => [item, clean(item, [...path, index], inner, cleaning)])
-      .filter(([item]) => !cleaning.removeEmptyArrayItems || (item !== null && item !== undefined))
-      .map(([, cleaned]) => cleaned);
+  if (ancestors.includes(value)) throw new FoundryCircularReferenceError({ path });
+  const inner: ReadonlyArray<object> = [...ancestors, value];
+  if (Array.isArray(value)) {
+    return value.flatMap((item: unknown, index) =>
+      cleaning.removeEmptyArrayItems && (item === null || item === undefined) ? [] : [clean(item, [...path, index], inner, cleaning)],
+    );
   }
   const result: object = {};
-  ɵgetOwnDataEntries(object).forEach(([key, item]) => {
+  ɵgetOwnDataEntries(value).forEach(([key, item]) => {
     const cleaned: unknown = clean(item, [...path, key], inner, cleaning);
     if (!isRemovedProperty(item, cleaned, cleaning)) ɵdefineOwnProperty(result, key, cleaned);
   });
@@ -36,7 +40,7 @@ function clean(value: unknown, path: FoundryObjectPath, ancestors: ReadonlyArray
 }
 
 /**
- * Returns a copy without `null` and `undefined` properties, in depth; dates, files and other objects are kept as they are.
+ * Returns a copy without `null` and `undefined` properties, in depth. Dates, files and other objects are kept as they are.
  * @throws {FoundryCircularReferenceError} When the value contains a cycle.
  * @throws {TypeError} When the options are not an object or have an unknown value.
  */
@@ -56,5 +60,6 @@ export function removeEmptyValues<T>(
 ): FoundryWithoutEmptyValues<T, true>;
 
 export function removeEmptyValues(value: unknown, options?: FoundryRemoveEmptyValuesOptions): unknown {
-  return clean(value, [], [], readCleaning(options));
+  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of removeEmptyValues must be an object');
+  return clean(value, [], [], parseCleaning(options));
 }

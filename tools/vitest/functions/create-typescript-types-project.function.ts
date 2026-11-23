@@ -1,5 +1,5 @@
 import type { TestProjectInlineConfiguration } from 'vitest/config';
-import { SPEC_TSCONFIG } from '../constants/spec-tsconfig.constant.ts';
+import { SPEC_TSCONFIG } from '../constants/test-paths.constant.ts';
 import type { ProjectOptions } from '../interfaces/project-options.interface.ts';
 
 // Type tests only run the compiler, so one project is enough for every time zone.

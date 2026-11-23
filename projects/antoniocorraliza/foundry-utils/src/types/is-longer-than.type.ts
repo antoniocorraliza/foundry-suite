@@ -1,4 +1,4 @@
-/** Tells whether a text type has more characters than the limit; for internal use of the entries. */
+/** Tells whether a text type has more characters than the limit. */
 export type ɵIsLongerThan<
   Text extends string,
   Limit extends number,
@@ -7,8 +7,6 @@ export type ɵIsLongerThan<
   ? Text extends ''
     ? false
     : true
-  : Text extends `${infer First}${infer Rest}`
-    ? First extends ''
-      ? false
-      : ɵIsLongerThan<Rest, Limit, [...Counted, unknown]>
+  : Text extends `${string}${infer Rest}`
+    ? ɵIsLongerThan<Rest, Limit, [...Counted, unknown]>
     : false;

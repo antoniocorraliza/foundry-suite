@@ -8,6 +8,10 @@ function readFields(options: unknown): ReadonlyArray<string> | null {
   return Array.isArray(fields) && fields.every((field) => typeof field === 'string') ? (fields as ReadonlyArray<string>) : null;
 }
 
+function hasHoles(array: ReadonlyArray<unknown>, entries: ReadonlyArray<[string, unknown]>): boolean {
+  return entries.length < array.length;
+}
+
 function isEmpty(value: unknown, ancestors: ReadonlyArray<object>): boolean {
   if (value === null || value === undefined) return true;
   if (typeof value === 'string') return value.trim() === '';
@@ -23,9 +27,9 @@ function isEmpty(value: unknown, ancestors: ReadonlyArray<object>): boolean {
       return readSetSize(value) === 0;
     case 'array':
     case 'plainObject': {
-      const values: Array<unknown> = ɵgetOwnDataEntries(value).map(([, item]) => item);
-      const length: number = Array.isArray(value) ? value.length : values.length;
-      return length === 0 || values.length < length || values.some((item) => isEmpty(item, inner));
+      const entries: Array<[string, unknown]> = ɵgetOwnDataEntries(value);
+      if (Array.isArray(value) && (value.length === 0 || hasHoles(value, entries))) return true;
+      return entries.length === 0 || entries.some(([, item]) => isEmpty(item, inner));
     }
     default:
       return false;

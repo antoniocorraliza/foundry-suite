@@ -1,4 +1,4 @@
-import { SPEC_FILE } from '../constants/spec-file.constant.ts';
+import { SPEC_FILE } from '../constants/file-patterns.constant.ts';
 import { TEXT_RULES } from '../constants/text-rules.constant.ts';
 import type { TextRule } from '../interfaces/text-rule.interface.ts';
 import { hasReviewCode } from './has-review-code.function.ts';
