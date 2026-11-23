@@ -11,7 +11,7 @@ import { writeDateText } from './write-date-text.function';
 import { writeTimeText } from './write-time-text.function';
 
 /**
- * Writes a local date and time in the requested format, or returns `null` for `null`.
+ * Writes a local date and time in the requested format.
  * @throws {RangeError} When the value is not canonical.
  * @throws {TypeError} When the options are not an object or have an unknown value.
  */
