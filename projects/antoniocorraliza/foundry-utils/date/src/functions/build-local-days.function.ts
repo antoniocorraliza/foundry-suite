@@ -1,14 +1,5 @@
 import { MAX_LISTED_DAYS } from '../constants/date-limits.constant';
-import type { FoundryCalendarDay } from '../types/foundry-calendar-day.type';
-import { convertEpochDayToCalendarDay } from './convert-epoch-day-to-calendar-day.function';
-import { findStartOfExistingDay } from './find-start-of-existing-day.function';
-
-function buildLocalDay(epochDay: number): Date {
-  const day: FoundryCalendarDay = convertEpochDayToCalendarDay(epochDay);
-  const start: Date | null = findStartOfExistingDay(epochDay, 'local');
-  if (start === null) throw new RangeError(`[foundry-utils]: the local time zone skips the day ${day}`);
-  return start;
-}
+import { getStartOfExistingLocalDay } from './get-start-of-existing-local-day.function';
 
 /**
  * Returns `count` local days, `step` days apart from the first one, each built from its parts at its first instant.
@@ -18,5 +9,5 @@ export function buildLocalDays(firstEpochDay: number, count: number, step: numbe
   if (count > MAX_LISTED_DAYS) {
     throw new RangeError(`[foundry-utils]: a list of days has at most ${MAX_LISTED_DAYS} days, ${count} requested`);
   }
-  return Array.from({ length: count }, (_entry, index) => buildLocalDay(firstEpochDay + index * step));
+  return Array.from({ length: count }, (_entry, index) => getStartOfExistingLocalDay(firstEpochDay + index * step));
 }

@@ -34,6 +34,6 @@ describe('ɵparseIntegerOption', () => {
     );
     const withoutMaximum: unknown = catchThrown(() => ɵparseIntegerOption({ options: { step: -1 }, name: 'step', minimum: 1 }));
     expect((withMaximum as RangeError).message).toBe('[foundry-utils]: the weeks option must be an integer from 1 to 5228, got 0');
-    expect((withoutMaximum as RangeError).message).toBe('[foundry-utils]: the step option must be an integer from 1, got -1');
+    expect((withoutMaximum as RangeError).message).toBe('[foundry-utils]: the step option must be an integer of at least 1, got -1');
   });
 });
