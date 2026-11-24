@@ -2,6 +2,7 @@ import type { TestProjectInlineConfiguration } from 'vitest/config';
 import { SMOKE_DIRECTORY, UTILS_DIRECTORY } from '../constants/test-paths.constant.ts';
 import {
   APIA_SPECS,
+  DOM_SPECS,
   EXHAUSTIVE_SPECS,
   EXHAUSTIVE_TEST_TIMEOUT,
   JSDOM_SPECS,
@@ -29,7 +30,7 @@ export function createUtilsProjects(environment: TestEnvironment): Array<TestPro
         name: 'utils',
         timeZones: [timeZone],
         include: [...listSpecsForTimeZone(timeZone), `${SMOKE_DIRECTORY}/timezone-node.smoke.spec.ts`],
-        exclude: ['**/node_modules/**', EXHAUSTIVE_SPECS, ...otherEnvironmentSpecs],
+        exclude: ['**/node_modules/**', EXHAUSTIVE_SPECS, DOM_SPECS, ...otherEnvironmentSpecs],
       }),
     ),
     ...(environment.isExhaustiveEnabled
@@ -46,14 +47,21 @@ export function createUtilsProjects(environment: TestEnvironment): Array<TestPro
       timeZones: ['Australia/Lord_Howe'],
       include: [`${UTILS_DIRECTORY}/${LORD_HOWE_SPECS}`],
     }),
-    createTypescriptJsdomProject({ name: 'utils-jsdom', include: [`${UTILS_DIRECTORY}/${JSDOM_SPECS}`] }),
+    createTypescriptJsdomProject({
+      name: 'utils-jsdom',
+      include: [`${UTILS_DIRECTORY}/${JSDOM_SPECS}`, `${UTILS_DIRECTORY}/${DOM_SPECS}`],
+    }),
     createTypescriptTypesProject({ name: 'utils-types', include: [`${UTILS_DIRECTORY}/**/*.test-d.ts`] }),
     ...createBrowserProjects({
       name: 'utils-browser',
       isAngular: false,
       environment,
       timeZones: UTILS_BROWSER_TIME_ZONES,
-      include: [...UTILS_BROWSER_SPECS.map((spec) => `${UTILS_DIRECTORY}/${spec}`), `${SMOKE_DIRECTORY}/timezone-browser.smoke.spec.ts`],
+      include: [
+        ...UTILS_BROWSER_SPECS.map((spec) => `${UTILS_DIRECTORY}/${spec}`),
+        `${UTILS_DIRECTORY}/${DOM_SPECS}`,
+        `${SMOKE_DIRECTORY}/timezone-browser.smoke.spec.ts`,
+      ],
       // The walks prove nothing new about an engine, and the Node-only specs read data that each engine updates at its own pace.
       exclude: [EXHAUSTIVE_SPECS, NODE_ONLY_SPECS, ...otherEnvironmentSpecs],
     }),

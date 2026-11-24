@@ -38,3 +38,7 @@ The figures of the last accepted build. `npm run size` fails when a measurement 
 ## Error names after minifying
 
 Every public error class declares its `name` as a literal, so that it survives the minifier of the app. For each class in `constants/public-error-classes.constant.ts` that is already exported, `npm run size` bundles `new Class(...).name` with esbuild and with Rollup and Terser, runs it with Node and compares the output with the class name. An exported class whose name matches `Foundry...Error` and is not in that list fails until it is added with the arguments of its constructor.
+
+## Values dropped when unused
+
+A frozen constant that an app imports and does not use must not reach its bundle: Utils marks it `/* @__PURE__ */`. For each value in `constants/discardable-values.constant.ts` whose entry exports it, `npm run size` bundles a file that imports the value without using it, next to a symbol that it uses, with esbuild and with Rollup and Terser, and fails when the bundle still contains the text of the value.

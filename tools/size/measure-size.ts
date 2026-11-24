@@ -5,6 +5,7 @@ import { FOUNDRY_PACKAGES } from '../packages/constants/foundry-packages.constan
 import { PACKAGES_DIST_DIRECTORY } from '../packages/constants/package-directories.constant.ts';
 import { BASE_APP_COMPONENT, BASE_FORMS_APP_COMPONENT } from './constants/base-components.constant.ts';
 import { BUNDLERS } from './constants/bundlers.constant.ts';
+import { DISCARDABLE_VALUES } from './constants/discardable-values.constant.ts';
 import { PUBLIC_ERROR_CLASSES } from './constants/public-error-classes.constant.ts';
 import { SIZE_MEASUREMENTS } from './constants/size-measurements.constant.ts';
 import { EMPTY_SIZE, SIZE_REFERENCE_PATH } from './constants/size-settings.constant.ts';
@@ -13,10 +14,12 @@ import { buildAngularProbe } from './functions/build-angular-probe.function.ts';
 import { bundleWithEsbuild } from './functions/bundle-with-esbuild.function.ts';
 import { bundleWithRollup } from './functions/bundle-with-rollup.function.ts';
 import { createAngularProbeSource } from './functions/create-angular-probe-source.function.ts';
+import { createDiscardableValueProbeSource } from './functions/create-discardable-value-probe-source.function.ts';
 import { createErrorNameProbeSource } from './functions/create-error-name-probe-source.function.ts';
 import { createProbeSource } from './functions/create-probe-source.function.ts';
 import { createWholeEntryMeasurements } from './functions/create-whole-entry-measurements.function.ts';
 import { findBudgetProblems } from './functions/find-budget-problems.function.ts';
+import { findDiscardableValueProblem } from './functions/find-discardable-value-problem.function.ts';
 import { findErrorNameProblem } from './functions/find-error-name-problem.function.ts';
 import { findReferenceProblems } from './functions/find-reference-problems.function.ts';
 import { findUndeclaredErrorClasses } from './functions/find-undeclared-error-classes.function.ts';
@@ -170,6 +173,28 @@ async function findErrorNameProblems(builtEntries: ReadonlyArray<BuiltEntry>, co
   return problems;
 }
 
+async function findDiscardableValueProblems(builtEntries: ReadonlyArray<BuiltEntry>, context: SizeRunContext): Promise<Array<string>> {
+  const problems: Array<string> = [];
+  let checked: number = 0;
+  for (const value of DISCARDABLE_VALUES) {
+    const builtEntry: BuiltEntry | undefined = builtEntries.find(
+      (candidate) => candidate.packageFolder === value.packageFolder && candidate.entry === value.entry,
+    );
+    if (!builtEntry?.exports.includes(value.valueName) || !builtEntry.exports.includes(value.keptSymbol)) continue;
+    checked += 1;
+    for (const bundler of BUNDLERS) {
+      const code: string = await bundle(bundler, {
+        ...context.bundleRequest,
+        source: createDiscardableValueProbeSource(builtEntry.specifier, value),
+      });
+      const problem: string | null = findDiscardableValueProblem(builtEntry.specifier, value, bundler, code);
+      if (problem !== null) problems.push(problem);
+    }
+  }
+  console.log(`[size]: values dropped when unused: ${checked} of ${DISCARDABLE_VALUES.length} declared values checked`);
+  return problems;
+}
+
 function printReport(report: SizeReport): void {
   const { measured, measurements, pending } = report;
   console.log(`\n${'measurement'.padEnd(64)}${'tool'.padEnd(9)}${'raw'.padStart(10)}${'gzip'.padStart(11)}   budget`);
@@ -228,6 +253,7 @@ async function main(): Promise<number> {
       findBudgetProblems(resolution.measurement.name, measured[resolution.measurement.name] ?? {}, resolution.measurement.budget),
     );
     const errorNameProblems: Array<string> = await findErrorNameProblems(builtEntries, context);
+    const discardableValueProblems: Array<string> = await findDiscardableValueProblems(builtEntries, context);
     const referenceProblems: Array<string> = isUpdate ? [] : findReferenceProblems(measured, readReference(SIZE_REFERENCE_PATH));
     if (isUpdate) {
       writeReference(SIZE_REFERENCE_PATH, measured);
@@ -235,8 +261,9 @@ async function main(): Promise<number> {
     }
     printProblems('Over budget:', budgetProblems);
     printProblems('Error names:', errorNameProblems);
+    printProblems('Values kept when unused:', discardableValueProblems);
     printProblems(`Different from ${SIZE_REFERENCE_PATH} (run \`npm run size:update\` and commit it):`, referenceProblems);
-    const failures: number = budgetProblems.length + errorNameProblems.length + referenceProblems.length;
+    const failures: number = budgetProblems.length + errorNameProblems.length + discardableValueProblems.length + referenceProblems.length;
     console.log(failures === 0 ? '\n[size]: ok' : `\n[size]: ${failures} problem(s)`);
     return failures === 0 ? 0 : 1;
   } finally {
