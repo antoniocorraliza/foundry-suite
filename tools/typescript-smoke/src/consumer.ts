@@ -12,8 +12,13 @@ import {
   parseLocalDateTime,
   toInstantRange,
 } from '@antoniocorraliza/foundry-utils/date';
+import type { FoundryCurrencyFormatOptions, FoundryParseDecimalOptions } from '@antoniocorraliza/foundry-utils/number';
+import { createCurrencyFormatter, getParseDecimalOptions, parseDecimal, roundToDecimals } from '@antoniocorraliza/foundry-utils/number';
 import type { FoundryObjectDifference } from '@antoniocorraliza/foundry-utils/object';
 import { deepClone, getObjectDifferences, isDeepEqual, removeEmptyValues } from '@antoniocorraliza/foundry-utils/object';
+import { toSlug, truncateText } from '@antoniocorraliza/foundry-utils/text';
+import type { FoundryValidatableControl, FoundryValidationErrors } from '@antoniocorraliza/foundry-utils/validation';
+import { createControlValidator, isDniOrNie, isEmail } from '@antoniocorraliza/foundry-utils/validation';
 import type { TicketDto } from './interfaces/ticket-dto.interface';
 
 export function useUtils(dto: TicketDto): ReadonlyArray<unknown> {
@@ -31,6 +36,14 @@ export function useUtils(dto: TicketDto): ReadonlyArray<unknown> {
   const meetingStart: Date | null = meeting === null ? null : localDateTimeToDate(meeting, { repeatedTime: 'later' });
   const days: Array<string> = ['2026-09-06', 3].filter(isCalendarDay);
   const firstDayOfWeek: FoundryWeekday = getFirstDayOfWeek('es-ES');
+  const euros: FoundryCurrencyFormatOptions = { locale: 'es-ES', currency: 'EUR' };
+  const formatEuros: (amount: number | null | undefined) => string = createCurrencyFormatter(euros);
+  const decimalOptions: FoundryParseDecimalOptions = getParseDecimalOptions('fr-FR');
+  const amount: number | null = parseDecimal('1234,5', decimalOptions);
+  const total: string = formatEuros(amount === null ? null : roundToDecimals(amount, 2));
+  const slug: string = toSlug(truncateText('Hola Mundo', 8, { suffix: '' }));
+  const dniValidator: (control: FoundryValidatableControl) => FoundryValidationErrors | null = createControlValidator(isDniOrNie, 'dni');
+  const emails: Array<unknown> = ['ana@example.com', 3].filter(isEmail);
   return [
     createdAt,
     firstName,
@@ -46,5 +59,9 @@ export function useUtils(dto: TicketDto): ReadonlyArray<unknown> {
     meetingStart,
     days,
     firstDayOfWeek,
+    total,
+    slug,
+    dniValidator({ value: '12345678Z' }),
+    emails,
   ];
 }

@@ -586,11 +586,12 @@ Checked by: ESLint in `projects/`: `@angular-eslint/prefer-inject`, `no-output-o
 
 ### 17. Options of the library functions
 
-The options of a library function are read with the readers of the root, which check the value and throw with one message format: `ɵparseEnumOption` (a value of a closed list), `ɵparseBooleanOption` and `ɵparseIntegerOption`. Never by hand, with `options?.['weeks']` and a cast. An option of another kind keeps its own reader (see Exceptions). The three readers take `null` as a missing option.
+The options of a library function are read with the readers of the root, which check the value and throw with one message format: `ɵparseEnumOption` (a value of a closed list), `ɵparseBooleanOption`, `ɵparseIntegerOption` and `ɵparseTextOption`. An `is...` or `has...` function, which never throws, reads them with `ɵreadEnumOption`, `ɵreadBooleanOption` and `ɵreadIntegerOption`: they never run a getter, and take a wrong value as a missing option. Never by hand, with `options?.['weeks']` and a cast. An option of another kind keeps its own reader (see Exceptions). All the readers take `null` as a missing option; with `fallback: null`, a missing option gives `null`.
 
 ```ts
 // Yes
 const weeks: number = ɵparseIntegerOption({ options, name: 'weeks', minimum: 1, maximum: MAX_CALENDAR_WEEKS, fallback: 1 });
+const version: number | null = ɵreadIntegerOption({ options, name: 'version', minimum: 1, maximum: 8, fallback: null });
 
 // No
 const weeks: number = (options?.['weeks'] as number | undefined) ?? 1;
@@ -630,13 +631,13 @@ Checked by: ESLint and `tools/lint/check-text.ts` skip the exported declarations
 
 ### Options with their own reader
 
-Two options are not an enum, a boolean or an integer, and keep their own reader: `customEquality`, the only option that is a function, and `fields` of `hasEmptyValue`, a list of texts. Why: their readers differ by contract. `isDeepEqual` and `hasEmptyValue` never throw, so their readers ignore a wrong value; `getObjectDifferences` throws `TypeError` when `customEquality` is not a function.
+Four options are not an enum, a boolean, an integer or a text, and keep their own reader: `customEquality`, the only option that is a function, and three lists: `fields` of `hasEmptyValue` (texts), `protocols` of `isUrl` and `normalizeUrl`, and `accept` of `isDniOrNie`. Why: their readers differ by contract. `isDeepEqual`, `hasEmptyValue`, `isUrl` and `isDniOrNie` never throw, so their readers ignore a wrong value; `getObjectDifferences` throws `TypeError` when `customEquality` is not a function, and `normalizeUrl` when `protocols` is not a list of texts.
 
 ```ts
 const customEquality: unknown = options?.['customEquality'];
 ```
 
-Checked by: ESLint skips these two property names when it looks for options read by hand; any other option read in the same files is still checked.
+Checked by: ESLint skips these four property names when it looks for options read by hand; any other option read in the same files is still checked.
 
 ### Loops with an index
 

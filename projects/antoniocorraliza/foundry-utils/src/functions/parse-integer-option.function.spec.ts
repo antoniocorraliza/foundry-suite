@@ -36,4 +36,17 @@ describe('ɵparseIntegerOption', () => {
     expect((withMaximum as RangeError).message).toBe('[foundry-utils]: the weeks option must be an integer from 1 to 5228, got 0');
     expect((withoutMaximum as RangeError).message).toBe('[foundry-utils]: the step option must be an integer of at least 1, got -1');
   });
+
+  it('returns null when the fallback is null and the option is missing, undefined or null', () => {
+    expect(ɵparseIntegerOption({ options: undefined, name: 'digits', minimum: 0, maximum: 100, fallback: null })).toBeNull();
+    expect(ɵparseIntegerOption({ options: { digits: undefined }, name: 'digits', minimum: 0, maximum: 100, fallback: null })).toBeNull();
+    expect(ɵparseIntegerOption({ options: { digits: null }, name: 'digits', minimum: 0, maximum: 100, fallback: null })).toBeNull();
+  });
+
+  it('still returns the value, and still checks it, when the fallback is null', () => {
+    expect(ɵparseIntegerOption({ options: { digits: 0 }, name: 'digits', minimum: 0, maximum: 100, fallback: null })).toBe(0);
+    expect(
+      catchThrown(() => ɵparseIntegerOption({ options: { digits: 101 }, name: 'digits', minimum: 0, maximum: 100, fallback: null })),
+    ).toBeInstanceOf(RangeError);
+  });
 });

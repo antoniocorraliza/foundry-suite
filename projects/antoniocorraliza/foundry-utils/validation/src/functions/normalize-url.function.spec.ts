@@ -1,0 +1,42 @@
+import { describe, expect, it } from 'vitest';
+import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { normalizeUrl } from './normalize-url.function';
+
+describe('normalizeUrl', () => {
+  it('returns URLs as the shared reader of this entry writes them, or null', () => {
+    expect(normalizeUrl('HTTPS://WWW.Empresa.ES')).toBe('https://www.empresa.es/');
+    expect(normalizeUrl('http://intranet')).toBeNull();
+    expect(normalizeUrl(null)).toBeNull();
+  });
+
+  it('adds https to a text without a scheme only when a missing protocol is allowed', () => {
+    expect(normalizeUrl('www.empresa.es')).toBeNull();
+    expect(normalizeUrl('www.empresa.es', { allowMissingProtocol: true })).toBe('https://www.empresa.es/');
+  });
+
+  it('adds the default protocol that it is given', () => {
+    expect(normalizeUrl('www.empresa.es', { allowMissingProtocol: true, defaultProtocol: 'http:' })).toBe('http://www.empresa.es/');
+  });
+
+  it('uses the default protocol only with allowMissingProtocol, and only when it is accepted', () => {
+    expect(normalizeUrl('www.empresa.es', { defaultProtocol: 'http:' })).toBeNull();
+    expect(normalizeUrl('www.empresa.es', { allowMissingProtocol: true, defaultProtocol: 'http:', protocols: ['https:'] })).toBeNull();
+  });
+
+  it('takes null options as their defaults', () => {
+    expect(normalizeUrl('https://empresa.es', { protocols: null, allowMissingProtocol: null, defaultProtocol: null } as never)).toBe(
+      'https://empresa.es/',
+    );
+  });
+
+  it.each<unknown>([
+    { protocols: 'https:' },
+    { protocols: [5] },
+    { protocols: ['https:', null] },
+    { allowMissingProtocol: 'yes' },
+    { defaultProtocol: 'ftp:' },
+    { defaultProtocol: 'https' },
+  ])('throws a TypeError for the options %j', (options) => {
+    expect(catchThrown(() => normalizeUrl('https://empresa.es', options as never))).toBeInstanceOf(TypeError);
+  });
+});
