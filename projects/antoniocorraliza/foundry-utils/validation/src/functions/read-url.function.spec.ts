@@ -40,6 +40,13 @@ describe('readUrl', () => {
     },
   );
 
+  it.each<string>(['https://em presa.es', 'https://em%20presa.es', 'https://em<presa.es', 'https://em%3Cpresa.es'])(
+    'returns null for %j, whose host has a character that a domain does not allow, whatever the engine does with it',
+    (text) => {
+      expect(readUrl(text, DEFAULTS)).toBeNull();
+    },
+  );
+
   it('accepts an IPv4 address only when its four numbers are written', () => {
     expect(readUrl('http://1.2.3.4', DEFAULTS)).toBe('http://1.2.3.4/');
     expect(readUrl('http://1.2.3', DEFAULTS)).toBeNull();

@@ -217,22 +217,22 @@
   },
   "utils/validation": {
     "esbuild": {
-      "raw": 8378,
-      "gzip": 2976
+      "raw": 8397,
+      "gzip": 2983
     },
     "rollup": {
-      "raw": 8178,
-      "gzip": 2911
+      "raw": 8198,
+      "gzip": 2918
     }
   },
   "utils: every entry": {
     "esbuild": {
-      "raw": 45333,
-      "gzip": 13671
+      "raw": 45352,
+      "gzip": 13678
     },
     "rollup": {
-      "raw": 44506,
-      "gzip": 13102
+      "raw": 44526,
+      "gzip": 13109
     }
   }
 }

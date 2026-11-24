@@ -23,6 +23,7 @@ function parseUrl(text: string): URL | null {
 }
 
 function isAcceptedHost(hostname: string, text: string): boolean {
+  if (hostname.includes('%')) return false;
   if (hostname.startsWith('[') || hostname === 'localhost') return true;
   if (IPV4_ADDRESS_PATTERN.test(hostname)) return WRITTEN_URL_HOST_PATTERN.exec(text)?.[1]?.toLowerCase() === hostname;
   return hostname.includes('.') && !hostname.endsWith('.');
