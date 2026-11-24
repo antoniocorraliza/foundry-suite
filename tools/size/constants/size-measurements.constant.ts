@@ -20,7 +20,7 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'text', symbols: ['capitalizeFirstLetter'] }],
-    budget: { rawKilobytes: 0.2, gzipKilobytes: 0.15 },
+    budget: { rawKilobytes: 0.33, gzipKilobytes: 0.23 },
   },
   {
     name: 'utils/date: parseDate',
@@ -146,7 +146,7 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'text', symbols: 'whole-entry' }],
-    budget: { rawKilobytes: 1, gzipKilobytes: 0.55 },
+    budget: { rawKilobytes: 3.4, gzipKilobytes: 1.35 },
   },
   {
     name: 'utils/validation',

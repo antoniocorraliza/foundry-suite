@@ -31,6 +31,7 @@ export default defineConfig((): ViteUserConfig => {
           'projects/antoniocorraliza/foundry-utils/date/src/**': { lines: 95, branches: 90 },
           'projects/antoniocorraliza/foundry-utils/number/src/**': { lines: 95, branches: 90 },
           'projects/antoniocorraliza/foundry-utils/object/src/**': { lines: 95, branches: 90 },
+          'projects/antoniocorraliza/foundry-utils/text/src/**': { lines: 95, branches: 90 },
         },
         reportsDirectory: 'coverage',
       },

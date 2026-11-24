@@ -197,22 +197,22 @@
   },
   "utils/text": {
     "esbuild": {
-      "raw": 560,
-      "gzip": 226
+      "raw": 2808,
+      "gzip": 1119
     },
     "rollup": {
-      "raw": 457,
-      "gzip": 159
+      "raw": 2678,
+      "gzip": 1083
     }
   },
   "utils/text: capitalizeFirstLetter": {
     "esbuild": {
-      "raw": 71,
-      "gzip": 65
+      "raw": 268,
+      "gzip": 194
     },
     "rollup": {
-      "raw": 68,
-      "gzip": 64
+      "raw": 267,
+      "gzip": 193
     }
   },
   "utils/validation": {
@@ -227,12 +227,12 @@
   },
   "utils: every entry": {
     "esbuild": {
-      "raw": 39972,
-      "gzip": 11898
+      "raw": 41942,
+      "gzip": 12468
     },
     "rollup": {
-      "raw": 39179,
-      "gzip": 11360
+      "raw": 41116,
+      "gzip": 11923
     }
   }
 }
