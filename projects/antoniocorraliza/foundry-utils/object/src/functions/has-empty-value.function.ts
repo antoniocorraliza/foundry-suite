@@ -1,10 +1,9 @@
-import { ɵgetOwnDataEntries, ɵgetValueKind } from '@antoniocorraliza/foundry-utils';
+import { ɵgetOwnDataEntries, ɵgetOwnDataValue, ɵgetValueKind } from '@antoniocorraliza/foundry-utils';
 import { readMapSize } from './read-map-size.function';
 import { readSetSize } from './read-set-size.function';
 
 function readFields(options: unknown): ReadonlyArray<string> | null {
-  if (typeof options !== 'object' || options === null) return null;
-  const fields: unknown = (options as Readonly<Record<string, unknown>>)['fields'];
+  const fields: unknown = ɵgetOwnDataValue(options, 'fields');
   return Array.isArray(fields) && fields.every((field) => typeof field === 'string') ? (fields as ReadonlyArray<string>) : null;
 }
 
