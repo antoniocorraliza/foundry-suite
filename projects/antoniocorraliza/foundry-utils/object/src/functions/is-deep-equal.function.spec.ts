@@ -1,5 +1,5 @@
 import fc from 'fast-check';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
@@ -111,6 +111,12 @@ describe('isDeepEqual', () => {
         },
       }),
     ).toThrow(failure);
+  });
+
+  it('does not run a getter of its options', () => {
+    const getter: () => () => boolean = vi.fn(() => () => true);
+    expect(isDeepEqual({ a: 1 }, { a: 2 }, Object.defineProperty({}, 'customEquality', { get: getter, enumerable: true }))).toBe(false);
+    expect(getter).not.toHaveBeenCalled();
   });
 
   it('ignores options that are not an object or a customEquality that is not a function', () => {

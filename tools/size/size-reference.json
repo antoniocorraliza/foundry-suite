@@ -177,22 +177,22 @@
   },
   "utils/object": {
     "esbuild": {
-      "raw": 10681,
-      "gzip": 3542
+      "raw": 10770,
+      "gzip": 3561
     },
     "rollup": {
-      "raw": 10517,
-      "gzip": 3417
+      "raw": 10606,
+      "gzip": 3433
     }
   },
   "utils/object: isDeepEqual": {
     "esbuild": {
-      "raw": 3159,
-      "gzip": 1124
+      "raw": 3285,
+      "gzip": 1141
     },
     "rollup": {
-      "raw": 3121,
-      "gzip": 1094
+      "raw": 3249,
+      "gzip": 1120
     }
   },
   "utils/text": {
@@ -227,12 +227,12 @@
   },
   "utils: every entry": {
     "esbuild": {
-      "raw": 45352,
-      "gzip": 13678
+      "raw": 45274,
+      "gzip": 13676
     },
     "rollup": {
-      "raw": 44526,
-      "gzip": 13109
+      "raw": 44448,
+      "gzip": 13106
     }
   }
 }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { hasEmptyValue } from './has-empty-value.function';
@@ -80,6 +80,12 @@ describe('hasEmptyValue', () => {
     expect(hasEmptyValue({ a: '' }, 5 as never)).toBe(true);
     expect(hasEmptyValue({ a: '' }, { fields: 5 } as never)).toBe(true);
     expect([{ a: '' }, { a: 1 }].filter(hasEmptyValue as (value: unknown, index: number) => boolean)).toEqual([{ a: '' }]);
+  });
+
+  it('does not run a getter of its options', () => {
+    const getter: () => ReadonlyArray<string> = vi.fn(() => ['a']);
+    expect(hasEmptyValue({ a: 1, b: '' }, Object.defineProperty({}, 'fields', { get: getter, enumerable: true }))).toBe(true);
+    expect(getter).not.toHaveBeenCalled();
   });
 
   it('does not change its input', () => {
