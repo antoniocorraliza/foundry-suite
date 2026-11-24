@@ -10,7 +10,7 @@ export class FoundryBrowserApiUnavailableError extends FoundryUtilsError {
     details: { readonly missingApi: 'document' | 'URL.createObjectURL' | 'URL.revokeObjectURL' },
     options?: { readonly cause?: unknown },
   ) {
-    super('[foundry-utils]: not implemented yet', options);
+    super(`[foundry-utils]: ${details.missingApi} is not available in this environment`, options);
     this.missingApi = details.missingApi;
   }
 }
