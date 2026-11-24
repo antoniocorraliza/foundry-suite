@@ -111,9 +111,10 @@ describe('readCsvRecords', () => {
     });
 
     it('reads the records with the delimiter it chooses', () => {
-      expect(readCells('Apellidos, Nombre;Email\r\nGarcía, Ana;ana@x.es')).toEqual([
+      expect(readCells('Apellidos, Nombre;Email\r\nGarcía, Ana;ana@x.es\r\nRuiz;ruiz@x.es')).toEqual([
         ['Apellidos, Nombre', 'Email'],
         ['García, Ana', 'ana@x.es'],
+        ['Ruiz', 'ruiz@x.es'],
       ]);
     });
 
