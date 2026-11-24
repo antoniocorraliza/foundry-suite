@@ -73,12 +73,33 @@ describe('createUtilsProjects', () => {
     `${UTILS}/src/public-api.spec.ts`,
     `${UTILS}/case/src/functions/to-camel-case.function.spec.ts`,
     `${UTILS}/object/src/functions/pick-properties.function.spec.ts`,
+    `${UTILS}/validation/src/functions/is-uuid.function.spec.ts`,
+    `${UTILS}/validation/src/public-api.spec.ts`,
   ])('runs %s once, in UTC', (file) => {
     expect(listProjectsRunning(file)).toEqual(['utils:UTC']);
   });
 
   it('keeps the browser specs that do not depend on the time zone in UTC and in the browser', () => {
     expect(listProjectsRunning(`${UTILS}/object/src/functions/deep-clone.function.spec.ts`)).toEqual(['utils:UTC', 'utils-browser']);
+  });
+
+  it.each([
+    `${UTILS}/number/src/functions/read-decimal.function.spec.ts`,
+    `${UTILS}/number/src/functions/round-to-decimals.function.spec.ts`,
+    `${UTILS}/number/src/public-api.spec.ts`,
+    `${UTILS}/text/src/functions/truncate-text.function.spec.ts`,
+    `${UTILS}/text/src/public-api.spec.ts`,
+    `${UTILS}/validation/src/functions/read-url.function.spec.ts`,
+  ])('runs %s once in UTC and in the browser', (file) => {
+    expect(listProjectsRunning(file)).toEqual(['utils:UTC', 'utils-browser']);
+  });
+
+  it.each([
+    `${UTILS}/number/src/functions/get-parse-decimal-options.node.function.spec.ts`,
+    `${UTILS}/number/src/functions/format-currency.node.function.spec.ts`,
+    `${UTILS}/text/src/functions/split-graphemes.node.function.spec.ts`,
+  ])('runs the Node-only spec %s once, in UTC, and not in the browser', (file) => {
+    expect(listProjectsRunning(file)).toEqual(['utils:UTC']);
   });
 
   it('runs the time zone guard in every time zone project', () => {
