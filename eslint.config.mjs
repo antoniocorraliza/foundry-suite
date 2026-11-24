@@ -242,7 +242,7 @@ const SERVICE_SELECTORS = forbid(
   'Services do not subscribe: they expose state with toSignal() and return the Observable for the rest.',
 );
 // Options that are not an enum, a boolean or an integer keep their own reader (see Exceptions in CONTRIBUTING.md).
-const OWN_READER_OPTIONS = '/^(?:customEquality|fields|protocols|accept)$/';
+const OWN_READER_OPTIONS = '/^(?:customEquality|fields|protocols|accept|columns)$/';
 const OTHER_THAN_OWN_READER_OPTIONS = `:not([property.name=${OWN_READER_OPTIONS}]):not([property.value=${OWN_READER_OPTIONS}])`;
 const OPTION_SELECTORS = forbid(
   [

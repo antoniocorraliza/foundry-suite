@@ -631,13 +631,13 @@ Checked by: ESLint and `tools/lint/check-text.ts` skip the exported declarations
 
 ### Options with their own reader
 
-Four options are not an enum, a boolean, an integer or a text, and keep their own reader: `customEquality`, the only option that is a function, and three lists: `fields` of `hasEmptyValue` (texts), `protocols` of `isUrl` and `normalizeUrl`, and `accept` of `isDniOrNie`. Why: their readers differ by contract. `isDeepEqual`, `hasEmptyValue`, `isUrl` and `isDniOrNie` never throw, so their readers ignore a wrong value; `getObjectDifferences` throws `TypeError` when `customEquality` is not a function, and `normalizeUrl` when `protocols` is not a list of texts.
+Five options are not an enum, a boolean, an integer or a text, and keep their own reader: `customEquality`, the only option that is a function, and four lists: `fields` of `hasEmptyValue` (texts), `protocols` of `isUrl` and `normalizeUrl`, `accept` of `isDniOrNie`, and `columns` of `toCsv` and `createCsvBlob` (objects with functions). Why: their readers differ by contract. `isDeepEqual`, `hasEmptyValue`, `isUrl` and `isDniOrNie` never throw, so their readers ignore a wrong value; `getObjectDifferences` throws `TypeError` when `customEquality` is not a function, `normalizeUrl` when `protocols` is not a list of texts, and `toCsv` when a column has no text header or its value is neither a key nor a function.
 
 ```ts
 const customEquality: unknown = options?.['customEquality'];
 ```
 
-Checked by: ESLint skips these four property names when it looks for options read by hand; any other option read in the same files is still checked.
+Checked by: ESLint skips these five property names when it looks for options read by hand; any other option read in the same files is still checked.
 
 ### Loops with an index
 

@@ -731,6 +731,20 @@ describe.skipIf(IS_ESLINT_MISSING)('options of the library functions', () => {
     ).toEqual([4]);
   });
 
+  it('accepts the columns option, which keeps its own reader, and still rejects any other', async () => {
+    const code: string = [
+      'export function readColumns(options: Readonly<Record<string, unknown>> | undefined): number {',
+      "  const columns: unknown = options?.['columns'];",
+      "  const delimiter: unknown = options?.['delimiter'];",
+      '  return Number(columns) + Number(delimiter);',
+      '}',
+      '',
+    ].join('\n');
+    expect(await findMessageLines(code, 'projects/antoniocorraliza/foundry-utils/csv/src/functions/probe.function.ts', message)).toEqual([
+      3,
+    ]);
+  });
+
   it('leaves the tools and the specs alone', async () => {
     const code: string = ["export const weeks: unknown = ({} as Readonly<Record<string, unknown>>)['weeks'];", ''].join('\n');
     const reading: string = [
