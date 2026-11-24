@@ -10,4 +10,5 @@ export const UTILS_BROWSER_SPECS: ReadonlyArray<string> = [
   'date/src/**/*.spec.ts',
   'number/src/**/*.spec.ts',
   'text/src/**/*.spec.ts',
+  'validation/src/functions/read-url.function.spec.ts',
 ];

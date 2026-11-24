@@ -4,6 +4,7 @@ export { FoundryUtilsError } from './errors/foundry-utils.error';
 export { ɵdefineOwnProperty } from './functions/define-own-property.function';
 export { ɵformatObjectPath } from './functions/format-object-path.function';
 export { ɵgetOwnDataEntries } from './functions/get-own-data-entries.function';
+export { ɵgetOwnDataValue } from './functions/get-own-data-value.function';
 export { ɵgetValueKind } from './functions/get-value-kind.function';
 export { ɵgetValueTag } from './functions/get-value-tag.function';
 export { ɵisOptionsValue } from './functions/is-options-value.function';

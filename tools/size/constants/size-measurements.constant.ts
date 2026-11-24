@@ -153,7 +153,7 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'validation', symbols: 'whole-entry' }],
-    budget: { rawKilobytes: 2.2, gzipKilobytes: 1 },
+    budget: { rawKilobytes: 10.1, gzipKilobytes: 3.58 },
   },
   {
     name: 'utils/random',
@@ -195,7 +195,7 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: 'every-entry',
-    budget: { rawKilobytes: 48, gzipKilobytes: 14.3 },
+    budget: { rawKilobytes: 54.4, gzipKilobytes: 16.41 },
   },
   {
     name: 'core/network: foundrySkipAuthentication',
