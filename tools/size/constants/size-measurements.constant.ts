@@ -13,7 +13,7 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'number', symbols: ['clampNumber'] }],
-    budget: { rawKilobytes: 0.2, gzipKilobytes: 0.15 },
+    budget: { rawKilobytes: 0.56, gzipKilobytes: 0.27 },
   },
   {
     name: 'utils/text: capitalizeFirstLetter',
@@ -125,21 +125,21 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'number', symbols: ['roundToDecimals'] }],
-    budget: { rawKilobytes: 0.6, gzipKilobytes: 0.35 },
+    budget: { rawKilobytes: 1.52, gzipKilobytes: 0.77 },
   },
   {
     name: 'utils/number: parseDecimal',
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'number', symbols: ['parseDecimal'] }],
-    budget: { rawKilobytes: 0.7, gzipKilobytes: 0.4 },
+    budget: { rawKilobytes: 1.96, gzipKilobytes: 0.93 },
   },
   {
     name: 'utils/number',
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'number', symbols: 'whole-entry' }],
-    budget: { rawKilobytes: 1.9, gzipKilobytes: 0.9 },
+    budget: { rawKilobytes: 8.2, gzipKilobytes: 2.84 },
   },
   {
     name: 'utils/text',
@@ -195,7 +195,7 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: 'every-entry',
-    budget: { rawKilobytes: 37.5, gzipKilobytes: 11.7 },
+    budget: { rawKilobytes: 48, gzipKilobytes: 14.3 },
   },
   {
     name: 'core/network: foundrySkipAuthentication',

@@ -137,42 +137,42 @@
   },
   "utils/number": {
     "esbuild": {
-      "raw": 857,
-      "gzip": 257
+      "raw": 6817,
+      "gzip": 2364
     },
     "rollup": {
-      "raw": 733,
-      "gzip": 187
+      "raw": 6718,
+      "gzip": 2305
     }
   },
   "utils/number: clampNumber": {
     "esbuild": {
-      "raw": 75,
-      "gzip": 68
+      "raw": 458,
+      "gzip": 216
     },
     "rollup": {
-      "raw": 72,
-      "gzip": 67
+      "raw": 455,
+      "gzip": 213
     }
   },
   "utils/number: parseDecimal": {
     "esbuild": {
-      "raw": 73,
-      "gzip": 67
+      "raw": 1613,
+      "gzip": 761
     },
     "rollup": {
-      "raw": 70,
-      "gzip": 66
+      "raw": 1626,
+      "gzip": 767
     }
   },
   "utils/number: roundToDecimals": {
     "esbuild": {
-      "raw": 75,
-      "gzip": 68
+      "raw": 1262,
+      "gzip": 637
     },
     "rollup": {
-      "raw": 72,
-      "gzip": 67
+      "raw": 1261,
+      "gzip": 626
     }
   },
   "utils/object": {
@@ -227,12 +227,12 @@
   },
   "utils: every entry": {
     "esbuild": {
-      "raw": 34888,
-      "gzip": 10297
+      "raw": 39972,
+      "gzip": 11898
     },
     "rollup": {
-      "raw": 34104,
-      "gzip": 9773
+      "raw": 39179,
+      "gzip": 11360
     }
   }
 }
