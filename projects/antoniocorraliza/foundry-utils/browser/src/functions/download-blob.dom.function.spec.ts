@@ -72,8 +72,12 @@ describe('downloadBlob with a document', () => {
   });
 
   it('puts the link in the root element when the document has no body', () => {
-    vi.spyOn(Document.prototype, 'body', 'get').mockReturnValue(null as never);
-    downloadBlob(new Blob(['a']), 'a.csv');
+    const bodyGetter: MockInstance = vi.spyOn(Document.prototype, 'body', 'get').mockReturnValue(null as never);
+    try {
+      downloadBlob(new Blob(['a']), 'a.csv');
+    } finally {
+      bodyGetter.mockRestore();
+    }
     expect(clickedLinks.map((link) => link.isInDocument)).toEqual([true]);
     expect(document.querySelectorAll('a[download]')).toHaveLength(0);
   });
