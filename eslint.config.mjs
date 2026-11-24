@@ -240,7 +240,7 @@ const SERVICE_SELECTORS = forbid(
   'Services do not subscribe: they expose state with toSignal() and return the Observable for the rest.',
 );
 // Options that are not an enum, a boolean or an integer keep their own reader (see Exceptions in CONTRIBUTING.md).
-const OWN_READER_OPTIONS = '/^(?:customEquality|fields)$/';
+const OWN_READER_OPTIONS = '/^(?:customEquality|fields|protocols|accept)$/';
 const OTHER_THAN_OWN_READER_OPTIONS = `:not([property.name=${OWN_READER_OPTIONS}]):not([property.value=${OWN_READER_OPTIONS}])`;
 const OPTION_SELECTORS = forbid(
   [
@@ -249,7 +249,7 @@ const OPTION_SELECTORS = forbid(
     "VariableDeclarator[id.type='ObjectPattern'][init.name='options']",
     "VariableDeclarator[id.type='ObjectPattern'][init.left.name='options']",
   ],
-  'Options are read with the readers of the root: \u0275parseEnumOption, \u0275parseBooleanOption or \u0275parseIntegerOption.',
+  'Options are read with the readers of the root: \u0275parseEnumOption, \u0275parseBooleanOption, \u0275parseIntegerOption or \u0275parseTextOption, and \u0275read...Option in the is... functions.',
 );
 const LIBRARY_GENERAL_SELECTORS = [
   ...COMMON_SELECTORS,
