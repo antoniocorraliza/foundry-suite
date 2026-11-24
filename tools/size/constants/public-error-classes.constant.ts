@@ -32,6 +32,18 @@ export const PUBLIC_ERROR_CLASSES: ReadonlyArray<PublicErrorClass> = [
     constructorArguments: "{ path: [], valueDescription: 'function' }",
   },
   {
+    packageFolder: 'foundry-utils',
+    entry: 'csv',
+    className: 'FoundryCsvParseError',
+    constructorArguments: "{ reason: 'unclosedQuote', line: 1, column: 1 }",
+  },
+  {
+    packageFolder: 'foundry-utils',
+    entry: 'browser',
+    className: 'FoundryBrowserApiUnavailableError',
+    constructorArguments: "{ missingApi: 'document' }",
+  },
+  {
     packageFolder: 'foundry-core',
     entry: 'network',
     className: 'FoundrySessionRefreshError',

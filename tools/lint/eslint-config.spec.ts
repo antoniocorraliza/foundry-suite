@@ -69,6 +69,25 @@ async function findLifecycleHookLines(code: string): Promise<Array<number>> {
     .map((message) => message.line);
 }
 
+describe.skipIf(IS_ESLINT_MISSING)('pure annotations', () => {
+  it('accepts a pure annotation and still rejects a JSDoc tag in a block with one asterisk', async () => {
+    const code: string = [
+      '/** Options for the probe. */',
+      'export const probeOptions: Readonly<{ a: 1 }> = /* @__PURE__ */ Object.freeze({ a: 1 });',
+      '/* @returns nothing */',
+      'export function getProbe(): void {}',
+      '',
+    ].join('\n');
+    const [result] = await eslint.lintText(code, {
+      filePath: 'projects/antoniocorraliza/foundry-utils/csv/src/constants/probe-options.constant.ts',
+    });
+    const lines: Array<number> = (result?.messages ?? [])
+      .filter((message) => message.ruleId === 'jsdoc/no-bad-blocks')
+      .map((message) => message.line);
+    expect(lines).toEqual([3]);
+  });
+});
+
 describe.skipIf(IS_ESLINT_MISSING)('code in lifecycle hooks', () => {
   it('accepts hooks that only call methods of the class', async () => {
     const code: string = [
@@ -710,6 +729,20 @@ describe.skipIf(IS_ESLINT_MISSING)('options of the library functions', () => {
     expect(
       await findMessageLines(code, 'projects/antoniocorraliza/foundry-utils/validation/src/functions/probe.function.ts', message),
     ).toEqual([4]);
+  });
+
+  it('accepts the columns option, which keeps its own reader, and still rejects any other', async () => {
+    const code: string = [
+      'export function readColumns(options: Readonly<Record<string, unknown>> | undefined): number {',
+      "  const columns: unknown = options?.['columns'];",
+      "  const delimiter: unknown = options?.['delimiter'];",
+      '  return Number(columns) + Number(delimiter);',
+      '}',
+      '',
+    ].join('\n');
+    expect(await findMessageLines(code, 'projects/antoniocorraliza/foundry-utils/csv/src/functions/probe.function.ts', message)).toEqual([
+      3,
+    ]);
   });
 
   it('leaves the tools and the specs alone', async () => {

@@ -2,12 +2,14 @@ export const APIA_SPECS: string = '**/*.apia.*spec.ts';
 export const LORD_HOWE_SPECS: string = '**/*.lord-howe.*spec.ts';
 export const JSDOM_SPECS: string = '**/*.jsdom.*spec.ts';
 export const NODE_ONLY_SPECS: string = '**/*.node.*spec.ts';
+export const DOM_SPECS: string = '**/*.dom.*spec.ts';
 // Walking every minute or every day of the calendar takes about a minute per time zone, so these specs only run in the full level.
 export const EXHAUSTIVE_SPECS: string = '**/*.exhaustive.*spec.ts';
 export const EXHAUSTIVE_TEST_TIMEOUT: number = 600_000;
 export const UTILS_BROWSER_SPECS: ReadonlyArray<string> = [
   'object/src/functions/deep-clone.function.spec.ts',
   'date/src/**/*.spec.ts',
+  'csv/src/**/*.spec.ts',
   'number/src/**/*.spec.ts',
   'text/src/**/*.spec.ts',
   'validation/src/functions/read-url.function.spec.ts',

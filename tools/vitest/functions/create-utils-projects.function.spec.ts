@@ -102,6 +102,37 @@ describe('createUtilsProjects', () => {
     expect(listProjectsRunning(file)).toEqual(['utils:UTC']);
   });
 
+  it('runs the csv specs in the four time zones and in the browser', () => {
+    expect(listProjectsRunning(`${UTILS}/csv/src/functions/to-csv.function.spec.ts`)).toEqual([...ZONE_PROJECTS, 'utils-browser']);
+    expect(listProjectsRunning(`${UTILS}/csv/src/public-api.spec.ts`)).toEqual([...ZONE_PROJECTS, 'utils-browser']);
+  });
+
+  it('runs the Node-only csv specs in the four time zones and not in the browser', () => {
+    expect(listProjectsRunning(`${UTILS}/csv/src/functions/parse-csv.node.function.spec.ts`)).toEqual(ZONE_PROJECTS);
+  });
+
+  it.each([
+    `${UTILS}/csv/src/functions/read-csv-file.jsdom.function.spec.ts`,
+    `${UTILS}/browser/src/functions/download-blob.jsdom.function.spec.ts`,
+  ])('runs the jsdom spec %s only in jsdom', (file) => {
+    expect(listProjectsRunning(file)).toEqual(['utils-jsdom']);
+  });
+
+  it('runs the specs that need a document in jsdom and in the browser, and never on Node', () => {
+    expect(listProjectsRunning(`${UTILS}/browser/src/functions/download-blob.dom.function.spec.ts`)).toEqual([
+      'utils-jsdom',
+      'utils-browser',
+    ]);
+  });
+
+  it.each([
+    `${UTILS}/browser/src/functions/sanitize-file-name.function.spec.ts`,
+    `${UTILS}/browser/src/functions/download-blob.node.function.spec.ts`,
+    `${UTILS}/browser/src/public-api.spec.ts`,
+  ])('runs the browser entry spec %s once, in UTC, and not in the browser', (file) => {
+    expect(listProjectsRunning(file)).toEqual(['utils:UTC']);
+  });
+
   it('runs the time zone guard in every time zone project', () => {
     expect(listProjectsRunning('tools/vitest/smoke/timezone-node.smoke.spec.ts')).toEqual(ZONE_PROJECTS);
   });

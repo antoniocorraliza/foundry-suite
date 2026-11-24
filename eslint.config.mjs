@@ -71,6 +71,7 @@ const FUNCTION_VERBS = [
   'convert',
   'copy',
   'create',
+  'decode',
   'define',
   'describe',
   'dismiss',
@@ -111,6 +112,7 @@ const FUNCTION_VERBS = [
   'resolve',
   'round',
   'run',
+  'sanitize',
   'schedule',
   'select',
   'send',
@@ -240,7 +242,7 @@ const SERVICE_SELECTORS = forbid(
   'Services do not subscribe: they expose state with toSignal() and return the Observable for the rest.',
 );
 // Options that are not an enum, a boolean or an integer keep their own reader (see Exceptions in CONTRIBUTING.md).
-const OWN_READER_OPTIONS = '/^(?:customEquality|fields|protocols|accept)$/';
+const OWN_READER_OPTIONS = '/^(?:customEquality|fields|protocols|accept|columns)$/';
 const OTHER_THAN_OWN_READER_OPTIONS = `:not([property.name=${OWN_READER_OPTIONS}]):not([property.value=${OWN_READER_OPTIONS}])`;
 const OPTION_SELECTORS = forbid(
   [
@@ -452,7 +454,8 @@ export default defineConfig([
       'jsdoc/require-returns-description': 'error',
       'jsdoc/no-blank-blocks': 'error',
       'jsdoc/no-blank-block-descriptions': 'error',
-      'jsdoc/no-bad-blocks': 'error',
+      // A pure annotation looks like a JSDoc tag to this rule; the bundlers need it written with @.
+      'jsdoc/no-bad-blocks': ['error', { ignore: ['ts-check', 'ts-expect-error', 'ts-ignore', 'ts-nocheck', '__PURE__'] }],
       'jsdoc/no-multi-asterisks': 'error',
       'jsdoc/check-alignment': 'error',
       '@angular-eslint/prefer-host-metadata-property': 'error',

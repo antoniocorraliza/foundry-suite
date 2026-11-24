@@ -45,6 +45,16 @@
       "gzip": 1393
     }
   },
+  "utils/browser": {
+    "esbuild": {
+      "raw": 1452,
+      "gzip": 707
+    },
+    "rollup": {
+      "raw": 1369,
+      "gzip": 647
+    }
+  },
   "utils/case": {
     "esbuild": {
       "raw": 3349,
@@ -63,6 +73,36 @@
     "rollup": {
       "raw": 2742,
       "gzip": 1210
+    }
+  },
+  "utils/csv": {
+    "esbuild": {
+      "raw": 15805,
+      "gzip": 5436
+    },
+    "rollup": {
+      "raw": 15356,
+      "gzip": 5150
+    }
+  },
+  "utils/csv: parseCsv": {
+    "esbuild": {
+      "raw": 4896,
+      "gzip": 2053
+    },
+    "rollup": {
+      "raw": 4849,
+      "gzip": 1974
+    }
+  },
+  "utils/csv: toCsv": {
+    "esbuild": {
+      "raw": 9441,
+      "gzip": 3311
+    },
+    "rollup": {
+      "raw": 9092,
+      "gzip": 3130
     }
   },
   "utils/date": {
@@ -227,12 +267,12 @@
   },
   "utils: every entry": {
     "esbuild": {
-      "raw": 45274,
-      "gzip": 13676
+      "raw": 56167,
+      "gzip": 17166
     },
     "rollup": {
-      "raw": 44448,
-      "gzip": 13106
+      "raw": 55368,
+      "gzip": 16491
     }
   }
 }

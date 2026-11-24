@@ -27,7 +27,9 @@ export default defineConfig((): ViteUserConfig => {
         // One threshold per entry, so a weak entry cannot hide behind the average.
         thresholds: {
           'projects/antoniocorraliza/foundry-utils/src/**': { lines: 95, branches: 90 },
+          'projects/antoniocorraliza/foundry-utils/browser/src/**': { lines: 95, branches: 90 },
           'projects/antoniocorraliza/foundry-utils/case/src/**': { lines: 95, branches: 90 },
+          'projects/antoniocorraliza/foundry-utils/csv/src/**': { lines: 95, branches: 90 },
           'projects/antoniocorraliza/foundry-utils/date/src/**': { lines: 95, branches: 90 },
           'projects/antoniocorraliza/foundry-utils/number/src/**': { lines: 95, branches: 90 },
           'projects/antoniocorraliza/foundry-utils/object/src/**': { lines: 95, branches: 90 },
