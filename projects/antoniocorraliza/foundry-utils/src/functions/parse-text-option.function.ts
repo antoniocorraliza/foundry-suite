@@ -5,5 +5,8 @@ import type { TextOptionRequest } from '../interfaces/text-option-request.interf
  * @throws {TypeError} When the value is not a text, or it is missing and has no fallback.
  */
 export function ɵparseTextOption<Fallback extends string | null = string>(request: TextOptionRequest<Fallback>): string | Fallback {
-  throw new Error(`[foundry-utils]: not implemented yet: ${request.name}`);
+  const value: unknown = request.options?.[request.name];
+  if (typeof value === 'string') return value;
+  if ((value === undefined || value === null) && request.fallback !== undefined) return request.fallback;
+  throw new TypeError(`[foundry-utils]: the ${request.name} option must be a string, got ${String(value)}`);
 }

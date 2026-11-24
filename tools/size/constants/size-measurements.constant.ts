@@ -6,7 +6,7 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: '', symbols: 'whole-entry' }],
-    budget: { rawKilobytes: 4.1, gzipKilobytes: 1.6 },
+    budget: { rawKilobytes: 5.3, gzipKilobytes: 1.8 },
   },
   {
     name: 'utils/number: clampNumber',
