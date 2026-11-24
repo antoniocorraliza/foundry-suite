@@ -1,4 +1,5 @@
 import { FoundryUtilsError } from '@antoniocorraliza/foundry-utils';
+import { CSV_PARSE_ERROR_SENTENCES } from '../constants/csv-parse-error-sentences.constant';
 
 /** Reports a CSV that cannot be read: its structure, its headers or its encoding. */
 export class FoundryCsvParseError extends FoundryUtilsError {
@@ -18,7 +19,10 @@ export class FoundryCsvParseError extends FoundryUtilsError {
     },
     options?: { readonly cause?: unknown },
   ) {
-    super('[foundry-utils]: not implemented yet', options);
+    super(
+      `[foundry-utils]: ${CSV_PARSE_ERROR_SENTENCES[details.reason]} (${details.reason}${details.line === 0 ? '' : ` at line ${details.line}, column ${details.column}`})`,
+      options,
+    );
     this.reason = details.reason;
     this.line = details.line;
     this.column = details.column;

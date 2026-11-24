@@ -1,5 +1,55 @@
+import { ɵdefineOwnProperty, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { DUPLICATE_HEADER_MODES } from '../constants/duplicate-header-modes.constant';
+import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
+import type { CsvRecord } from '../interfaces/csv-record.interface';
+import type { CsvRecordsReading } from '../interfaces/csv-records-reading.interface';
 import type { FoundryCsvTable } from '../interfaces/foundry-csv-table.interface';
 import type { FoundryCsvTableOptions } from '../interfaces/foundry-csv-table-options.interface';
+import type { DuplicateHeaderMode } from '../types/duplicate-header-mode.type';
+import { readCsvRecords } from './read-csv-records.function';
+
+function findFreeHeader(header: string, takenHeaders: ReadonlySet<string>): string {
+  let suffix: number = 2;
+  while (takenHeaders.has(`${header}_${suffix}`)) suffix += 1;
+  return `${header}_${suffix}`;
+}
+
+function readHeaders(record: CsvRecord, duplicateHeaders: DuplicateHeaderMode): Array<string> {
+  const takenHeaders: Set<string> = new Set<string>(record.cells);
+  const usedHeaders: Set<string> = new Set<string>();
+  return record.cells.map((cell, index) => {
+    const line: number = record.cellLines[index] ?? record.endLine;
+    if (cell.trim() === '') throw new FoundryCsvParseError({ reason: 'emptyHeader', line, column: index + 1 });
+    if (usedHeaders.has(cell) && duplicateHeaders === 'error') {
+      throw new FoundryCsvParseError({ reason: 'duplicateHeader', line, column: index + 1 });
+    }
+    const header: string = usedHeaders.has(cell) ? findFreeHeader(cell, takenHeaders) : cell;
+    takenHeaders.add(header);
+    usedHeaders.add(header);
+    return header;
+  });
+}
+
+function readRowCells(record: CsvRecord, headerCount: number, isRelaxed: boolean): ReadonlyArray<string> {
+  const extraIndex: number = record.cells.findIndex((cell, index) => index >= headerCount && (!isRelaxed || cell !== ''));
+  if (extraIndex !== -1) {
+    throw new FoundryCsvParseError({
+      reason: 'columnCountMismatch',
+      line: record.cellLines[extraIndex] ?? record.endLine,
+      column: extraIndex + 1,
+    });
+  }
+  if (record.cells.length < headerCount && !isRelaxed) {
+    throw new FoundryCsvParseError({ reason: 'columnCountMismatch', line: record.endLine, column: record.cells.length + 1 });
+  }
+  return Array.from({ length: headerCount }, (_value, index) => record.cells[index] ?? '');
+}
+
+function writeRow(headers: ReadonlyArray<string>, cells: ReadonlyArray<string>): Record<string, string> {
+  const row: Record<string, string> = {};
+  headers.forEach((header, index) => ɵdefineOwnProperty(row, header, cells[index]));
+  return row;
+}
 
 /**
  * Reads a CSV text with a header line into one object per row, with the headers as keys.
@@ -7,5 +57,20 @@ import type { FoundryCsvTableOptions } from '../interfaces/foundry-csv-table-opt
  * @throws {FoundryCsvParseError} When a quote, a header or the number of cells of a row is wrong.
  */
 export function parseCsv(text: string, options?: FoundryCsvTableOptions): FoundryCsvTable {
-  throw new Error('[foundry-utils]: parseCsv is not implemented yet');
+  const reading: CsvRecordsReading = readCsvRecords(text, options);
+  const checkedOptions: Readonly<Record<string, unknown>> | undefined = options as Readonly<Record<string, unknown>> | undefined;
+  const isRelaxed: boolean = ɵparseBooleanOption({ options: checkedOptions, name: 'relaxColumnCount', fallback: false });
+  const duplicateHeaders: DuplicateHeaderMode = ɵparseEnumOption({
+    options: checkedOptions,
+    name: 'duplicateHeaders',
+    allowedValues: DUPLICATE_HEADER_MODES,
+    fallback: 'error',
+  });
+  const [headerRecord, ...dataRecords] = reading.records;
+  if (headerRecord === undefined) return { delimiter: reading.delimiter, headers: [], rows: [] };
+  const headers: Array<string> = readHeaders(headerRecord, duplicateHeaders);
+  const rows: Array<Record<string, string>> = dataRecords.map((record) =>
+    writeRow(headers, readRowCells(record, headers.length, isRelaxed)),
+  );
+  return { delimiter: reading.delimiter, headers, rows };
 }
