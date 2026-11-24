@@ -1,4 +1,7 @@
+import { ɵparseBooleanOption } from '@antoniocorraliza/foundry-utils';
+import { BYTE_ORDER_MARK } from '../constants/byte-order-mark.constant';
 import type { FoundryCsvWriteOptions } from '../interfaces/foundry-csv-write-options.interface';
+import { toCsv } from './to-csv.function';
 
 /**
  * Writes rows as a CSV file in UTF-8, with a byte order mark unless `byteOrderMark` is `false`, of type `text/csv;charset=utf-8`.
@@ -9,5 +12,11 @@ export function createCsvBlob<Row extends object>(
   rows: ReadonlyArray<Row>,
   options?: FoundryCsvWriteOptions<Row> & { readonly byteOrderMark?: boolean },
 ): Blob {
-  throw new Error('[foundry-utils]: createCsvBlob is not implemented yet');
+  const text: string = toCsv(rows, options);
+  const hasByteOrderMark: boolean = ɵparseBooleanOption({
+    options: options as Readonly<Record<string, unknown>> | undefined,
+    name: 'byteOrderMark',
+    fallback: true,
+  });
+  return new Blob([hasByteOrderMark ? `${BYTE_ORDER_MARK}${text}` : text], { type: 'text/csv;charset=utf-8' });
 }
