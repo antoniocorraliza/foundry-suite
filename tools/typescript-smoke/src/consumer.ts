@@ -1,7 +1,17 @@
 import type { FoundryBinaryInput, FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
 import { FoundryUtilsError } from '@antoniocorraliza/foundry-utils';
+import { downloadBlob, FoundryBrowserApiUnavailableError } from '@antoniocorraliza/foundry-utils/browser';
 import type { FoundryCamelCaseKeys } from '@antoniocorraliza/foundry-utils/case';
 import { toCamelCaseKeys, toSnakeCaseKeys } from '@antoniocorraliza/foundry-utils/case';
+import type { FoundryCsvColumn, FoundryCsvTable } from '@antoniocorraliza/foundry-utils/csv';
+import {
+  createCsvBlob,
+  excelSpanishCsvOptions,
+  FoundryCsvParseError,
+  parseCsv,
+  readCsvFile,
+  toCsv,
+} from '@antoniocorraliza/foundry-utils/csv';
 import type { FoundryCalendarDay, FoundryInstantRange, FoundryLocalDateTime, FoundryWeekday } from '@antoniocorraliza/foundry-utils/date';
 import {
   formatDate,
@@ -44,6 +54,17 @@ export function useUtils(dto: TicketDto): ReadonlyArray<unknown> {
   const slug: string = toSlug(truncateText('Hola Mundo', 8, { suffix: '' }));
   const dniValidator: (control: FoundryValidatableControl) => FoundryValidationErrors | null = createControlValidator(isDniOrNie, 'dni');
   const emails: Array<unknown> = ['ana@example.com', 3].filter(isEmail);
+  const columns: ReadonlyArray<FoundryCsvColumn<TicketDto>> = [
+    { header: 'Id', value: 'ticket_id' },
+    { header: 'Created', value: (row) => row.created_at, format: (value) => String(value) },
+  ];
+  const csv: string = toCsv([dto], { ...excelSpanishCsvOptions, columns });
+  const table: FoundryCsvTable = parseCsv(csv, { delimiter: 'auto', duplicateHeaders: 'suffix' });
+  const blob: Blob = createCsvBlob([dto], { columns, byteOrderMark: false });
+  const readTable: Promise<FoundryCsvTable> = readCsvFile(blob, { encoding: 'windows-1252' });
+  const isCsvError: boolean = new Error('[typescript-smoke]: compiled') instanceof FoundryCsvParseError;
+  const isBrowserError: boolean = error instanceof FoundryBrowserApiUnavailableError;
+  const download: (file: Blob, fileName: string) => void = downloadBlob;
   return [
     createdAt,
     firstName,
@@ -63,5 +84,10 @@ export function useUtils(dto: TicketDto): ReadonlyArray<unknown> {
     slug,
     dniValidator({ value: '12345678Z' }),
     emails,
+    table.rows[0]?.['Id'],
+    readTable,
+    isCsvError,
+    isBrowserError,
+    download,
   ];
 }

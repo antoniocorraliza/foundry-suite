@@ -1,7 +1,9 @@
 import { describe, expect, it } from '@jest/globals';
 import { runInNewContext } from 'node:vm';
 import { FoundryUtilsError } from '@antoniocorraliza/foundry-utils';
+import { downloadBlob, FoundryBrowserApiUnavailableError } from '@antoniocorraliza/foundry-utils/browser';
 import { FoundryKeyCollisionError, toCamelCaseKeys } from '@antoniocorraliza/foundry-utils/case';
+import { readCsvFile } from '@antoniocorraliza/foundry-utils/csv';
 import { deepClone, isPlainObject } from '@antoniocorraliza/foundry-utils/object';
 
 describe('Foundry Utils under Jest with jsdom', () => {
@@ -22,5 +24,24 @@ describe('Foundry Utils under Jest with jsdom', () => {
     const convertCollidingKeys = () => toCamelCaseKeys({ user_id: 1, userId: 2 });
     expect(convertCollidingKeys).toThrow(FoundryKeyCollisionError);
     expect(convertCollidingKeys).toThrow(FoundryUtilsError);
+  });
+
+  it('rejects reading a CSV file with a TypeError that names what jsdom lacks', async () => {
+    const reading = readCsvFile(new File(['Nombre\nNuñez\n'], 'a.csv'));
+    await expect(reading).rejects.toThrow(TypeError);
+    await expect(reading).rejects.toThrow(/TextDecoder/);
+    await expect(reading).rejects.toThrow(/arrayBuffer/);
+  });
+
+  it('throws its named error when a download needs URL.createObjectURL', () => {
+    let thrown = null;
+    try {
+      downloadBlob(new Blob(['a']), 'a.csv');
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBeInstanceOf(FoundryBrowserApiUnavailableError);
+    expect(thrown.missingApi).toBe('URL.createObjectURL');
+    expect(document.querySelector('a')).toBeNull();
   });
 });
