@@ -697,6 +697,21 @@ describe.skipIf(IS_ESLINT_MISSING)('options of the library functions', () => {
     expect(await findMessageLines(code, libraryFile, message)).toEqual([]);
   });
 
+  it('accepts the protocols and accept options, which keep their own reader, and still rejects any other', async () => {
+    const code: string = [
+      'export function readLists(options: Readonly<Record<string, unknown>> | undefined): number {',
+      "  const protocols: unknown = options?.['protocols'];",
+      "  const accept: unknown = (options as Readonly<Record<string, unknown>>)['accept'];",
+      "  const suffix: unknown = options?.['suffix'];",
+      '  return Number(protocols) + Number(accept) + Number(suffix);',
+      '}',
+      '',
+    ].join('\n');
+    expect(
+      await findMessageLines(code, 'projects/antoniocorraliza/foundry-utils/validation/src/functions/probe.function.ts', message),
+    ).toEqual([4]);
+  });
+
   it('leaves the tools and the specs alone', async () => {
     const code: string = ["export const weeks: unknown = ({} as Readonly<Record<string, unknown>>)['weeks'];", ''].join('\n');
     const reading: string = [
