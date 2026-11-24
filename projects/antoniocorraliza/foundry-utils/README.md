@@ -50,6 +50,12 @@ module.exports = {
 module.exports = { presets: [['@babel/preset-env', { targets: { node: 'current' } }]] };
 ```
 
+`readCsvFile` needs `TextDecoder` and `Blob.prototype.arrayBuffer`, which `jest-environment-jsdom` lacks: there it rejects with a `TypeError` that names them. A test that reads a file runs in the `node` environment, with this comment at the top of the file:
+
+```js
+/** @jest-environment node */
+```
+
 ## License
 
 [MIT](LICENSE) © 2026 Antonio Corraliza León.
