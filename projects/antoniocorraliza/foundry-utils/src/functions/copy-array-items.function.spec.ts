@@ -14,6 +14,7 @@ describe('ɵcopyArrayItems', () => {
   it('copies an index with a getter as a hole, without running the getter, and leaves out the other properties', () => {
     const array: Array<unknown> = Object.assign(createArrayWithGetter([1, 2, 3], 1), { extra: 'x' });
     const items: Array<unknown> = ɵcopyArrayItems(array);
-    expect([items.length, items[0], 1 in items, items[2], 'extra' in items]).toEqual([3, 1, false, 3, false]);
+    expect([items.length, items[0], 1 in items, items[2]]).toEqual([3, 1, false, 3]);
+    expect(Object.keys(items)).toEqual(['0', '2']);
   });
 });
