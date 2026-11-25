@@ -631,13 +631,13 @@ Checked by: ESLint and `tools/lint/check-text.ts` skip the exported declarations
 
 ### Options with their own reader
 
-Five options are not an enum, a boolean, an integer or a text, and keep their own reader: `customEquality`, the only option that is a function, and four lists: `fields` of `hasEmptyValue` (texts), `protocols` of `isUrl` and `normalizeUrl`, `accept` of `isDniOrNie`, and `columns` of `toCsv` and `createCsvBlob` (objects with functions). Why: their readers differ by contract. `isDeepEqual`, `hasEmptyValue`, `isUrl` and `isDniOrNie` never throw, so their readers ignore a wrong value; `getObjectDifferences` throws `TypeError` when `customEquality` is not a function, `normalizeUrl` when `protocols` is not a list of texts, and `toCsv` when a column has no text header or its value is neither a key nor a function.
+Six options are not an enum, a boolean, an integer or a text, and keep their own reader: `customEquality`, the only option that is a function, `signal` of `sleep`, an `AbortSignal`, and four lists: `fields` of `hasEmptyValue` (texts), `protocols` of `isUrl` and `normalizeUrl`, `accept` of `isDniOrNie`, and `columns` of `toCsv` and `createCsvBlob` (objects with functions). Why: their readers differ by contract. `isDeepEqual`, `hasEmptyValue`, `isUrl` and `isDniOrNie` never throw, so their readers ignore a wrong value; `getObjectDifferences` throws `TypeError` when `customEquality` is not a function, `normalizeUrl` when `protocols` is not a list of texts, `toCsv` when a column has no text header or its value is neither a key nor a function, and `sleep` rejects with `TypeError` when `signal` is not an `AbortSignal`.
 
 ```ts
 const customEquality: unknown = options?.['customEquality'];
 ```
 
-Checked by: ESLint skips these five property names when it looks for options read by hand; any other option read in the same files is still checked.
+Checked by: ESLint skips these six property names when it looks for options read by hand; any other option read in the same files is still checked.
 
 ### Loops with an index
 
@@ -736,7 +736,7 @@ Checked by: the list `NEVER_THROWING_NAME_EXCEPTIONS` in `tools/lint/constants/n
 
 ### Function names that do not start with a verb
 
-Three kinds of function keep a name that does not start with a verb: `main()` of the scripts of `tools/`, the names of the approved designs (`deepClone`, `localDateTimeToDate`, `startOfDay` and `endOfDay`, where `start` and `end` are nouns, and the option `customEquality` of `isDeepEqual`), and the lifecycle hooks of Angular (`ngOnInit`...). Why: `main()` is the entry point of every script, the designs have frozen the public names, and Angular fixes the names of its hooks.
+Three kinds of function keep a name that does not start with a verb: `main()` of the scripts of `tools/`, the names of the approved designs (`deepClone`, `localDateTimeToDate`, `sha256`, `sha512`, `startOfDay` and `endOfDay`, where `start` and `end` are nouns, and the option `customEquality` of `isDeepEqual`), and the lifecycle hooks of Angular (`ngOnInit`...). Why: `main()` is the entry point of every script, the designs have frozen the public names, and Angular fixes the names of its hooks.
 
 ```ts
 export function deepClone<T>(value: T): T {}

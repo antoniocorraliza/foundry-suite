@@ -57,6 +57,7 @@ const FUNCTION_VERBS = [
   'build',
   'bundle',
   'can',
+  'cancel',
   'capitalize',
   'catch',
   'check',
@@ -75,12 +76,14 @@ const FUNCTION_VERBS = [
   'define',
   'describe',
   'dismiss',
+  'dispose',
   'download',
   'emit',
   'enter',
   'escape',
   'filter',
   'find',
+  'flush',
   'forbid',
   'format',
   'freeze',
@@ -135,7 +138,7 @@ const FUNCTION_VERBS = [
   'write',
 ];
 // main(), the names of the Utils design and Angular's lifecycle hooks keep their names; object literal keys are not checked.
-const FUNCTION_NAME_EXCEPTIONS = '^(?:main|deepClone|customEquality|endOfDay|localDateTimeToDate|startOfDay|ng[A-Z]\\w*)$';
+const FUNCTION_NAME_EXCEPTIONS = '^(?:main|deepClone|customEquality|endOfDay|localDateTimeToDate|sha256|sha512|startOfDay|ng[A-Z]\\w*)$';
 const FUNCTION_NAME = `^\\u0275?(?:${FUNCTION_VERBS.join('|')})(?![a-z])`;
 const FUNCTION_NAME_MESSAGE = 'Functions start with a verb of FUNCTION_VERBS in eslint.config.mjs (getEntryFiles, not entryFiles).';
 const FUNCTION_NAME_SELECTORS = [
@@ -242,7 +245,7 @@ const SERVICE_SELECTORS = forbid(
   'Services do not subscribe: they expose state with toSignal() and return the Observable for the rest.',
 );
 // Options that are not an enum, a boolean or an integer keep their own reader (see Exceptions in CONTRIBUTING.md).
-const OWN_READER_OPTIONS = '/^(?:customEquality|fields|protocols|accept|columns)$/';
+const OWN_READER_OPTIONS = '/^(?:customEquality|fields|protocols|accept|columns|signal)$/';
 const OTHER_THAN_OWN_READER_OPTIONS = `:not([property.name=${OWN_READER_OPTIONS}]):not([property.value=${OWN_READER_OPTIONS}])`;
 const OPTION_SELECTORS = forbid(
   [
