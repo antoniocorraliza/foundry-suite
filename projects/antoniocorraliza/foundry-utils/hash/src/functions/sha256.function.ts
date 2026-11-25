@@ -1,4 +1,5 @@
 import type { FoundryBinaryInput } from '@antoniocorraliza/foundry-utils';
+import { createHexDigest } from './create-hex-digest.function';
 
 /**
  * Computes the SHA-256 of a text, encoded as UTF-8 without normalizing it, or of bytes, in lowercase hexadecimal.
@@ -7,5 +8,5 @@ import type { FoundryBinaryInput } from '@antoniocorraliza/foundry-utils';
  * @throws {FoundryCryptoUnavailableError} When `crypto` or `crypto.subtle` is missing.
  */
 export function sha256(input: string | FoundryBinaryInput): Promise<string> {
-  throw new Error('[foundry-utils]: not implemented');
+  return createHexDigest('SHA-256', input);
 }
