@@ -291,7 +291,7 @@ Checked by: ESLint `curly` (`multi-line`).
 throw new Error('[strip-tslib]: unknown package folder "foundry-x"');
 ```
 
-A `TypeError` says the type it got (`typeof`); a `RangeError`, the value. A text that cannot be empty is "a text that is not empty".
+A `TypeError` says the type it got (`typeof`), except the reader of enum options, which says the value it got: it is always a short text of a closed list. A `RangeError` says the value. A text that cannot be empty is "a text that is not empty".
 
 ```ts
 throw new TypeError(`[foundry-utils]: the rows of toCsv must be an array, got ${typeof rows}`);
