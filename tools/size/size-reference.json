@@ -77,22 +77,22 @@
   },
   "utils/csv": {
     "esbuild": {
-      "raw": 15983,
-      "gzip": 5463
+      "raw": 15971,
+      "gzip": 5461
     },
     "rollup": {
-      "raw": 15529,
-      "gzip": 5188
+      "raw": 15511,
+      "gzip": 5187
     }
   },
   "utils/csv: parseCsv": {
     "esbuild": {
-      "raw": 5128,
-      "gzip": 2129
+      "raw": 5124,
+      "gzip": 2130
     },
     "rollup": {
-      "raw": 5055,
-      "gzip": 2030
+      "raw": 5049,
+      "gzip": 2031
     }
   },
   "utils/csv: toCsv": {
@@ -307,12 +307,12 @@
   },
   "utils: every entry": {
     "esbuild": {
-      "raw": 61599,
-      "gzip": 18996
+      "raw": 61587,
+      "gzip": 18995
     },
     "rollup": {
-      "raw": 60778,
-      "gzip": 18142
+      "raw": 60760,
+      "gzip": 18139
     }
   }
 }
