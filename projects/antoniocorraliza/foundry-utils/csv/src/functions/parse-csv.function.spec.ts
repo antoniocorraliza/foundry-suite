@@ -3,6 +3,7 @@ import { ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/found
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
+import { measureMilliseconds } from '@foundry-test/functions/measure-milliseconds.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { DUPLICATE_HEADER_MODES } from '../constants/duplicate-header-modes.constant';
 import { excelSpanishCsvOptions } from '../constants/excel-spanish-csv-options.constant';
@@ -169,6 +170,13 @@ describe('parseCsv', () => {
         headers: ['Importe', 'Importe_3', 'Importe_2'],
         rows: [{ Importe: '1', Importe_3: '2', Importe_2: '3' }],
       });
+      expect(parseCsv('a,a,a_3,a\r\n1,2,3,4', { duplicateHeaders: 'suffix' }).headers).toEqual(['a', 'a_2', 'a_3', 'a_4']);
+    });
+
+    it('renames 20,000 copies of one header in less than 500 ms', () => {
+      const text: string = `${Array.from({ length: 20_000 }, () => 'a').join(',')}\r\n`;
+      expect(measureMilliseconds(() => parseCsv(text, { duplicateHeaders: 'suffix' }))).toBeLessThan(500);
+      expect(parseCsv(text, { duplicateHeaders: 'suffix' }).headers.slice(-2)).toEqual(['a_19999', 'a_20000']);
     });
   });
 
@@ -198,7 +206,7 @@ describe('parseCsv', () => {
         'yes',
         () => ɵparseBooleanOption({ options: { relaxColumnCount: 'yes' }, name: 'relaxColumnCount', fallback: false }),
       ],
-    ])('rejects the %s %j as the reader of the root does', (name, value, readOption) => {
+    ])('rejects the %s %j as parseEnumOption or parseBooleanOption does', (name, value, readOption) => {
       expect(catchError(() => parseCsv('a', { [name]: value } as never), TypeError).message).toBe(
         catchError(readOption, TypeError).message,
       );

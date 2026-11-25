@@ -1,5 +1,12 @@
 import type { FoundryObjectPath, ɵValueKind } from '@antoniocorraliza/foundry-utils';
-import { ɵcheckOptions, ɵgetOwnDataEntries, ɵgetValueKind, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import {
+  ɵcheckOptions,
+  ɵcopyArrayItems,
+  ɵgetOwnDataEntries,
+  ɵgetOwnDataValue,
+  ɵgetValueKind,
+  ɵparseEnumOption,
+} from '@antoniocorraliza/foundry-utils';
 import { ARRAY_MODES } from '../constants/array-modes.constant';
 import type { DifferenceWalk } from '../interfaces/difference-walk.interface';
 import type { FoundryDeepEqualOptions } from '../interfaces/foundry-deep-equal-options.interface';
@@ -8,8 +15,8 @@ import type { CustomEquality } from '../types/custom-equality.type';
 import { areValuesEqual } from './are-values-equal.function';
 
 function parseCustomEquality(options: Readonly<Record<string, unknown>> | undefined): CustomEquality | null {
-  const customEquality: unknown = options?.['customEquality'];
-  if (customEquality === undefined) return null;
+  const customEquality: unknown = ɵgetOwnDataValue(options, 'customEquality');
+  if (customEquality === null || customEquality === undefined) return null;
   if (typeof customEquality !== 'function') throw new TypeError('[foundry-utils]: the customEquality option must be a function');
   return customEquality as CustomEquality;
 }
@@ -46,8 +53,8 @@ function compareEntries(walk: DifferenceWalk, previous: object, current: object,
 }
 
 function compareItems(walk: DifferenceWalk, previous: unknown, current: unknown, path: FoundryObjectPath): void {
-  const previousItems: ReadonlyArray<unknown> = previous as ReadonlyArray<unknown>;
-  const currentItems: ReadonlyArray<unknown> = current as ReadonlyArray<unknown>;
+  const previousItems: ReadonlyArray<unknown> = ɵcopyArrayItems(previous as ReadonlyArray<unknown>);
+  const currentItems: ReadonlyArray<unknown> = ɵcopyArrayItems(current as ReadonlyArray<unknown>);
   const length: number = Math.max(previousItems.length, currentItems.length);
   for (let index: number = 0; index < length; index++) {
     if (index >= currentItems.length) walk.differences.push(createRemovedDifference([...path, index], previousItems[index]));

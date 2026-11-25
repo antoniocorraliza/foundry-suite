@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, inject, it, vi } from 'vitest'
 import { ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { MAX_YEAR, MIN_YEAR } from '../constants/date-limits.constant';
 import { getYearRange } from './get-year-range.function';
 
 const timeZone: string = inject('expectedTimeZone');
@@ -28,9 +29,9 @@ describe('getYearRange', () => {
   });
 
   it.each<unknown>([{ referenceYear: 2026, yearsAfter: 0 }, { referenceYear: 2026, yearsBefore: 0 }, undefined])(
-    'throws a RangeError for %j, which leaves out a number of years that has no default',
+    'throws a TypeError for %j, which leaves out a number of years that has no default',
     (options) => {
-      expect(catchThrown(() => getYearRange(options as never))).toBeInstanceOf(RangeError);
+      expect(catchThrown(() => getYearRange(options as never))).toBeInstanceOf(TypeError);
     },
   );
 
@@ -39,6 +40,15 @@ describe('getYearRange', () => {
     { referenceYear: 9995, yearsBefore: 0, yearsAfter: 10 },
   ])('throws a RangeError for %j, whose range leaves the years 1 to 9999', (options) => {
     expect(catchThrown(() => getYearRange(options as never))).toBeInstanceOf(RangeError);
+  });
+
+  it('rejects a reference year that is not an integer as parseIntegerOption does', () => {
+    expect(catchError(() => getYearRange({ referenceYear: 2026.5, yearsBefore: 0, yearsAfter: 0 }), RangeError).message).toBe(
+      catchError(
+        () => ɵparseIntegerOption({ options: { referenceYear: 2026.5 }, name: 'referenceYear', minimum: MIN_YEAR, maximum: MAX_YEAR }),
+        RangeError,
+      ).message,
+    );
   });
 
   it('rejects a number of years that is not an integer of at least 0 as parseIntegerOption does', () => {

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FoundryCryptoUnavailableError } from '@antoniocorraliza/foundry-utils';
 import { catchRejectedError } from '@foundry-test/functions/catch-rejected-error.function';
 import { catchRejection } from '@foundry-test/functions/catch-rejection.function';
+import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { createHexDigest } from './create-hex-digest.function';
@@ -81,6 +82,14 @@ describe('createHexDigest', () => {
       expect(rejection.message).toMatch(/^\[foundry-utils\]: /);
     },
   );
+
+  it('returns a promise rejected with a TypeError for an object that only fakes the tag of an ArrayBuffer', async () => {
+    const rejection: TypeError = await catchRejectedError(
+      () => createHexDigest('SHA-256', createObjectWithFakeTag('ArrayBuffer') as ArrayBuffer),
+      TypeError,
+    );
+    expect(rejection.message).toBe('[foundry-utils]: the input of SHA-256 must be a string, an ArrayBuffer or a view of one');
+  });
 
   it('returns a promise rejected with a FoundryCryptoUnavailableError for crypto, and not a ReferenceError, when crypto is missing', async () => {
     vi.stubGlobal('crypto', undefined);

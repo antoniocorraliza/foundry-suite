@@ -422,7 +422,7 @@ describe('toCsv', () => {
         'escape',
         () => ɵparseEnumOption({ options: { formulaEscaping: 'escape' }, name: 'formulaEscaping', allowedValues: FORMULA_ESCAPINGS }),
       ],
-    ])('rejects the %s %j as the reader of the root does', (name, value, readOption) => {
+    ])('rejects the %s %j as parseEnumOption or parseBooleanOption does', (name, value, readOption) => {
       expect(catchError(() => toCsv([{ a: 1 }], { [name]: value } as never), TypeError).message).toBe(
         catchError(readOption, TypeError).message,
       );

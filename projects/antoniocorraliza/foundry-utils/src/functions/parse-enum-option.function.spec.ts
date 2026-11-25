@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { ɵparseEnumOption } from './parse-enum-option.function';
 
@@ -17,6 +17,15 @@ describe('ɵparseEnumOption', () => {
     expect(ɵparseEnumOption({ options: { mode: null }, name: 'mode', allowedValues: MODES, fallback: 'down' })).toBe('down');
   });
 
+  it('reads only own data properties, without running a getter', () => {
+    const getter: () => unknown = vi.fn(() => 'down');
+    const withGetter: Readonly<Record<string, unknown>> = Object.defineProperty({}, 'mode', { get: getter, enumerable: true });
+    const inherited: Readonly<Record<string, unknown>> = Object.create({ mode: 'down' }) as Readonly<Record<string, unknown>>;
+    expect(ɵparseEnumOption({ options: withGetter, name: 'mode', allowedValues: MODES, fallback: 'up' })).toBe('up');
+    expect(ɵparseEnumOption({ options: inherited, name: 'mode', allowedValues: MODES, fallback: 'up' })).toBe('up');
+    expect(getter).not.toHaveBeenCalled();
+  });
+
   it('returns null when the fallback is null and the option is missing, undefined or null', () => {
     expect(ɵparseEnumOption({ options: undefined, name: 'mode', allowedValues: MODES, fallback: null })).toBeNull();
     expect(ɵparseEnumOption({ options: { mode: undefined }, name: 'mode', allowedValues: MODES, fallback: null })).toBeNull();
@@ -27,16 +36,31 @@ describe('ɵparseEnumOption', () => {
     expect(ɵparseEnumOption({ options: { mode: 'down' }, name: 'mode', allowedValues: MODES, fallback: null })).toBe('down');
   });
 
-  it.each<unknown>(['UP', 'sideways', '', 1, true, {}])(
-    'throws a TypeError for %j, naming the option, its values and the value',
-    (mode) => {
-      const error: TypeError = catchError(
-        () => ɵparseEnumOption({ options: { mode }, name: 'mode', allowedValues: MODES, fallback: null }),
-        TypeError,
-      );
-      expect(error.message).toBe(`[foundry-utils]: the mode option must be one of up, down, got ${String(mode)}`);
-    },
-  );
+  it.each(['UP', 'sideways', ''])('throws a TypeError for the text %j, naming the option, its values and the text', (mode) => {
+    const error: TypeError = catchError(
+      () => ɵparseEnumOption({ options: { mode }, name: 'mode', allowedValues: MODES, fallback: null }),
+      TypeError,
+    );
+    expect(error.message).toBe(`[foundry-utils]: the mode option must be one of up, down, got ${mode}`);
+  });
+
+  it.each<unknown>([1, true, {}, Object.create(null)])('throws a TypeError for %j, which is not a text, naming its type', (mode) => {
+    const error: TypeError = catchError(
+      () => ɵparseEnumOption({ options: { mode }, name: 'mode', allowedValues: MODES, fallback: null }),
+      TypeError,
+    );
+    expect(error.message).toBe(`[foundry-utils]: the mode option must be one of up, down, got ${typeof mode}`);
+  });
+
+  it('does not run the toString of a value that is not a text', () => {
+    const toString: () => string = vi.fn(() => 'up');
+    const error: TypeError = catchError(
+      () => ɵparseEnumOption({ options: { mode: { toString } }, name: 'mode', allowedValues: MODES, fallback: null }),
+      TypeError,
+    );
+    expect(error.message).toBe('[foundry-utils]: the mode option must be one of up, down, got object');
+    expect(toString).not.toHaveBeenCalled();
+  });
 
   it.each<[string, Readonly<Record<string, unknown>> | undefined]>([
     ['missing options', undefined],

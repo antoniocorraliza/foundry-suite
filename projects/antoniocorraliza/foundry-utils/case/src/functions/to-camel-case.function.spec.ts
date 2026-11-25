@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { measureMilliseconds } from '@foundry-test/functions/measure-milliseconds.function';
 import { toCamelCase } from './to-camel-case.function';
 
 describe('toCamelCase', () => {
@@ -60,5 +61,11 @@ describe('toCamelCase', () => {
     });
     expect(toCamelCase('ID')).toBe('id');
     expect(toCamelCase('user_id')).toBe('userId');
+  });
+
+  it('converts a key of 100,000 characters with a long run of inner underscores in less than 50 ms', () => {
+    const key: string = `a${'_'.repeat(99_998)}b`;
+    expect(measureMilliseconds(() => toCamelCase(key))).toBeLessThan(50);
+    expect(toCamelCase(key)).toBe('aB');
   });
 });

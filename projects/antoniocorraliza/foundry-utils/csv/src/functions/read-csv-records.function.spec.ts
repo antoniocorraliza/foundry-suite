@@ -233,7 +233,7 @@ describe('readCsvRecords', () => {
       ],
       ['trimCells', 'yes', () => ɵparseBooleanOption({ options: { trimCells: 'yes' }, name: 'trimCells', fallback: false })],
       ['skipEmptyLines', 1, () => ɵparseBooleanOption({ options: { skipEmptyLines: 1 }, name: 'skipEmptyLines', fallback: true })],
-    ])('rejects the %s %j as the reader of the root does', (name, value, readOption) => {
+    ])('rejects the %s %j as parseEnumOption or parseBooleanOption does', (name, value, readOption) => {
       expect(catchError(() => readCsvRecords('a', { [name]: value } as never), TypeError).message).toBe(
         catchError(readOption, TypeError).message,
       );

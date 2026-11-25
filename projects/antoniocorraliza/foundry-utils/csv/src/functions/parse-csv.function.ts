@@ -10,22 +10,24 @@ import { checkCellCount } from './check-cell-count.function';
 import { getCellLine } from './get-cell-line.function';
 import { readCsvRecords } from './read-csv-records.function';
 
-function findFreeHeader(header: string, takenHeaders: ReadonlySet<string>): string {
-  let suffix: number = 2;
+function findFreeHeader(header: string, takenHeaders: ReadonlySet<string>, nextSuffixes: Map<string, number>): string {
+  let suffix: number = nextSuffixes.get(header) ?? 2;
   while (takenHeaders.has(`${header}_${suffix}`)) suffix += 1;
+  nextSuffixes.set(header, suffix + 1);
   return `${header}_${suffix}`;
 }
 
 function readHeaders(record: CsvRecord, duplicateHeaders: DuplicateHeaderMode): Array<string> {
   const takenHeaders: Set<string> = new Set<string>(record.cells);
   const usedHeaders: Set<string> = new Set<string>();
+  const nextSuffixes: Map<string, number> = new Map<string, number>();
   return record.cells.map((cell, index) => {
     const line: number = getCellLine(record, index);
     if (cell.trim() === '') throw new FoundryCsvParseError({ reason: 'emptyHeader', line, column: index + 1 });
     if (usedHeaders.has(cell) && duplicateHeaders === 'error') {
       throw new FoundryCsvParseError({ reason: 'duplicateHeader', line, column: index + 1 });
     }
-    const header: string = usedHeaders.has(cell) ? findFreeHeader(cell, takenHeaders) : cell;
+    const header: string = usedHeaders.has(cell) ? findFreeHeader(cell, takenHeaders, nextSuffixes) : cell;
     takenHeaders.add(header);
     usedHeaders.add(header);
     return header;

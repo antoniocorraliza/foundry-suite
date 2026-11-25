@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { JSDOC_FILLER_WORDS } from '../constants/jsdoc-name-words.constant.ts';
+import { JSDOC_FILLER_WORDS } from '../constants/jsdoc-filler-words.constant.ts';
 
 function splitWords(text: string): Array<string> {
   return text

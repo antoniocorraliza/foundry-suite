@@ -1,14 +1,32 @@
-import { ɵdefineOwnProperty, ɵgetOwnDataEntries, ɵgetValueKind } from '@antoniocorraliza/foundry-utils';
+import { ɵcopyArrayItems, ɵdefineOwnProperty, ɵgetOwnDataEntries, ɵgetValueKind } from '@antoniocorraliza/foundry-utils';
+import type { ViewConstructor } from '../types/view-constructor.type';
 import { readMapEntries } from './read-map-entries.function';
 import { readSetValues } from './read-set-values.function';
+
+function readBuiltInGetter(prototype: object, name: PropertyKey, value: object): unknown {
+  return Object.getOwnPropertyDescriptor(prototype, name)?.get?.call(value);
+}
+
+function copyView(view: object, copies: Map<object, unknown>): ArrayBufferView {
+  const typedArrayPrototype: object = Object.getPrototypeOf(Uint8Array.prototype) as object;
+  const typedArrayName: unknown = readBuiltInGetter(typedArrayPrototype, Symbol.toStringTag, view);
+  const viewPrototype: object = typeof typedArrayName === 'string' ? typedArrayPrototype : DataView.prototype;
+  const buffer: ArrayBufferLike = copyValueWith(readBuiltInGetter(viewPrototype, 'buffer', view), copies) as ArrayBufferLike;
+  const byteOffset: number = readBuiltInGetter(viewPrototype, 'byteOffset', view) as number;
+  if (typeof typedArrayName === 'string') {
+    const viewConstructor: ViewConstructor = Reflect.get(globalThis, typedArrayName) as ViewConstructor;
+    return new viewConstructor(buffer, byteOffset, readBuiltInGetter(viewPrototype, 'length', view) as number);
+  }
+  return new DataView(buffer, byteOffset, readBuiltInGetter(viewPrototype, 'byteLength', view) as number);
+}
 
 function copyContainer(value: object, copies: Map<object, unknown>): unknown {
   switch (ɵgetValueKind(value)) {
     case 'array': {
-      const copy: Array<unknown> = new Array<unknown>((value as ReadonlyArray<unknown>).length);
+      const copy: Array<unknown> = ɵcopyArrayItems(value as ReadonlyArray<unknown>);
       copies.set(value, copy);
-      ɵgetOwnDataEntries(value).forEach(([key, item]) => {
-        if (/^\d+$/.test(key)) copy[Number(key)] = copyValueWith(item, copies);
+      copy.forEach((item, index) => {
+        copy[index] = copyValueWith(item, copies);
       });
       return copy;
     }
@@ -34,8 +52,9 @@ function copyContainer(value: object, copies: Map<object, unknown>): unknown {
       return new Date(Date.prototype.getTime.call(value));
     case 'regExp':
     case 'arrayBuffer':
-    case 'view':
       return structuredClone(value);
+    case 'view':
+      return copyView(value, copies);
     default:
       return value;
   }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { ɵparseIntegerOption } from './parse-integer-option.function';
@@ -15,18 +15,36 @@ describe('ɵparseIntegerOption', () => {
     expect(ɵparseIntegerOption({ options: { weeks: null }, name: 'weeks', minimum: 1, fallback: 3 })).toBe(3);
   });
 
+  it('reads only own data properties, without running a getter', () => {
+    const getter: () => unknown = vi.fn(() => 2);
+    const withGetter: Readonly<Record<string, unknown>> = Object.defineProperty({}, 'weeks', { get: getter, enumerable: true });
+    const inherited: Readonly<Record<string, unknown>> = Object.create({ weeks: 2 }) as Readonly<Record<string, unknown>>;
+    expect(ɵparseIntegerOption({ options: withGetter, name: 'weeks', minimum: 1, maximum: 5, fallback: 1 })).toBe(1);
+    expect(ɵparseIntegerOption({ options: inherited, name: 'weeks', minimum: 1, maximum: 5, fallback: 1 })).toBe(1);
+    expect(getter).not.toHaveBeenCalled();
+  });
+
   it('accepts any integer from the minimum when there is no maximum', () => {
     expect(ɵparseIntegerOption({ options: { count: Number.MAX_SAFE_INTEGER }, name: 'count', minimum: 0 })).toBe(Number.MAX_SAFE_INTEGER);
   });
 
-  it.each<unknown>([0, 6, 1.5, Number.NaN, Number.POSITIVE_INFINITY, '2', true])('throws a RangeError for %j', (weeks) => {
+  it.each<unknown>([0, 6, 1.5, Number.NaN, Number.POSITIVE_INFINITY])('throws a RangeError for %j', (weeks) => {
     expect(catchThrown(() => ɵparseIntegerOption({ options: { weeks }, name: 'weeks', minimum: 1, maximum: 5 }))).toBeInstanceOf(
       RangeError,
     );
   });
 
-  it('throws a RangeError when the option is missing and has no fallback', () => {
-    expect(catchThrown(() => ɵparseIntegerOption({ options: {}, name: 'yearsBefore', minimum: 0 }))).toBeInstanceOf(RangeError);
+  it.each<unknown>(['2', true, {}])('throws a TypeError for %j, which is not a number, naming its type', (weeks) => {
+    const error: TypeError = catchError(
+      () => ɵparseIntegerOption({ options: { weeks }, name: 'weeks', minimum: 1, maximum: 5 }),
+      TypeError,
+    );
+    expect(error.message).toBe(`[foundry-utils]: the weeks option must be a number, got ${typeof weeks}`);
+  });
+
+  it('throws a TypeError when the option is missing and has no fallback', () => {
+    const error: TypeError = catchError(() => ɵparseIntegerOption({ options: {}, name: 'yearsBefore', minimum: 0 }), TypeError);
+    expect(error.message).toBe('[foundry-utils]: the yearsBefore option must be a number, got null');
   });
 
   it('names the option, its limits and the value in the message', () => {

@@ -2,6 +2,7 @@ import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
 import {
   FoundryCircularReferenceError,
   ɵcheckOptions,
+  ɵcopyArrayItems,
   ɵdefineOwnProperty,
   ɵgetOwnDataEntries,
   ɵisPlainObject,
@@ -30,7 +31,7 @@ function convertValue(value: unknown, path: FoundryObjectPath, ancestors: Readon
   if (!Array.isArray(value) && !ɵisPlainObject(value)) return value;
   if (ancestors.includes(value)) throw new FoundryCircularReferenceError({ path });
   const inner: ReadonlyArray<object> = [...ancestors, value];
-  if (Array.isArray(value)) return value.map((item: unknown, index) => convertValue(item, [...path, index], inner, conversion));
+  if (Array.isArray(value)) return ɵcopyArrayItems(value).map((item, index) => convertValue(item, [...path, index], inner, conversion));
   return convertObject(value, path, inner, conversion);
 }
 

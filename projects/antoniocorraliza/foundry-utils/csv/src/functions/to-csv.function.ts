@@ -147,7 +147,7 @@ export function toCsv<Row extends object>(rows: ReadonlyArray<Row>, options?: Fo
   };
   const lineBreak: CsvLineBreak = ɵparseEnumOption({ options, name: 'lineBreak', allowedValues: LINE_BREAKS, fallback: '\r\n' });
   const hasHeaderLine: boolean = ɵparseBooleanOption({ options, name: 'includeHeader', fallback: true });
-  const givenColumns: unknown = options?.['columns'] ?? null;
+  const givenColumns: unknown = ɵgetOwnDataValue(options, 'columns') ?? null;
   const columns: ReadonlyArray<CsvWriteColumn> = givenColumns === null ? listRowKeys(rows) : readGivenColumns(givenColumns);
   if (columns.length === 0) return '';
   const headerLine: string = hasHeaderLine

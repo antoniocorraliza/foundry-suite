@@ -4,7 +4,7 @@ import { MAX_YEAR, MIN_YEAR } from '../constants/date-limits.constant';
 /**
  * Returns the years around a reference year, or the current local year, in ascending order.
  * @throws {RangeError} When a number is not a valid integer or a year is outside 1-9999.
- * @throws {TypeError} When the options are not an object.
+ * @throws {TypeError} When the options are not an object, or a number is missing or not a number.
  */
 export function getYearRange(options: {
   readonly referenceYear?: number;

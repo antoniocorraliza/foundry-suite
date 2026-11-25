@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { FoundryCircularReferenceError, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { createArrayWithGetter } from '@foundry-test/functions/create-array-with-getter.function';
 import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
+import { createSparseArray } from '@foundry-test/functions/create-sparse-array.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { COLLISION_MODES } from '../constants/collision-modes.constant';
@@ -152,6 +154,15 @@ describe('convertKeys', () => {
         },
       });
       expect(Reflect.ownKeys(convert(value) as object)).toEqual([targetKey]);
+    });
+
+    it('keeps the holes of an array and takes an index with a getter as a hole, without running the getter', () => {
+      const withGetter: Array<unknown> = createArrayWithGetter([{ [sourceKey]: 1 }, { [sourceKey]: 2 }], 0);
+      const lists: Array<Array<unknown>> = convert([withGetter, createSparseArray(2, { 1: 'x' })]) as Array<Array<unknown>>;
+      expect(lists.map((list) => [list.length, 0 in list, list[1]])).toEqual([
+        [2, false, { [targetKey]: 2 }],
+        [2, false, 'x'],
+      ]);
     });
 
     it('converts nested data through map', () => {

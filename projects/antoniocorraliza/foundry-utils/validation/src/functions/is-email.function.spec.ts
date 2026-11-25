@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { measureMilliseconds } from '@foundry-test/functions/measure-milliseconds.function';
 import { isEmail } from './is-email.function';
 
 describe('isEmail', () => {
@@ -22,9 +23,7 @@ describe('isEmail', () => {
     ['a long domain', `ana@${'a'.repeat(50_000)}`],
     ['a long run of labels', `ana@${'a.'.repeat(25_000)}`],
   ])('answers at once for %s', (_name, text) => {
-    const start: number = performance.now();
-    isEmail(text);
-    expect(performance.now() - start).toBeLessThan(500);
+    expect(measureMilliseconds(() => isEmail(text))).toBeLessThan(500);
   });
 
   it('can be passed to filter directly', () => {

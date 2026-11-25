@@ -40,9 +40,7 @@ describe('getDaysInRange', () => {
   it('gives up to 36600 days and throws a RangeError, with the number asked, beyond them', () => {
     const start: Date = createLocalTestDate('2000-01-01');
     expect(getDaysInRange(start, createLocalTestDate('2100-03-16'))).toHaveLength(36_600);
-    const error: unknown = catchThrown(() => getDaysInRange(start, createLocalTestDate('2100-03-17')));
-    expect(error).toBeInstanceOf(RangeError);
-    expect((error as RangeError).message).toContain('36601');
+    expect(catchError(() => getDaysInRange(start, createLocalTestDate('2100-03-17')), RangeError).message).toContain('36601');
   });
 
   it('counts the days it gives, not the days it walks', () => {

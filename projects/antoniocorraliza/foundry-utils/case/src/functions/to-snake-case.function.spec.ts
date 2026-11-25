@@ -1,5 +1,6 @@
 import fc from 'fast-check';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { measureMilliseconds } from '@foundry-test/functions/measure-milliseconds.function';
 import { toCamelCase } from './to-camel-case.function';
 import { toSnakeCase } from './to-snake-case.function';
 
@@ -42,6 +43,12 @@ describe('toSnakeCase', () => {
       return this.replaceAll('I', 'ı').toLowerCase();
     });
     expect(toSnakeCase('ID')).toBe('id');
+  });
+
+  it('converts a key of 100,000 characters with a long run of inner underscores in less than 50 ms', () => {
+    const key: string = `a${'_'.repeat(99_998)}b`;
+    expect(measureMilliseconds(() => toSnakeCase(key))).toBeLessThan(50);
+    expect(toSnakeCase(key)).toBe('a_b');
   });
 });
 

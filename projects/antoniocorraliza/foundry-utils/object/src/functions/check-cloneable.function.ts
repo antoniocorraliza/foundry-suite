@@ -1,4 +1,4 @@
-import { ɵgetValueKind, ɵgetValueTag } from '@antoniocorraliza/foundry-utils';
+import { ɵgetValueKind, ɵgetValueTag, ɵisArrayIndex } from '@antoniocorraliza/foundry-utils';
 import { FoundryCloneError } from '../errors/foundry-clone.error';
 import type { CloneLocation } from '../interfaces/clone-location.interface';
 import { readMapEntries } from './read-map-entries.function';
@@ -15,12 +15,21 @@ function enterLocation(location: CloneLocation, key: string | number): CloneLoca
   return location.place === null ? { path: [...location.path, key], place: null } : location;
 }
 
+function readConstructorName(prototype: object | null): string {
+  const constructorValue: unknown = prototype === null ? null : Object.getOwnPropertyDescriptor(prototype, 'constructor')?.value;
+  return typeof constructorValue === 'function' ? constructorValue.name : '';
+}
+
 function getClassName(value: object): string {
-  const prototype: unknown = Object.getPrototypeOf(value);
-  const constructorValue: unknown =
-    typeof prototype === 'object' && prototype !== null ? Object.getOwnPropertyDescriptor(prototype, 'constructor')?.value : null;
-  const name: string = typeof constructorValue === 'function' ? constructorValue.name : '';
+  const name: string = readConstructorName(Object.getPrototypeOf(value) as object | null);
   return `class ${name === '' ? 'without name' : name}`;
+}
+
+function checkBuiltInPrototype(value: object, className: string, location: CloneLocation): void {
+  const prototype: object | null = Object.getPrototypeOf(value) as object | null;
+  const parent: object | null = prototype === null ? null : (Object.getPrototypeOf(prototype) as object | null);
+  const isBuiltIn: boolean = parent !== null && Object.getPrototypeOf(parent) === null && readConstructorName(prototype) === className;
+  if (!isBuiltIn) throwCloneError(location, getClassName(value));
 }
 
 function checkOwnProperties(value: object, location: CloneLocation, visited: WeakSet<object>): void {
@@ -28,9 +37,10 @@ function checkOwnProperties(value: object, location: CloneLocation, visited: Wea
     if (typeof key === 'symbol') throwCloneError(location, 'symbol key');
     const descriptor: PropertyDescriptor | undefined = Object.getOwnPropertyDescriptor(value, key);
     if (descriptor === undefined || (Array.isArray(value) && key === 'length')) return;
+    if (Array.isArray(value) && !ɵisArrayIndex(key)) throwCloneError(enterLocation(location, key), 'array property');
     if (!('value' in descriptor)) throwCloneError(enterLocation(location, key), 'accessor');
     if (descriptor.enumerable !== true) throwCloneError(enterLocation(location, key), 'non-enumerable');
-    const segment: string | number = Array.isArray(value) && /^\d+$/.test(key) ? Number(key) : key;
+    const segment: string | number = Array.isArray(value) ? Number(key) : key;
     checkValue(descriptor.value, enterLocation(location, segment), visited);
   });
 }
@@ -42,19 +52,26 @@ function checkValue(value: unknown, location: CloneLocation, visited: WeakSet<ob
   visited.add(value);
   switch (ɵgetValueKind(value)) {
     case 'plainObject':
+      checkOwnProperties(value, location, visited);
+      return;
     case 'array':
+      checkBuiltInPrototype(value, 'Array', location);
       checkOwnProperties(value, location, visited);
       return;
     case 'map':
+      checkBuiltInPrototype(value, 'Map', location);
       readMapEntries(value).forEach(([key, entry]) => {
         checkValue(key, { path: location.path, place: location.place ?? 'Map key' }, visited);
         checkValue(entry, { path: location.path, place: location.place ?? 'Map value' }, visited);
       });
       return;
     case 'set':
+      checkBuiltInPrototype(value, 'Set', location);
       readSetValues(value).forEach((item) => checkValue(item, { path: location.path, place: location.place ?? 'Set element' }, visited));
       return;
     case 'date':
+      checkBuiltInPrototype(value, 'Date', location);
+      return;
     case 'regExp':
     case 'arrayBuffer':
     case 'view':

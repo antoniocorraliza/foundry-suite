@@ -2,6 +2,8 @@ import type { Mock } from 'vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
+import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import type { FoundryDebouncer } from '../interfaces/foundry-debouncer.interface';
 import { createDebouncer } from './create-debouncer.function';
 
@@ -247,6 +249,18 @@ describe('createDebouncer', () => {
       input.dispatchEvent(event);
       vi.advanceTimersByTime(300);
       expect(callback.mock.calls).toEqual([[event]]);
+    });
+
+    it('leaves the arguments of schedule unchanged, also when it runs the call', () => {
+      const callback: Mock = vi.fn();
+      const argument: FrozenSnapshot<object> = freezeAndSnapshot({ items: [1, 2], lookup: new Map([['a', 1]]) });
+      const debouncer: FoundryDebouncer<[object]> = createDebouncer(callback, 500);
+      debouncer.schedule(argument.value);
+      vi.advanceTimersByTime(500);
+      debouncer.schedule(argument.value);
+      debouncer.flush();
+      expect(callback).toHaveBeenCalledTimes(2);
+      expect(argument.listChanges()).toEqual([]);
     });
 
     it('has its own timer: two debouncers run both', () => {

@@ -2,6 +2,7 @@ import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
 import {
   FoundryCircularReferenceError,
   ɵcheckOptions,
+  ɵcopyArrayItems,
   ɵdefineOwnProperty,
   ɵgetOwnDataEntries,
   ɵisPlainObject,
@@ -27,9 +28,9 @@ function clean(value: unknown, path: FoundryObjectPath, ancestors: ReadonlyArray
   if (ancestors.includes(value)) throw new FoundryCircularReferenceError({ path });
   const inner: ReadonlyArray<object> = [...ancestors, value];
   if (Array.isArray(value)) {
-    return value.flatMap((item: unknown, index) =>
-      cleaning.removeEmptyArrayItems && (item === null || item === undefined) ? [] : [clean(item, [...path, index], inner, cleaning)],
-    );
+    const items: Array<unknown> = ɵcopyArrayItems(value);
+    if (!cleaning.removeEmptyArrayItems) return items.map((item, index) => clean(item, [...path, index], inner, cleaning));
+    return items.flatMap((item, index) => (item === null || item === undefined ? [] : [clean(item, [...path, index], inner, cleaning)]));
   }
   const result: object = {};
   ɵgetOwnDataEntries(value).forEach(([key, item]) => {
