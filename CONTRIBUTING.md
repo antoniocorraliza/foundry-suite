@@ -101,8 +101,8 @@ Checked by:
   - no types in tags (`no-types`) and no tag that only repeats its name (`informative-docs`);
   - `@param` names that exist, and descriptions in `@param` and `@returns`;
   - `@throws` when the body throws (`require-throws`), and a one-line `@example`.
-- `tools/lint/check-text.ts`: the sales words and the filler openings in any JSDoc line; a `@throws` on an `is...` or `has...` function or method that is not in `NEVER_THROWING_NAME_EXCEPTIONS`; and, in `constants/`, `interfaces/` and `types/` of `projects/`, a declaration JSDoc that opens with a template verb (`TEMPLATE_JSDOC_VERBS` in `tools/lint/constants/comment-patterns.constant.ts`: "Gives", "Holds", "Lists", "Names", "Sets"...).
-- Review: the number of sentences, that nothing repeats the types, `@throws` for the errors of the functions it calls, whether an `@example` is needed, English, filler that the lists do not catch, and an internal JSDoc that only repeats the name.
+- `tools/lint/check-text.ts`: the sales words and the filler openings in any JSDoc line; a `@throws` on an `is...` or `has...` function or method that is not in `NEVER_THROWING_NAME_EXCEPTIONS`; and, in `constants/`, `interfaces/` and `types/` of `projects/`, a declaration JSDoc that opens with a template verb (`TEMPLATE_JSDOC_VERBS` in `tools/lint/constants/comment-patterns.constant.ts`: "Gives", "Holds", "Lists", "Names", "Sets"...); and, in the code of `projects/`, a declaration JSDoc whose first sentence has no word besides the words of the name, the verb of a function and the filler words of `JSDOC_FILLER_WORDS` (`tools/lint/constants/jsdoc-name-words.constant.ts`).
+- Review: the number of sentences, that nothing repeats the types, `@throws` for the errors of the functions it calls, whether an `@example` is needed, English, filler that the lists do not catch, and an internal JSDoc that repeats the name in other words or on a member.
 
 ### 3. No process references
 
@@ -661,7 +661,7 @@ it.each<unknown>([5, 'x', true, null, []])('throws a TypeError for the options %
 });
 ```
 
-Checked by: review: tables of one case, the errors of a reader tested again outside its spec, and a short test that does not compare with the reader.
+Checked by: `tools/lint/check-text.ts` reports an `it.each`, `test.each` or `describe.each` outside a `public-api.spec.ts` whose table, written in the call or in a constant of the same file, has fewer than two cases. Review: that the errors of a reader are not tested again outside its spec, and that the short test compares with the reader.
 
 ## How each piece is written
 
