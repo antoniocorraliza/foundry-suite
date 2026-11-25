@@ -1,7 +1,8 @@
 import { expect } from 'vitest';
+import type { StartPromise } from '../types/start-promise.type';
 
 /** Starts an action that returns a promise, checks that starting it throws nothing, and returns the rejection, or `null` when it resolves. */
-export async function catchRejection(start: () => Promise<unknown>): Promise<unknown> {
+export async function catchRejection(start: StartPromise): Promise<unknown> {
   let promise: Promise<unknown> | null = null;
   expect(() => {
     promise = start();

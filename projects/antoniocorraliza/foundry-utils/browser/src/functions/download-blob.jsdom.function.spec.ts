@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { catchError } from '@foundry-test/functions/catch-error.function';
-import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { FoundryBrowserApiUnavailableError } from '../errors/foundry-browser-api-unavailable.error';
 import { downloadBlob } from './download-blob.function';
 
@@ -36,6 +35,6 @@ describe('downloadBlob with jsdom', () => {
   it('looks for the document before the URL functions', () => {
     vi.stubGlobal('document', undefined);
     vi.stubGlobal('URL', {});
-    expect((catchThrown(() => downloadBlob(new Blob(['a']), 'a.csv')) as FoundryBrowserApiUnavailableError).missingApi).toBe('document');
+    expect(catchError(() => downloadBlob(new Blob(['a']), 'a.csv'), FoundryBrowserApiUnavailableError).missingApi).toBe('document');
   });
 });

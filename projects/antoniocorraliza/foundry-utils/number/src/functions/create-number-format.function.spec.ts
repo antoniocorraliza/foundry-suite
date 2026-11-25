@@ -26,6 +26,12 @@ describe('createNumberFormat', () => {
     expect(createNumberFormat({ locale: 'es-ES', fallback: '—' }, 'decimal').fallback).toBe('—');
   });
 
+  it('rejects a fallback that is not a text as parseTextOption does', () => {
+    expect(catchError(() => createNumberFormat({ locale: 'es-ES', fallback: 0 }, 'decimal'), TypeError).message).toBe(
+      catchError(() => ɵparseTextOption({ options: { fallback: 0 }, name: 'fallback', fallback: '' }), TypeError).message,
+    );
+  });
+
   it.each<[string, unknown]>([
     ['locale', 'auto'],
     ['always', 'always'],

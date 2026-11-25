@@ -206,7 +206,7 @@ describe('parseCsv', () => {
         'yes',
         () => ɵparseBooleanOption({ options: { relaxColumnCount: 'yes' }, name: 'relaxColumnCount', fallback: false }),
       ],
-    ])('rejects the %s %j as the reader of the root does', (name, value, readOption) => {
+    ])('rejects the %s %j as parseEnumOption or parseBooleanOption does', (name, value, readOption) => {
       expect(catchError(() => parseCsv('a', { [name]: value } as never), TypeError).message).toBe(
         catchError(readOption, TypeError).message,
       );

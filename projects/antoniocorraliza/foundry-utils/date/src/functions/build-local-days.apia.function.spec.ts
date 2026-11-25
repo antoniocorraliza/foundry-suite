@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { getCalendarMonthGrid } from './get-calendar-month-grid.function';
 import { getCalendarWeek } from './get-calendar-week.function';
 import { getConsecutiveDays } from './get-consecutive-days.function';
@@ -12,9 +12,7 @@ describe('buildLocalDays in a time zone that skips a whole day', () => {
     ['getCalendarWeek', () => getCalendarWeek(new Date(2011, 11, 29))],
     ['getCalendarMonthGrid', () => getCalendarMonthGrid(new Date(2011, 11, 1))],
   ])('throws through %s a RangeError naming the skipped day instead of leaving it out', (_name, listDays) => {
-    const error: unknown = catchThrown(listDays);
-    expect(error).toBeInstanceOf(RangeError);
-    expect((error as RangeError).message).toContain('2011-12-30');
+    expect(catchError(listDays, RangeError).message).toContain('2011-12-30');
   });
 
   it('lists the days around the skipped day when the list does not contain it', () => {

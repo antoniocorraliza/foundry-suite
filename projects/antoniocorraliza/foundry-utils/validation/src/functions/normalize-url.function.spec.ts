@@ -53,7 +53,7 @@ describe('normalizeUrl', () => {
     },
   );
 
-  it('rejects an allowMissingProtocol that is not a boolean and an unknown defaultProtocol as the readers of the root do', () => {
+  it('rejects an allowMissingProtocol that is not a boolean and an unknown defaultProtocol as parseBooleanOption and parseEnumOption do', () => {
     expect(catchError(() => normalizeUrl('https://empresa.es', { allowMissingProtocol: 'yes' } as never), TypeError).message).toBe(
       catchError(
         () => ɵparseBooleanOption({ options: { allowMissingProtocol: 'yes' }, name: 'allowMissingProtocol', fallback: false }),

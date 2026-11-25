@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
 import { listFunctionNames } from '@foundry-test/functions/list-function-names.function';
@@ -22,5 +22,14 @@ describe('public API of the form-data entry', () => {
 
   it('throws a TypeError through map, which passes the index as the options', () => {
     expect(catchThrown(() => [{ a: 'x' }].map(entry.createFormData as never))).toBeInstanceOf(TypeError);
+  });
+
+  it('can be imported without FormData, Blob or File, which it only reads when a function is called', async () => {
+    vi.resetModules();
+    vi.stubGlobal('FormData', undefined);
+    vi.stubGlobal('Blob', undefined);
+    vi.stubGlobal('File', undefined);
+    await expect(import('./public-api')).resolves.toBeDefined();
+    vi.unstubAllGlobals();
   });
 });
