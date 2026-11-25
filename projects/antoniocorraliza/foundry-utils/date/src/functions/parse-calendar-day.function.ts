@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { DATE_FORMATS } from '../constants/date-formats.constant';
 import { TIMESTAMP_UNITS } from '../constants/timestamp-units.constant';
 import type { CivilDate } from '../interfaces/civil-date.interface';
@@ -27,7 +27,7 @@ function readDay(value: unknown, format: FoundryDateFormat): CivilDate | null {
  * @throws {TypeError} When the options are not an object or have an unknown value.
  */
 export function parseCalendarDay(value: unknown, options?: FoundryParseCalendarDayOptions): FoundryCalendarDay | null {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of parseCalendarDay must be an object');
+  ɵcheckOptions(options, 'parseCalendarDay');
   const format: FoundryDateFormat = ɵparseEnumOption({ options, name: 'format', allowedValues: DATE_FORMATS, fallback: 'iso' });
   const canReadMidnightInstant: boolean = ɵparseBooleanOption({ options, name: 'acceptMidnightInstant', fallback: false });
   const timestampUnit: TimestampUnit = ɵparseEnumOption({

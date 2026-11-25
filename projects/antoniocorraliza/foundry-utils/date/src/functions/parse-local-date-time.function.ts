@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { DATE_FORMATS } from '../constants/date-formats.constant';
 import type { DatePartsReading } from '../interfaces/date-parts-reading.interface';
 import type { DateTextReading } from '../interfaces/date-text-reading.interface';
@@ -30,7 +30,7 @@ function readLocalDateTimeParts(value: unknown): FoundryLocalDateTime | null {
  * @throws {TypeError} When the options are not an object or have an unknown value.
  */
 export function parseLocalDateTime(value: unknown, options?: FoundryParseLocalDateTimeOptions): FoundryLocalDateTime | null {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of parseLocalDateTime must be an object');
+  ɵcheckOptions(options, 'parseLocalDateTime');
   const format: FoundryDateFormat = ɵparseEnumOption({ options, name: 'format', allowedValues: DATE_FORMATS, fallback: 'iso' });
   return typeof value === 'string' ? readLocalDateTimeText(value, format) : readLocalDateTimeParts(value);
 }

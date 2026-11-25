@@ -1,9 +1,9 @@
 import {
+  ɵcheckOptions,
   ɵgetOwnDataEntries,
   ɵgetOwnDataValue,
   ɵgetValueTag,
   ɵisBlobLike,
-  ɵisOptionsValue,
   ɵisPlainObject,
   ɵparseEnumOption,
 } from '@antoniocorraliza/foundry-utils';
@@ -75,7 +75,7 @@ function writeJson(json: unknown, key: string): string {
  */
 export function createFormData(entries: FoundryFormDataEntries, options?: { readonly arrayKeyStyle?: 'repeat' | 'brackets' }): FormData {
   if (!ɵisPlainObject(entries)) throw new TypeError('[foundry-utils]: the entries of createFormData must be a plain object');
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of createFormData must be an object');
+  ɵcheckOptions(options, 'createFormData');
   const arrayKeyStyle: ArrayKeyStyle = ɵparseEnumOption({
     options,
     name: 'arrayKeyStyle',

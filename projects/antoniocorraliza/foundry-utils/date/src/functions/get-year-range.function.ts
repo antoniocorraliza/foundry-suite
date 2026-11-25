@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';
 import { MAX_YEAR, MIN_YEAR } from '../constants/date-limits.constant';
 
 /**
@@ -11,7 +11,7 @@ export function getYearRange(options: {
   readonly yearsBefore: number;
   readonly yearsAfter: number;
 }): Array<number> {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of getYearRange must be an object');
+  ɵcheckOptions(options, 'getYearRange');
   const referenceYear: number = ɵparseIntegerOption({
     options,
     name: 'referenceYear',

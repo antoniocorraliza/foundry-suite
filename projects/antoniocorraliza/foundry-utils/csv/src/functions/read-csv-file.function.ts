@@ -1,4 +1,4 @@
-import { ɵisBlobLike, ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵisBlobLike, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { TEXT_ENCODINGS } from '../constants/text-encodings.constant';
 import type { FoundryCsvTable } from '../interfaces/foundry-csv-table.interface';
 import type { FoundryCsvTableOptions } from '../interfaces/foundry-csv-table-options.interface';
@@ -18,7 +18,7 @@ export async function readCsvFile(
   if (!ɵisBlobLike(file)) {
     throw new TypeError(`[foundry-utils]: readCsvFile needs a Blob or a File, got ${typeof file}`);
   }
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of readCsvFile must be an object');
+  ɵcheckOptions(options, 'readCsvFile');
   const encoding: FoundryTextEncoding = ɵparseEnumOption({ options, name: 'encoding', allowedValues: TEXT_ENCODINGS, fallback: 'auto' });
   if (typeof TextDecoder !== 'function' || typeof file.arrayBuffer !== 'function') {
     throw new TypeError('[foundry-utils]: readCsvFile needs TextDecoder and Blob.prototype.arrayBuffer, which this environment lacks');

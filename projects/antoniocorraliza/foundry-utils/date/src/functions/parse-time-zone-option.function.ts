@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { TIME_ZONE_MODES } from '../constants/time-zone-modes.constant';
 import type { FoundryTimeZoneMode } from '../types/foundry-time-zone-mode.type';
 
@@ -7,6 +7,6 @@ import type { FoundryTimeZoneMode } from '../types/foundry-time-zone-mode.type';
  * @throws {TypeError} When the options are not an object or the time zone is unknown.
  */
 export function parseTimeZoneOption(options: unknown, functionName: string): FoundryTimeZoneMode {
-  if (!ɵisOptionsValue(options)) throw new TypeError(`[foundry-utils]: the options of ${functionName} must be an object`);
+  ɵcheckOptions(options, functionName);
   return ɵparseEnumOption({ options, name: 'timeZone', allowedValues: TIME_ZONE_MODES, fallback: 'local' });
 }

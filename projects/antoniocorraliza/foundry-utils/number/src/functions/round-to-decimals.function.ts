@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { MAX_ROUNDING_DECIMALS } from '../constants/number-limits.constant';
 import { ROUNDING_MODES } from '../constants/rounding-modes.constant';
 import type { FoundryRoundingMode } from '../types/foundry-rounding-mode.type';
@@ -21,7 +21,7 @@ export function roundToDecimals(value: number, decimals: number, options?: { rea
       `[foundry-utils]: the decimals of roundToDecimals must be an integer from 0 to ${MAX_ROUNDING_DECIMALS}, got ${String(decimals)}`,
     );
   }
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of roundToDecimals must be an object');
+  ɵcheckOptions(options, 'roundToDecimals');
   const mode: FoundryRoundingMode = ɵparseEnumOption({
     options,
     name: 'mode',

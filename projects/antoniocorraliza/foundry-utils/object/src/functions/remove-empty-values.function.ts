@@ -1,9 +1,9 @@
 import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
 import {
   FoundryCircularReferenceError,
+  ɵcheckOptions,
   ɵdefineOwnProperty,
   ɵgetOwnDataEntries,
-  ɵisOptionsValue,
   ɵisPlainObject,
 } from '@antoniocorraliza/foundry-utils';
 import type { EmptyValuesCleaning } from '../interfaces/empty-values-cleaning.interface';
@@ -60,6 +60,6 @@ export function removeEmptyValues<T>(
 ): FoundryWithoutEmptyValues<T, true>;
 
 export function removeEmptyValues(value: unknown, options?: FoundryRemoveEmptyValuesOptions): unknown {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of removeEmptyValues must be an object');
+  ɵcheckOptions(options, 'removeEmptyValues');
   return clean(value, [], [], parseCleaning(options));
 }

@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { DATE_FORMATS } from '../constants/date-formats.constant';
 import { MAX_TIME, MAX_YEAR, MIN_TIME, MIN_YEAR } from '../constants/date-limits.constant';
 import { MILLISECONDS_PER_MINUTE } from '../constants/time-units.constant';
@@ -68,7 +68,7 @@ function readParts(value: unknown, timeZone: FoundryTimeZoneMode): Date | null {
  * @throws {TypeError} When the options are not an object or have an unknown value.
  */
 export function parseDate(value: unknown, options?: FoundryParseDateOptions): Date | null {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of parseDate must be an object');
+  ɵcheckOptions(options, 'parseDate');
   const format: FoundryDateFormat = ɵparseEnumOption({ options, name: 'format', allowedValues: DATE_FORMATS, fallback: 'iso' });
   const timeZone: FoundryTimeZoneMode = ɵparseEnumOption({ options, name: 'timeZone', allowedValues: TIME_ZONE_MODES, fallback: 'local' });
   const isCalendarDate: boolean = ɵparseBooleanOption({ options, name: 'calendarDate', fallback: false });

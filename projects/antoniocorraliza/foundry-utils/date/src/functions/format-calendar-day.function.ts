@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { DATE_FORMATS } from '../constants/date-formats.constant';
 import { DATE_SEPARATORS } from '../constants/date-separators.constant';
 import type { FoundryFormatCalendarDayOptions } from '../interfaces/foundry-format-calendar-day-options.interface';
@@ -23,7 +23,7 @@ export function formatCalendarDay(day: FoundryCalendarDay, options?: FoundryForm
 export function formatCalendarDay(day: FoundryCalendarDay | null, options?: FoundryFormatCalendarDayOptions): string | null;
 
 export function formatCalendarDay(day: FoundryCalendarDay | null, options?: FoundryFormatCalendarDayOptions): string | null {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of formatCalendarDay must be an object');
+  ɵcheckOptions(options, 'formatCalendarDay');
   const format: FoundryDateFormat = ɵparseEnumOption({ options, name: 'format', allowedValues: DATE_FORMATS, fallback: 'iso' });
   const separator: FoundryDateSeparator = ɵparseEnumOption({ options, name: 'separator', allowedValues: DATE_SEPARATORS, fallback: '/' });
   return day === null ? null : writeDateText(getCalendarDayParts(day), format, separator);

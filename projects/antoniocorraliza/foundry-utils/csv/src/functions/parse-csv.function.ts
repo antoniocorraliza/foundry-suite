@@ -1,4 +1,4 @@
-import { ɵdefineOwnProperty, ɵisOptionsValue, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵdefineOwnProperty, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { DUPLICATE_HEADER_MODES } from '../constants/duplicate-header-modes.constant';
 import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
 import type { CsvRecord } from '../interfaces/csv-record.interface';
@@ -49,7 +49,7 @@ function writeRow(headers: ReadonlyArray<string>, cells: ReadonlyArray<string>):
  * @throws {FoundryCsvParseError} When a quote, a header or the number of cells of a row is wrong.
  */
 export function parseCsv(text: string, options?: FoundryCsvTableOptions): FoundryCsvTable {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of parseCsv must be an object');
+  ɵcheckOptions(options, 'parseCsv');
   const reading: CsvRecordsReading = readCsvRecords(text, options);
   const isRelaxed: boolean = ɵparseBooleanOption({ options, name: 'relaxColumnCount', fallback: false });
   const duplicateHeaders: DuplicateHeaderMode = ɵparseEnumOption({

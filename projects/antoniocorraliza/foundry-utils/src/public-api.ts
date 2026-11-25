@@ -1,6 +1,7 @@
 export { FoundryCircularReferenceError } from './errors/foundry-circular-reference.error';
 export { FoundryCryptoUnavailableError } from './errors/foundry-crypto-unavailable.error';
 export { FoundryUtilsError } from './errors/foundry-utils.error';
+export { ɵcheckOptions } from './functions/check-options.function';
 export { ɵdefineOwnProperty } from './functions/define-own-property.function';
 export { ɵformatObjectPath } from './functions/format-object-path.function';
 export { ɵgetOwnDataEntries } from './functions/get-own-data-entries.function';

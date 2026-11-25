@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseLanguageTag, ɵparseTextOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseLanguageTag, ɵparseTextOption } from '@antoniocorraliza/foundry-utils';
 import { TITLE_CASE_WORD } from '../constants/title-case-word.constant';
 import { splitFirstCharacter } from './split-first-character.function';
 
@@ -15,7 +15,7 @@ function capitalizeWord(word: string, locale: string | null): string {
  */
 export function toTitleCase(text: string, options?: { readonly locale?: string }): string {
   if (typeof text !== 'string') throw new TypeError(`[foundry-utils]: the text of toTitleCase must be a string, got ${typeof text}`);
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of toTitleCase must be an object');
+  ɵcheckOptions(options, 'toTitleCase');
   const locale: string | null = ɵparseTextOption({ options, name: 'locale', fallback: null });
   const languageTag: string | null = locale === null ? null : ɵparseLanguageTag(locale);
   return text.replace(TITLE_CASE_WORD, (word) => capitalizeWord(word, languageTag));

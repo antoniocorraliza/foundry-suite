@@ -1,9 +1,9 @@
 import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
 import {
   FoundryCircularReferenceError,
+  ɵcheckOptions,
   ɵdefineOwnProperty,
   ɵgetOwnDataEntries,
-  ɵisOptionsValue,
   ɵisPlainObject,
   ɵparseEnumOption,
 } from '@antoniocorraliza/foundry-utils';
@@ -41,7 +41,7 @@ function convertValue(value: unknown, path: FoundryObjectPath, ancestors: Readon
  * @throws {TypeError} When the options are not an object or have an unknown value.
  */
 export function convertKeys(value: unknown, options: unknown, convertKey: (key: string) => string): unknown {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of the key conversion must be an object');
+  ɵcheckOptions(options, 'the key conversion');
   const mode: CollisionMode = ɵparseEnumOption({ options, name: 'onCollision', allowedValues: COLLISION_MODES, fallback: 'error' });
   return convertValue(value, [], [], { convertKey, mode });
 }

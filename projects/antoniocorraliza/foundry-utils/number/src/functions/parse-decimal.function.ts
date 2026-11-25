@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { DECIMAL_SEPARATORS } from '../constants/decimal-separators.constant';
 import { GROUP_SEPARATORS } from '../constants/group-separators.constant';
 import { GROUP_STYLES } from '../constants/group-styles.constant';
@@ -11,7 +11,7 @@ import { readDecimal } from './read-decimal.function';
  * @throws {TypeError} When the options are not valid.
  */
 export function parseDecimal(value: unknown, options: FoundryParseDecimalOptions): number | null {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of parseDecimal must be an object');
+  ɵcheckOptions(options, 'parseDecimal');
   const format: Required<FoundryParseDecimalOptions> = {
     decimalSeparator: ɵparseEnumOption({ options, name: 'decimalSeparator', allowedValues: DECIMAL_SEPARATORS }),
     groupSeparator: ɵparseEnumOption({ options, name: 'groupSeparator', allowedValues: GROUP_SEPARATORS, fallback: null }),
