@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FoundryCryptoUnavailableError } from '@antoniocorraliza/foundry-utils';
+import { catchRejectedError } from '@foundry-test/functions/catch-rejected-error.function';
 import { catchRejection } from '@foundry-test/functions/catch-rejection.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
@@ -76,25 +77,28 @@ describe('createHexDigest', () => {
   it.each<unknown>([null, undefined, 5, true, {}, ['a'], new Blob(['abc'])])(
     'returns a promise rejected with a TypeError for %j, which is neither a text nor bytes, instead of throwing',
     async (input) => {
-      const rejection: unknown = await catchRejection(() => createHexDigest('SHA-256', input as string));
-      expect(rejection).toBeInstanceOf(TypeError);
-      expect((rejection as TypeError).message).toMatch(/^\[foundry-utils\]: /);
+      const rejection: TypeError = await catchRejectedError(() => createHexDigest('SHA-256', input as string), TypeError);
+      expect(rejection.message).toMatch(/^\[foundry-utils\]: /);
     },
   );
 
   it('returns a promise rejected with a FoundryCryptoUnavailableError for crypto, and not a ReferenceError, when crypto is missing', async () => {
     vi.stubGlobal('crypto', undefined);
-    const rejection: unknown = await catchRejection(() => createHexDigest('SHA-256', 'abc'));
-    expect(rejection).toBeInstanceOf(FoundryCryptoUnavailableError);
-    expect((rejection as FoundryCryptoUnavailableError).missingApi).toBe('crypto');
+    const rejection: FoundryCryptoUnavailableError = await catchRejectedError(
+      () => createHexDigest('SHA-256', 'abc'),
+      FoundryCryptoUnavailableError,
+    );
+    expect(rejection.missingApi).toBe('crypto');
   });
 
   it('returns a promise rejected with a FoundryCryptoUnavailableError that explains the secure context when crypto.subtle is missing', async () => {
     vi.stubGlobal('crypto', { getRandomValues: vi.fn(), randomUUID: vi.fn() });
-    const rejection: unknown = await catchRejection(() => createHexDigest('SHA-512', new Uint8Array([1])));
-    expect(rejection).toBeInstanceOf(FoundryCryptoUnavailableError);
-    expect((rejection as FoundryCryptoUnavailableError).missingApi).toBe('crypto.subtle');
-    expect((rejection as FoundryCryptoUnavailableError).message).toContain('secure context');
+    const rejection: FoundryCryptoUnavailableError = await catchRejectedError(
+      () => createHexDigest('SHA-512', new Uint8Array([1])),
+      FoundryCryptoUnavailableError,
+    );
+    expect(rejection.missingApi).toBe('crypto.subtle');
+    expect(rejection.message).toContain('secure context');
   });
 
   it('checks the input before looking for crypto', async () => {
@@ -104,10 +108,9 @@ describe('createHexDigest', () => {
 
   it('returns a promise rejected with a TypeError that names TextEncoder when a text needs it and the environment lacks it', async () => {
     vi.stubGlobal('TextEncoder', undefined);
-    const rejection: unknown = await catchRejection(() => createHexDigest('SHA-256', 'abc'));
-    expect(rejection).toBeInstanceOf(TypeError);
-    expect((rejection as TypeError).message).toMatch(/^\[foundry-utils\]: /);
-    expect((rejection as TypeError).message).toContain('TextEncoder');
+    const rejection: TypeError = await catchRejectedError(() => createHexDigest('SHA-256', 'abc'), TypeError);
+    expect(rejection.message).toMatch(/^\[foundry-utils\]: /);
+    expect(rejection.message).toContain('TextEncoder');
   });
 
   it('reads crypto when it is called, so a stand-in installed after the import is used', async () => {

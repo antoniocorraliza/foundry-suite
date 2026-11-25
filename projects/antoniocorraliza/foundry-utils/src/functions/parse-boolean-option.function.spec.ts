@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { ɵparseBooleanOption } from './parse-boolean-option.function';
 
 describe('ɵparseBooleanOption', () => {
@@ -15,8 +15,7 @@ describe('ɵparseBooleanOption', () => {
   });
 
   it.each<unknown>([0, 1, 'true', {}])('throws a TypeError for %j, naming the option and the type of the value', (strict) => {
-    const error: unknown = catchThrown(() => ɵparseBooleanOption({ options: { strict }, name: 'strict', fallback: false }));
-    expect(error).toBeInstanceOf(TypeError);
-    expect((error as TypeError).message).toBe(`[foundry-utils]: the strict option must be a boolean, got ${typeof strict}`);
+    const error: TypeError = catchError(() => ɵparseBooleanOption({ options: { strict }, name: 'strict', fallback: false }), TypeError);
+    expect(error.message).toBe(`[foundry-utils]: the strict option must be a boolean, got ${typeof strict}`);
   });
 });

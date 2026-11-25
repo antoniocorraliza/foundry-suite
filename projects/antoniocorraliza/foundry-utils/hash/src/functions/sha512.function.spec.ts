@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { FoundryCryptoUnavailableError } from '@antoniocorraliza/foundry-utils';
-import { catchRejection } from '@foundry-test/functions/catch-rejection.function';
+import { FoundryCryptoUnavailableError } from '@antoniocorraliza/foundry-utils';
+import { catchRejectedError } from '@foundry-test/functions/catch-rejected-error.function';
 import { createHexDigest } from './create-hex-digest.function';
 import { sha512 } from './sha512.function';
 
@@ -33,8 +33,11 @@ describe('sha512', () => {
       await Promise.all(inputs.map((input) => createHexDigest('SHA-512', input))),
     );
     vi.stubGlobal('crypto', {});
-    const rejection: unknown = await catchRejection(() => sha512('abc'));
-    const digestRejection: unknown = await catchRejection(() => createHexDigest('SHA-512', 'abc'));
-    expect((rejection as FoundryCryptoUnavailableError).missingApi).toBe((digestRejection as FoundryCryptoUnavailableError).missingApi);
+    const rejection: FoundryCryptoUnavailableError = await catchRejectedError(() => sha512('abc'), FoundryCryptoUnavailableError);
+    const digestRejection: FoundryCryptoUnavailableError = await catchRejectedError(
+      () => createHexDigest('SHA-512', 'abc'),
+      FoundryCryptoUnavailableError,
+    );
+    expect(rejection.missingApi).toBe(digestRejection.missingApi);
   });
 });

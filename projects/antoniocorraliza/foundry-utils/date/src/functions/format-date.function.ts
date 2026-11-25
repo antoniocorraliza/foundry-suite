@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { DATE_FORMATS } from '../constants/date-formats.constant';
 import { DATE_SEPARATORS } from '../constants/date-separators.constant';
 import { TIME_PRECISIONS } from '../constants/time-precisions.constant';
@@ -28,7 +28,7 @@ export function formatDate(date: Date, options?: FoundryFormatDateOptions): stri
 export function formatDate(date: Date | null, options?: FoundryFormatDateOptions): string | null;
 
 export function formatDate(date: Date | null, options?: FoundryFormatDateOptions): string | null {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of formatDate must be an object');
+  ɵcheckOptions(options, 'formatDate');
   const format: FoundryDateFormat = ɵparseEnumOption({ options, name: 'format', allowedValues: DATE_FORMATS, fallback: 'iso' });
   const separator: FoundryDateSeparator = ɵparseEnumOption({ options, name: 'separator', allowedValues: DATE_SEPARATORS, fallback: '/' });
   const time: FoundryTimePrecision = ɵparseEnumOption({ options, name: 'time', allowedValues: TIME_PRECISIONS, fallback: 'none' });

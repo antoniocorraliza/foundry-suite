@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';
 import { buildLocalDays } from './build-local-days.function';
 import { getEpochDayOfDate } from './get-epoch-day-of-date.function';
 
@@ -8,7 +8,7 @@ import { getEpochDayOfDate } from './get-epoch-day-of-date.function';
  * @throws {TypeError} When the options are not an object.
  */
 export function getDaysInRange(start: Date, end: Date, options?: { readonly stepInDays?: number }): Array<Date> {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of getDaysInRange must be an object');
+  ɵcheckOptions(options, 'getDaysInRange');
   const step: number = ɵparseIntegerOption({ options, name: 'stepInDays', minimum: 1, fallback: 1 });
   const startEpochDay: number = getEpochDayOfDate(start);
   const endEpochDay: number = getEpochDayOfDate(end);

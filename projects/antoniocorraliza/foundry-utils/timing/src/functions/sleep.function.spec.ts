@@ -1,6 +1,7 @@
 import { getEventListeners } from 'node:events';
 import type { MockInstance } from 'vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { catchRejectedError } from '@foundry-test/functions/catch-rejected-error.function';
 import { catchRejection } from '@foundry-test/functions/catch-rejection.function';
 import { sleep } from './sleep.function';
 
@@ -54,9 +55,8 @@ describe('sleep', () => {
   it.each<unknown>([-1, 2 ** 31, 1.5, -0.5, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, '5', null, undefined])(
     'never throws for the milliseconds %s: it returns a promise rejected with a RangeError, without a timer',
     async (milliseconds) => {
-      const rejection: unknown = await catchRejection(() => sleep(milliseconds as number));
-      expect(rejection).toBeInstanceOf(RangeError);
-      expect((rejection as RangeError).message).toMatch(/^\[foundry-utils\]: /);
+      const rejection: RangeError = await catchRejectedError(() => sleep(milliseconds as number), RangeError);
+      expect(rejection.message).toMatch(/^\[foundry-utils\]: /);
       expect(vi.getTimerCount()).toBe(0);
     },
   );
@@ -78,9 +78,8 @@ describe('sleep', () => {
   ])(
     'never throws for a signal that is %s: it returns a promise rejected with a TypeError that names the option',
     async (_description, signal) => {
-      const rejection: unknown = await catchRejection(() => sleep(10, { signal: signal as AbortSignal }));
-      expect(rejection).toBeInstanceOf(TypeError);
-      expect((rejection as TypeError).message).toMatch(/^\[foundry-utils\]: .*signal/);
+      const rejection: TypeError = await catchRejectedError(() => sleep(10, { signal: signal as AbortSignal }), TypeError);
+      expect(rejection.message).toMatch(/^\[foundry-utils\]: .*signal/);
       expect(vi.getTimerCount()).toBe(0);
     },
   );

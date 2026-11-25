@@ -114,7 +114,7 @@ it('returns the first instant of a day without midnight', () => {});
 it('U17: parseDate in Santiago', () => {});
 ```
 
-Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `describe`, `it` and `test` (read with the TypeScript parser). It looks for anything shaped like a code (capitals and digits joined by hyphens, or one to four capitals followed by one to three digits) and for decision numbers. Names that look like a code are listed as exceptions in `REVIEW_CODE_EXCEPTIONS` (`tools/lint/constants/review-codes.constant.ts`) (`UTF-8`, `ISO-8601`, `ES2022`, `V8`, `F2`...): add one there when a real name is rejected. It also rejects test titles that tell how the code was made instead of what the test checks: "the design", "loose reference", "old version" and "of this entry" (`PROCESS_TITLE_PHRASE` in `tools/lint/constants/test-title-phrases.constant.ts`).
+Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `describe`, `it` and `test` (read with the TypeScript parser). It looks for anything shaped like a code (capitals and digits joined by hyphens, or one to four capitals followed by one to three digits) and for decision numbers. Names that look like a code are listed as exceptions in `REVIEW_CODE_EXCEPTIONS` (`tools/lint/constants/review-codes.constant.ts`) (`UTF-8`, `ISO-8601`, `ES2022`, `V8`, `F2`...): add one there when a real name is rejected. It also rejects test titles that tell how the code was made instead of what the test checks: "as the design", "of the design", "the design fixes", "says" or "leaves", "loose reference", "old version" and "of this entry"; a title such as "applies the design tokens" passes (`PROCESS_TITLE_PHRASE` in `tools/lint/constants/test-title-phrases.constant.ts`).
 
 ### 4. Only characters you can type
 
@@ -676,7 +676,7 @@ export type PhoneCountry = (typeof PHONE_COUNTRIES)[number];
 
 ### Checking an error in a test
 
-`catchError` of `@foundry-test` runs the action, checks the class of what it throws and returns the error with its type. A spec does not write its own helper for this.
+`catchError` of `@foundry-test` runs the action, checks the class of what it throws and returns the error with its type; `catchRejectedError` does the same with a promise that rejects. A spec does not write its own helper for this. When the test only checks the class, `expect(catchThrown(...)).toBeInstanceOf(TypeError)` is enough.
 
 ```ts
 const error: FoundryCsvParseError = catchError(() => parseCsv('a,"b'), FoundryCsvParseError);

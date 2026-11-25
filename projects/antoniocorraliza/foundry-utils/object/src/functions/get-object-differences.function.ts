@@ -1,5 +1,5 @@
 import type { FoundryObjectPath, ɵValueKind } from '@antoniocorraliza/foundry-utils';
-import { ɵgetOwnDataEntries, ɵgetValueKind, ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵgetOwnDataEntries, ɵgetValueKind, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { ARRAY_MODES } from '../constants/array-modes.constant';
 import type { DifferenceWalk } from '../interfaces/difference-walk.interface';
 import type { FoundryDeepEqualOptions } from '../interfaces/foundry-deep-equal-options.interface';
@@ -85,7 +85,7 @@ export function getObjectDifferences(
   current: unknown,
   options?: { readonly arrays?: 'atomic' | 'byIndex' } & FoundryDeepEqualOptions,
 ): ReadonlyArray<FoundryObjectDifference> {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of getObjectDifferences must be an object');
+  ɵcheckOptions(options, 'getObjectDifferences');
   const walk: DifferenceWalk = {
     arrayMode: ɵparseEnumOption({ options, name: 'arrays', allowedValues: ARRAY_MODES, fallback: 'atomic' }),
     customEquality: parseCustomEquality(options),

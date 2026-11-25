@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { catchRejection } from '@foundry-test/functions/catch-rejection.function';
+import { catchRejectedError } from '@foundry-test/functions/catch-rejected-error.function';
 import { createHexDigest } from './create-hex-digest.function';
 
 const NODE_ALGORITHMS: ReadonlyArray<['SHA-256' | 'SHA-512', string]> = [
@@ -37,8 +37,10 @@ describe('createHexDigest against node:crypto', () => {
   });
 
   it('rejects with the error of the engine, not one of its own, for a view over a SharedArrayBuffer', async () => {
-    const rejection: unknown = await catchRejection(() => createHexDigest('SHA-256', new Uint8Array(new SharedArrayBuffer(4))));
-    expect(rejection).toBeInstanceOf(TypeError);
-    expect((rejection as TypeError).message).not.toMatch(/^\[foundry-utils\]/);
+    const rejection: TypeError = await catchRejectedError(
+      () => createHexDigest('SHA-256', new Uint8Array(new SharedArrayBuffer(4))),
+      TypeError,
+    );
+    expect(rejection.message).not.toMatch(/^\[foundry-utils\]/);
   });
 });

@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { REPEATED_TIMES } from '../constants/repeated-times.constant';
 import { TIME_ZONE_MODES } from '../constants/time-zone-modes.constant';
 import type { CivilDateTime } from '../interfaces/civil-date-time.interface';
@@ -16,7 +16,7 @@ import { readLocalDateTime } from './read-local-date-time.function';
  * @throws {TypeError} When the options are not an object or have an unknown value.
  */
 export function localDateTimeToDate(value: FoundryLocalDateTime, options?: FoundryLocalDateTimeToDateOptions): Date | null {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of localDateTimeToDate must be an object');
+  ɵcheckOptions(options, 'localDateTimeToDate');
   const timeZone: FoundryTimeZoneMode = ɵparseEnumOption({ options, name: 'timeZone', allowedValues: TIME_ZONE_MODES, fallback: 'local' });
   const repeatedTime: RepeatedTime = ɵparseEnumOption({
     options,

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
 import { FoundryBrowserApiUnavailableError } from '../errors/foundry-browser-api-unavailable.error';
@@ -11,9 +12,11 @@ describe('downloadBlob on Node', () => {
 
   it('throws a FoundryBrowserApiUnavailableError for the missing document, before creating a URL', () => {
     const createObjectUrl: unknown = vi.spyOn(URL, 'createObjectURL');
-    const thrown: unknown = catchThrown(() => downloadBlob(new Blob(['a']), 'a.csv'));
-    expect(thrown).toBeInstanceOf(FoundryBrowserApiUnavailableError);
-    expect((thrown as FoundryBrowserApiUnavailableError).missingApi).toBe('document');
+    const thrown: FoundryBrowserApiUnavailableError = catchError(
+      () => downloadBlob(new Blob(['a']), 'a.csv'),
+      FoundryBrowserApiUnavailableError,
+    );
+    expect(thrown.missingApi).toBe('document');
     expect(createObjectUrl).not.toHaveBeenCalled();
   });
 
@@ -29,7 +32,10 @@ describe('downloadBlob on Node', () => {
   });
 
   it.each(['Blob', 'File'])('takes an object with the tag %s as a Blob, whatever its class', (tag) => {
-    const thrown: unknown = catchThrown(() => downloadBlob(createObjectWithFakeTag(tag) as Blob, 'a.csv'));
-    expect((thrown as FoundryBrowserApiUnavailableError).missingApi).toBe('document');
+    const thrown: FoundryBrowserApiUnavailableError = catchError(
+      () => downloadBlob(createObjectWithFakeTag(tag) as Blob, 'a.csv'),
+      FoundryBrowserApiUnavailableError,
+    );
+    expect(thrown.missingApi).toBe('document');
   });
 });

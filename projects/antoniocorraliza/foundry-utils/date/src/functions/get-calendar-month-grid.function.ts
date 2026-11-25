@@ -1,4 +1,4 @@
-import { ɵisOptionsValue } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions } from '@antoniocorraliza/foundry-utils';
 import type { FoundryDateParts } from '../interfaces/foundry-date-parts.interface';
 import type { FoundryWeekday } from '../types/foundry-weekday.type';
 import { buildLocalDays } from './build-local-days.function';
@@ -13,7 +13,7 @@ import { parseWeekdayOption } from './parse-weekday-option.function';
  * @throws {TypeError} When the options are not an object.
  */
 export function getCalendarMonthGrid(date: Date, options?: { readonly firstDayOfWeek?: FoundryWeekday }): Array<Date> {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of getCalendarMonthGrid must be an object');
+  ɵcheckOptions(options, 'getCalendarMonthGrid');
   const firstDayOfWeek: FoundryWeekday = parseWeekdayOption(options);
   const parts: Required<FoundryDateParts> = getZonedParts(date, 'local');
   const firstOfMonth: number = convertCivilDateToEpochDay({ year: parts.year, month: parts.month, day: 1 });

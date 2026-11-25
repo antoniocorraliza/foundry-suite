@@ -1,8 +1,8 @@
 import {
+  ɵcheckOptions,
   ɵgetOwnDataEntries,
   ɵgetOwnDataValue,
   ɵgetValueKind,
-  ɵisOptionsValue,
   ɵisPlainObject,
   ɵparseBooleanOption,
   ɵparseEnumOption,
@@ -138,7 +138,7 @@ function writeRow(row: unknown, index: number, columns: ReadonlyArray<CsvWriteCo
  */
 export function toCsv<Row extends object>(rows: ReadonlyArray<Row>, options?: FoundryCsvWriteOptions<Row>): string {
   if (!Array.isArray(rows)) throw new TypeError(`[foundry-utils]: the rows of toCsv must be an array, got ${typeof rows}`);
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of toCsv must be an object');
+  ɵcheckOptions(options, 'toCsv');
   const settings: CsvWriteSettings = {
     delimiter: ɵparseEnumOption({ options, name: 'delimiter', allowedValues: CSV_DELIMITERS, fallback: ',' }),
     decimalSeparator: ɵparseEnumOption({ options, name: 'decimalSeparator', allowedValues: CSV_DECIMAL_SEPARATORS, fallback: '.' }),

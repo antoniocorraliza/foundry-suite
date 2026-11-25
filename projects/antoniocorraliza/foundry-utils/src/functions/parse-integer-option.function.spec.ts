@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { ɵparseIntegerOption } from './parse-integer-option.function';
 
@@ -29,12 +30,16 @@ describe('ɵparseIntegerOption', () => {
   });
 
   it('names the option, its limits and the value in the message', () => {
-    const withMaximum: unknown = catchThrown(() =>
-      ɵparseIntegerOption({ options: { weeks: 0 }, name: 'weeks', minimum: 1, maximum: 5228 }),
+    const withMaximum: RangeError = catchError(
+      () => ɵparseIntegerOption({ options: { weeks: 0 }, name: 'weeks', minimum: 1, maximum: 5228 }),
+      RangeError,
     );
-    const withoutMaximum: unknown = catchThrown(() => ɵparseIntegerOption({ options: { step: -1 }, name: 'step', minimum: 1 }));
-    expect((withMaximum as RangeError).message).toBe('[foundry-utils]: the weeks option must be an integer from 1 to 5228, got 0');
-    expect((withoutMaximum as RangeError).message).toBe('[foundry-utils]: the step option must be an integer of at least 1, got -1');
+    const withoutMaximum: RangeError = catchError(
+      () => ɵparseIntegerOption({ options: { step: -1 }, name: 'step', minimum: 1 }),
+      RangeError,
+    );
+    expect(withMaximum.message).toBe('[foundry-utils]: the weeks option must be an integer from 1 to 5228, got 0');
+    expect(withoutMaximum.message).toBe('[foundry-utils]: the step option must be an integer of at least 1, got -1');
   });
 
   it('returns null when the fallback is null and the option is missing, undefined or null', () => {

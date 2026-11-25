@@ -189,9 +189,8 @@ describe('parseCsv', () => {
       ['relaxColumnCount', 'yes'],
       ['delimiter', '|'],
     ])('throws a TypeError that names the option %s for the value %j', (name, value) => {
-      const thrown: unknown = catchThrown(() => parseCsv('a', { [name]: value } as never));
-      expect(thrown).toBeInstanceOf(TypeError);
-      expect((thrown as TypeError).message).toContain(name);
+      const thrown: TypeError = catchError(() => parseCsv('a', { [name]: value } as never), TypeError);
+      expect(thrown.message).toContain(name);
     });
 
     it.each<unknown>([null, 5])('throws a TypeError for the text %j, which is not a string', (text) => {

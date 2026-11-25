@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { ɵparseEnumOption } from './parse-enum-option.function';
 
 const MODES: ReadonlyArray<'up' | 'down'> = ['up', 'down'];
@@ -30,9 +30,11 @@ describe('ɵparseEnumOption', () => {
   it.each<unknown>(['UP', 'sideways', '', 1, true, {}])(
     'throws a TypeError for %j, naming the option, its values and the value',
     (mode) => {
-      const error: unknown = catchThrown(() => ɵparseEnumOption({ options: { mode }, name: 'mode', allowedValues: MODES, fallback: null }));
-      expect(error).toBeInstanceOf(TypeError);
-      expect((error as TypeError).message).toBe(`[foundry-utils]: the mode option must be one of up, down, got ${String(mode)}`);
+      const error: TypeError = catchError(
+        () => ɵparseEnumOption({ options: { mode }, name: 'mode', allowedValues: MODES, fallback: null }),
+        TypeError,
+      );
+      expect(error.message).toBe(`[foundry-utils]: the mode option must be one of up, down, got ${String(mode)}`);
     },
   );
 
@@ -42,8 +44,7 @@ describe('ɵparseEnumOption', () => {
     ['an undefined option', { mode: undefined }],
     ['a null option', { mode: null }],
   ])('throws a TypeError for %s when there is no fallback, naming the option', (_case, options) => {
-    const error: unknown = catchThrown(() => ɵparseEnumOption({ options, name: 'mode', allowedValues: MODES }));
-    expect(error).toBeInstanceOf(TypeError);
-    expect((error as TypeError).message).toMatch(/^\[foundry-utils\]: .*\bmode\b/u);
+    const error: TypeError = catchError(() => ɵparseEnumOption({ options, name: 'mode', allowedValues: MODES }), TypeError);
+    expect(error.message).toMatch(/^\[foundry-utils\]: .*\bmode\b/u);
   });
 });

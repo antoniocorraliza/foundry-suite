@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FoundryCryptoUnavailableError } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { createQueuedCrypto } from '@foundry-test/functions/create-queued-crypto.function';
 import { readRandomBytes } from './read-random-bytes.function';
@@ -34,9 +35,8 @@ describe('readRandomBytes', () => {
 
   it('throws a FoundryCryptoUnavailableError for crypto, and not a ReferenceError, when crypto is missing', () => {
     vi.stubGlobal('crypto', undefined);
-    const thrown: unknown = catchThrown(() => readRandomBytes(4));
-    expect(thrown).toBeInstanceOf(FoundryCryptoUnavailableError);
-    expect((thrown as FoundryCryptoUnavailableError).missingApi).toBe('crypto');
+    const thrown: FoundryCryptoUnavailableError = catchError(() => readRandomBytes(4), FoundryCryptoUnavailableError);
+    expect(thrown.missingApi).toBe('crypto');
   });
 
   it.each<[string, unknown]>([
@@ -44,9 +44,8 @@ describe('readRandomBytes', () => {
     ['whose getRandomValues is not a function', { getRandomValues: 5 }],
   ])('throws a FoundryCryptoUnavailableError for crypto.getRandomValues with a crypto %s', (_description, stand) => {
     vi.stubGlobal('crypto', stand);
-    const thrown: unknown = catchThrown(() => readRandomBytes(4));
-    expect(thrown).toBeInstanceOf(FoundryCryptoUnavailableError);
-    expect((thrown as FoundryCryptoUnavailableError).missingApi).toBe('crypto.getRandomValues');
+    const thrown: FoundryCryptoUnavailableError = catchError(() => readRandomBytes(4), FoundryCryptoUnavailableError);
+    expect(thrown.missingApi).toBe('crypto.getRandomValues');
   });
 
   it('never calls Math.random, not even as a fallback when crypto is missing', () => {

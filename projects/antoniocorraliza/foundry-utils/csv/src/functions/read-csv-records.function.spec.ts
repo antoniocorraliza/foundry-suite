@@ -226,9 +226,8 @@ describe('readCsvRecords', () => {
       ['trimCells', 'yes'],
       ['skipEmptyLines', 1],
     ])('throws a TypeError that names the option %s for the value %j', (name, value) => {
-      const thrown: unknown = catchThrown(() => readCsvRecords('a', { [name]: value } as never));
-      expect(thrown).toBeInstanceOf(TypeError);
-      expect((thrown as TypeError).message).toContain(name);
+      const thrown: TypeError = catchError(() => readCsvRecords('a', { [name]: value } as never), TypeError);
+      expect(thrown.message).toContain(name);
     });
 
     it('takes a null option as a missing one', () => {

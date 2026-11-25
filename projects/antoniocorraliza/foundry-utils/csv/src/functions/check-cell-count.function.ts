@@ -3,7 +3,7 @@ import type { CsvRecord } from '../interfaces/csv-record.interface';
 import { getCellLine } from './get-cell-line.function';
 
 /**
- * Checks that a record has the number of cells of the table; relaxed, it only rejects a cell beyond them that is not empty.
+ * Checks that a record has the number of cells of the table. Relaxed, it only rejects a cell beyond them that is not empty.
  * @throws {FoundryCsvParseError} When a cell is left over or missing, at the first cell that is wrong.
  */
 export function checkCellCount(record: CsvRecord, cellCount: number, isRelaxed: boolean): void {

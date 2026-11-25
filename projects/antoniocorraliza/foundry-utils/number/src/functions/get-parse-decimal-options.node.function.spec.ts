@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import type { FoundryParseDecimalOptions } from '../interfaces/foundry-parse-decimal-options.interface';
 import { getParseDecimalOptions } from './get-parse-decimal-options.function';
 
@@ -51,8 +51,7 @@ describe('getParseDecimalOptions with the language data of Node', () => {
   });
 
   it.each<string>(['ar-EG', 'fa-IR', 'bn-BD'])('throws a RangeError for %s, whose default digits are not Latin', (locale) => {
-    const error: unknown = catchThrown(() => getParseDecimalOptions(locale));
-    expect(error).toBeInstanceOf(RangeError);
-    expect((error as RangeError).message).toContain(`${locale}-u-nu-latn`);
+    const error: RangeError = catchError(() => getParseDecimalOptions(locale), RangeError);
+    expect(error.message).toContain(`${locale}-u-nu-latn`);
   });
 });

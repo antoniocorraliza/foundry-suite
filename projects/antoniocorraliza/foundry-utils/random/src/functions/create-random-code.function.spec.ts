@@ -96,9 +96,8 @@ describe('createRandomCode', () => {
   it.each<unknown>([0, -1, -0, 1.5, 1025, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, '5', null])(
     'throws a RangeError for the length %s',
     (length) => {
-      const thrown: unknown = catchThrown(() => createRandomCode(length as number));
-      expect(thrown).toBeInstanceOf(RangeError);
-      expect((thrown as RangeError).message).toMatch(/^\[foundry-utils\]: /);
+      const thrown: RangeError = catchError(() => createRandomCode(length as number), RangeError);
+      expect(thrown.message).toMatch(/^\[foundry-utils\]: /);
     },
   );
 

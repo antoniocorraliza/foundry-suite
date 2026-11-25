@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';
 import { MAX_CALENDAR_WEEKS } from '../constants/date-limits.constant';
 import type { FoundryWeekday } from '../types/foundry-weekday.type';
 import { buildLocalDays } from './build-local-days.function';
@@ -12,7 +12,7 @@ import { parseWeekdayOption } from './parse-weekday-option.function';
  * @throws {TypeError} When the options are not an object.
  */
 export function getCalendarWeek(date: Date, options?: { readonly firstDayOfWeek?: FoundryWeekday; readonly weeks?: number }): Array<Date> {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of getCalendarWeek must be an object');
+  ɵcheckOptions(options, 'getCalendarWeek');
   const firstDayOfWeek: FoundryWeekday = parseWeekdayOption(options);
   const weeks: number = ɵparseIntegerOption({ options, name: 'weeks', minimum: 1, maximum: MAX_CALENDAR_WEEKS, fallback: 1 });
   const epochDay: number = getEpochDayOfDate(date);

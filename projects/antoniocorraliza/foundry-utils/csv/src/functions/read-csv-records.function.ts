@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { BYTE_ORDER_MARK } from '../constants/byte-order-mark.constant';
 import { CSV_DELIMITERS } from '../constants/csv-delimiters.constant';
 import { CSV_PARSE_DELIMITERS } from '../constants/csv-parse-delimiters.constant';
@@ -131,7 +131,7 @@ function readCellText(cell: string, isTrimmed: boolean, formulaEscaping: CsvForm
  */
 export function readCsvRecords(text: string, options: FoundryCsvParseOptions | undefined): CsvRecordsReading {
   if (typeof text !== 'string') throw new TypeError(`[foundry-utils]: the CSV text must be a string, got ${typeof text}`);
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of a CSV reading must be an object');
+  ɵcheckOptions(options, 'a CSV reading');
   const askedDelimiter: CsvParseDelimiter = ɵparseEnumOption({
     options,
     name: 'delimiter',

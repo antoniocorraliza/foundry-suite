@@ -31,7 +31,7 @@ describe('findTestTitleProblems', () => {
     ]);
   });
 
-  it.each<string>(['the design', 'loose reference', 'old version', 'of this entry'])(
+  it.each<string>(['as the design', 'of the design', 'the design fixes', 'loose reference', 'old version', 'of this entry'])(
     'reports a title with "%s", which tells how the code was made and not what the test checks',
     (phrase) => {
       expect(findTestTitleProblems('a.spec.ts', `it('works as ${phrase} says', () => {});`)).toEqual([
@@ -39,6 +39,10 @@ describe('findTestTitleProblems', () => {
       ]);
     },
   );
+
+  it('accepts a title that only names the design of a component', () => {
+    expect(findTestTitleProblems('a.spec.ts', "it('applies the design tokens', () => {});")).toEqual([]);
+  });
 
   it('ignores calls that are not tests', () => {
     expect(findTestTitleProblems('a.spec.ts', "expect(code('R2')).toBe(true);")).toEqual([]);

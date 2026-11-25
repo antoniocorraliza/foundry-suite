@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseBooleanOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseBooleanOption } from '@antoniocorraliza/foundry-utils';
 import type { CsvRecordsReading } from '../interfaces/csv-records-reading.interface';
 import type { FoundryCsvParseOptions } from '../interfaces/foundry-csv-parse-options.interface';
 import { checkCellCount } from './check-cell-count.function';
@@ -10,8 +10,8 @@ import { readCsvRecords } from './read-csv-records.function';
  * @throws {FoundryCsvParseError} When a quote is wrong, or a record has another number of cells than the first one.
  */
 export function parseCsvRecords(text: string, options?: FoundryCsvParseOptions): Array<Array<string>> {
+  ɵcheckOptions(options, 'parseCsvRecords');
   const reading: CsvRecordsReading = readCsvRecords(text, options);
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of parseCsvRecords must be an object');
   const isRelaxed: boolean = ɵparseBooleanOption({ options, name: 'relaxColumnCount', fallback: false });
   const cellCount: number = reading.records[0]?.cells.length ?? 0;
   if (!isRelaxed) reading.records.forEach((record) => checkCellCount(record, cellCount, false));

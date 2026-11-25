@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseTextOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseTextOption } from '@antoniocorraliza/foundry-utils';
 import { splitGraphemes } from './split-graphemes.function';
 
 /**
@@ -13,7 +13,7 @@ export function truncateText(text: string, maximumLength: number, options?: { re
       `[foundry-utils]: the maximum length of truncateText must be an integer of at least 0, got ${String(maximumLength)}`,
     );
   }
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of truncateText must be an object');
+  ɵcheckOptions(options, 'truncateText');
   const suffix: string = ɵparseTextOption({ options, name: 'suffix', fallback: '\u2026' });
   const graphemes: Array<string> = splitGraphemes(text);
   if (graphemes.length <= maximumLength) return text;

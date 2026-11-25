@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseTextOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseTextOption } from '@antoniocorraliza/foundry-utils';
 import {
   DEFAULT_RANDOM_CODE_ALPHABET,
   MAX_ALPHABET_SIZE,
@@ -29,7 +29,7 @@ export function createRandomCode(length: number, options?: { readonly alphabet?:
       `[foundry-utils]: the length of createRandomCode must be an integer from 1 to ${MAX_RANDOM_CODE_LENGTH}, got ${String(length)}`,
     );
   }
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of createRandomCode must be an object');
+  ɵcheckOptions(options, 'createRandomCode');
   const alphabet: Array<string> = splitAlphabet(ɵparseTextOption({ options, name: 'alphabet', fallback: DEFAULT_RANDOM_CODE_ALPHABET }));
   const keptBytes: number = MAX_ALPHABET_SIZE - (MAX_ALPHABET_SIZE % alphabet.length);
   const characters: Array<string> = [];

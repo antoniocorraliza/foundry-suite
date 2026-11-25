@@ -1,4 +1,4 @@
-import { ɵgetValueTag, ɵisOptionsValue } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵgetValueTag } from '@antoniocorraliza/foundry-utils';
 import { checkTimerDelay } from './check-timer-delay.function';
 
 function readSignal(options: Readonly<Record<string, unknown>> | undefined): AbortSignal | null {
@@ -14,7 +14,7 @@ function readSignal(options: Readonly<Record<string, unknown>> | undefined): Abo
  */
 export async function sleep(milliseconds: number, options?: { readonly signal?: AbortSignal }): Promise<void> {
   checkTimerDelay(milliseconds, 'milliseconds of sleep');
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of sleep must be an object');
+  ɵcheckOptions(options, 'sleep');
   const signal: AbortSignal | null = readSignal(options);
   if (signal?.aborted) throw signal.reason;
   return new Promise((resolve, reject) => {

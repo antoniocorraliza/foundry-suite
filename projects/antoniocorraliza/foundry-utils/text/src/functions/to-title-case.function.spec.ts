@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { toTitleCase } from './to-title-case.function';
 
@@ -42,10 +43,9 @@ describe('toTitleCase', () => {
   });
 
   it('throws its own RangeError for an invalid language tag, with the error of the engine as the cause', () => {
-    const error: unknown = catchThrown(() => toTitleCase('hola', { locale: 'es_ES' }));
-    expect(error).toBeInstanceOf(RangeError);
-    expect((error as RangeError).message).toMatch(/^\[foundry-utils\]: /u);
-    expect((error as RangeError).cause).toBeInstanceOf(RangeError);
+    const error: RangeError = catchError(() => toTitleCase('hola', { locale: 'es_ES' }), RangeError);
+    expect(error.message).toMatch(/^\[foundry-utils\]: /u);
+    expect(error.cause).toBeInstanceOf(RangeError);
   });
 
   it.each<unknown>([5, true, ['tr']])('throws a TypeError for the locale %j, which is not a string', (locale) => {

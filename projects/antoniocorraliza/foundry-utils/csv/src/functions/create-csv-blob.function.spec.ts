@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
@@ -47,9 +48,8 @@ describe('createCsvBlob', () => {
   });
 
   it.each<unknown>(['false', 0, 1])('throws a TypeError that names byteOrderMark for the value %j', (value) => {
-    const thrown: unknown = catchThrown(() => createCsvBlob([{ a: 1 }], { byteOrderMark: value } as never));
-    expect(thrown).toBeInstanceOf(TypeError);
-    expect((thrown as TypeError).message).toContain('byteOrderMark');
+    const thrown: TypeError = catchError(() => createCsvBlob([{ a: 1 }], { byteOrderMark: value } as never), TypeError);
+    expect(thrown.message).toContain('byteOrderMark');
   });
 
   it('leaves its rows and options unchanged', () => {

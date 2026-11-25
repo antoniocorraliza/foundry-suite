@@ -1,4 +1,4 @@
-import { ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { CLOCK_PRECISIONS } from '../constants/clock-precisions.constant';
 import { TIME_ZONE_MODES } from '../constants/time-zone-modes.constant';
 import type { FoundryDateParts } from '../interfaces/foundry-date-parts.interface';
@@ -17,7 +17,7 @@ export function formatTime(
   date: Date,
   options?: { readonly precision?: Exclude<FoundryTimePrecision, 'none'>; readonly timeZone?: FoundryTimeZoneMode },
 ): string {
-  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of formatTime must be an object');
+  ɵcheckOptions(options, 'formatTime');
   const precision: ClockPrecision = ɵparseEnumOption({
     options,
     name: 'precision',
