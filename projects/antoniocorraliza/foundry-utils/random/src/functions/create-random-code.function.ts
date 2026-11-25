@@ -7,6 +7,16 @@ import {
 } from '../constants/random-code-settings.constant';
 import { readRandomBytes } from './read-random-bytes.function';
 
+function splitAlphabet(text: string): Array<string> {
+  const characters: Array<string> = Array.from(text);
+  if (characters.length < MIN_ALPHABET_SIZE || characters.length > MAX_ALPHABET_SIZE || new Set(characters).size !== characters.length) {
+    throw new RangeError(
+      `[foundry-utils]: the alphabet of createRandomCode must have from ${MIN_ALPHABET_SIZE} to ${MAX_ALPHABET_SIZE} different characters`,
+    );
+  }
+  return characters;
+}
+
 /**
  * Returns a random code of `length` characters of the alphabet, all equally likely. Both are counted in code points.
  * @throws {RangeError} When the length is not an integer from 1 to 1024, or the alphabet does not have from 2 to 256 different characters.
@@ -15,7 +25,9 @@ import { readRandomBytes } from './read-random-bytes.function';
  */
 export function createRandomCode(length: number, options?: { readonly alphabet?: string }): string {
   if (!Number.isInteger(length) || length < 1 || length > MAX_RANDOM_CODE_LENGTH) {
-    throw new RangeError(`[foundry-utils]: the length of createRandomCode must be an integer from 1 to 1024, got ${String(length)}`);
+    throw new RangeError(
+      `[foundry-utils]: the length of createRandomCode must be an integer from 1 to ${MAX_RANDOM_CODE_LENGTH}, got ${String(length)}`,
+    );
   }
   if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of createRandomCode must be an object');
   const alphabet: Array<string> = splitAlphabet(ɵparseTextOption({ options, name: 'alphabet', fallback: DEFAULT_RANDOM_CODE_ALPHABET }));
@@ -27,12 +39,4 @@ export function createRandomCode(length: number, options?: { readonly alphabet?:
     });
   }
   return characters.join('');
-}
-
-function splitAlphabet(text: string): Array<string> {
-  const characters: Array<string> = Array.from(text);
-  if (characters.length < MIN_ALPHABET_SIZE || characters.length > MAX_ALPHABET_SIZE || new Set(characters).size !== characters.length) {
-    throw new RangeError('[foundry-utils]: the alphabet of createRandomCode must have from 2 to 256 different characters');
-  }
-  return characters;
 }

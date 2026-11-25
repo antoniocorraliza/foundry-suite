@@ -2,6 +2,17 @@ import type { FoundryBinaryInput } from '@antoniocorraliza/foundry-utils';
 import { FoundryCryptoUnavailableError, ɵgetValueTag } from '@antoniocorraliza/foundry-utils';
 import type { HashAlgorithm } from '../types/hash-algorithm.type';
 
+function readInputBytes(input: string | FoundryBinaryInput): Uint8Array<ArrayBuffer> {
+  if (typeof input === 'string') {
+    if (typeof TextEncoder === 'undefined') {
+      throw new TypeError('[foundry-utils]: a text needs TextEncoder, which is not available in this environment');
+    }
+    return new TextEncoder().encode(input);
+  }
+  if (ArrayBuffer.isView(input)) return new Uint8Array(input.buffer, input.byteOffset, input.byteLength) as Uint8Array<ArrayBuffer>;
+  return new Uint8Array(input);
+}
+
 /**
  * Computes the digest of a text, encoded as UTF-8 without normalizing it, or of bytes, in lowercase hexadecimal.
  * Every error comes as a rejected promise.
@@ -16,15 +27,4 @@ export async function createHexDigest(algorithm: HashAlgorithm, input: string | 
   if (typeof crypto.subtle === 'undefined') throw new FoundryCryptoUnavailableError({ missingApi: 'crypto.subtle' });
   const digest: ArrayBuffer = await crypto.subtle.digest(algorithm, readInputBytes(input));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
-}
-
-function readInputBytes(input: string | FoundryBinaryInput): Uint8Array<ArrayBuffer> {
-  if (typeof input === 'string') {
-    if (typeof TextEncoder === 'undefined') {
-      throw new TypeError('[foundry-utils]: a text needs TextEncoder, which is not available in this environment');
-    }
-    return new TextEncoder().encode(input);
-  }
-  if (ArrayBuffer.isView(input)) return new Uint8Array(input.buffer, input.byteOffset, input.byteLength) as Uint8Array<ArrayBuffer>;
-  return new Uint8Array(input);
 }

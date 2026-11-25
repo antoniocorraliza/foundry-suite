@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
@@ -22,14 +23,6 @@ async function listParts(formData: FormData): Promise<Array<Part>> {
       return [key, { name: value.name, type: value.type, text: await value.text() }];
     }),
   );
-}
-
-function catchKeyError(entries: unknown, key: string): TypeError {
-  const thrown: unknown = catchThrown(() => createFormData(entries as FoundryFormDataEntries));
-  expect(thrown).toBeInstanceOf(TypeError);
-  expect((thrown as TypeError).message).toMatch(/^\[foundry-utils\]: /);
-  expect((thrown as TypeError).message).toContain(key);
-  return thrown as TypeError;
 }
 
 class Ticket {
@@ -93,7 +86,7 @@ describe('createFormData', () => {
     ['an ArrayBuffer', new ArrayBuffer(1)],
     ['a Uint8Array', new Uint8Array(1)],
   ])('throws a TypeError with the key for %s, and never sends it with String', (_description, value) => {
-    catchKeyError({ subject: 'Hola', due: value }, 'due');
+    expect(catchError(() => createFormData({ subject: 'Hola', due: value } as never), TypeError).message).toContain('due');
   });
 
   it('sends a Blob as a file named blob, with its type and its bytes', async () => {
@@ -148,7 +141,7 @@ describe('createFormData', () => {
     ['a key that a file does not have', { file: new Blob(['a']), name: 'a.pdf' }],
     ['a key that a json does not have', { json: 1, contentType: 'application/json' }],
   ])('throws a TypeError with the key for an object with %s', (_description, value) => {
-    catchKeyError({ attachment: value }, 'attachment');
+    expect(catchError(() => createFormData({ attachment: value } as never), TypeError).message).toContain('attachment');
   });
 
   it('sends a json object as a text part with its JSON, without a content type', async () => {
@@ -170,7 +163,7 @@ describe('createFormData', () => {
     ['a function', (): number => 1],
     ['a symbol', Symbol('metadata')],
   ])('throws a TypeError with the key for %s inside json, which JSON.stringify turns into undefined', (_description, json) => {
-    catchKeyError({ metadata: { json } }, 'metadata');
+    expect(catchError(() => createFormData({ metadata: { json } } as never), TypeError).message).toContain('metadata');
   });
 
   it.each<[string, () => unknown]>([
@@ -186,7 +179,8 @@ describe('createFormData', () => {
   ])(
     'throws a TypeError with the key and the original error as its cause when JSON.stringify throws for %s',
     (_description, createJson) => {
-      const thrown: TypeError = catchKeyError({ metadata: { json: createJson() } }, 'metadata');
+      const thrown: TypeError = catchError(() => createFormData({ metadata: { json: createJson() } } as never), TypeError);
+      expect(thrown.message).toContain('metadata');
       expect(thrown.cause).toBeInstanceOf(TypeError);
     },
   );
@@ -195,7 +189,7 @@ describe('createFormData', () => {
     ['an object without json or file', { name: 'Ana' }],
     ['an empty object', {}],
   ])('throws a TypeError with the key for %s, and never nests its keys', (_description, value) => {
-    catchKeyError({ user: value }, 'user');
+    expect(catchError(() => createFormData({ user: value } as never), TypeError).message).toContain('user');
   });
 
   it('sends one part per element of a list, with the same key', async () => {
@@ -228,11 +222,11 @@ describe('createFormData', () => {
   });
 
   it('throws a TypeError with the key for a list inside a list', () => {
-    catchKeyError({ matrix: [['a']] }, 'matrix');
+    expect(catchError(() => createFormData({ matrix: [['a']] } as never), TypeError).message).toContain('matrix');
   });
 
   it('throws a TypeError with the key for a value inside a list that cannot be sent', () => {
-    catchKeyError({ dates: ['2026-03-01', new Date()] }, 'dates');
+    expect(catchError(() => createFormData({ dates: ['2026-03-01', new Date()] } as never), TypeError).message).toContain('dates');
   });
 
   it('writes the parts in the order of Object.keys: keys shaped like integers first, then the others as written', async () => {
@@ -296,7 +290,11 @@ describe('createFormData', () => {
   });
 
   it('throws a TypeError with the key and the original error as its cause when the FormData of the environment refuses a value', () => {
-    const thrown: TypeError = catchKeyError({ doc: createObjectWithFakeTag('Blob') }, 'doc');
+    const thrown: TypeError = catchError(
+      () => createFormData({ doc: createObjectWithFakeTag('Blob') } as FoundryFormDataEntries),
+      TypeError,
+    );
+    expect(thrown.message).toContain('doc');
     expect(thrown.cause).toBeInstanceOf(TypeError);
   });
 

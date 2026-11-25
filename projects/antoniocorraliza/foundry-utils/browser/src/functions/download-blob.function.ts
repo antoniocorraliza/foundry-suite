@@ -10,10 +10,10 @@ import { sanitizeFileName } from './sanitize-file-name.function';
  */
 export function downloadBlob(blob: Blob, fileName: string): void {
   if (!ɵisBlobLike(blob)) {
-    throw new TypeError(`[foundry-utils]: downloadBlob needs a Blob or a File, got ${String(blob)}`);
+    throw new TypeError(`[foundry-utils]: downloadBlob needs a Blob or a File, got ${typeof blob}`);
   }
   if (typeof fileName !== 'string') {
-    throw new TypeError(`[foundry-utils]: the name of downloadBlob must be a string, got ${String(fileName)}`);
+    throw new TypeError(`[foundry-utils]: the name of downloadBlob must be a string, got ${typeof fileName}`);
   }
   if (typeof document === 'undefined') throw new FoundryBrowserApiUnavailableError({ missingApi: 'document' });
   if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
