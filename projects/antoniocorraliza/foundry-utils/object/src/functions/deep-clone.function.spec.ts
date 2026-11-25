@@ -17,6 +17,22 @@ class TicketTags extends Set<unknown> {}
 
 class DueDate extends Date {}
 
+class Readings extends Uint8Array {}
+
+class Pattern extends RegExp {}
+
+class Payload extends ArrayBuffer {}
+
+class PayloadReader extends DataView<ArrayBuffer> {}
+
+function createResizableBuffer(byteLength: number, maxByteLength: number): ArrayBuffer {
+  return Reflect.construct(ArrayBuffer, [byteLength, { maxByteLength }]) as ArrayBuffer;
+}
+
+function setByteLength(buffer: ArrayBuffer, byteLength: number): void {
+  Reflect.apply(Reflect.get(buffer, 'resize') as (newByteLength: number) => void, buffer, [byteLength]);
+}
+
 describe('deepClone', () => {
   it.each([1, 'x', null, undefined, true, Number.NaN])('returns the primitive %j', (value) => {
     expect(deepClone(value)).toBe(value);
@@ -69,6 +85,24 @@ describe('deepClone', () => {
     expect(clone.tail.buffer).toBe(clone.head.buffer);
     expect(clone.buffer).toBe(clone.head.buffer);
     expect([clone.head.byteOffset, clone.head.length, clone.tail.byteOffset, clone.tail.byteLength]).toEqual([0, 4, 4, 4]);
+  });
+
+  it('copies a view that follows the length of a resizable buffer into one that follows the copy, and keeps a fixed view fixed', () => {
+    const buffer: ArrayBuffer = createResizableBuffer(4, 16);
+    const original: Record<string, ArrayBufferView | ArrayBuffer> = {
+      buffer,
+      following: new Uint8Array(buffer),
+      fixed: new Uint8Array(buffer, 0, 4),
+      head: new Uint8Array(buffer, 0, 2),
+      emptyFollowing: new Uint8Array(buffer, 4),
+      emptyFixed: new Uint8Array(buffer, 4, 0),
+      followingReader: new DataView(buffer),
+      fixedReader: new DataView(buffer, 0, 4),
+    };
+    const clone: Record<string, ArrayBufferView | ArrayBuffer> = deepClone(original);
+    setByteLength(clone['buffer'] as ArrayBuffer, 8);
+    expect(Object.values(clone).map((view) => view.byteLength)).toEqual([8, 8, 4, 2, 4, 0, 8, 4]);
+    expect(Object.values(original).map((view) => view.byteLength)).toEqual([4, 4, 4, 2, 0, 0, 4, 4]);
   });
 
   it('keeps files and blobs by reference, with their name', () => {
@@ -132,13 +166,52 @@ describe('deepClone', () => {
     ['a map', new TicketLookup(), 'class TicketLookup'],
     ['a set', new TicketTags(), 'class TicketTags'],
     ['a date', new DueDate(2026, 0, 1), 'class DueDate'],
+    ['a typed array', new Readings(1), 'class Readings'],
+    ['a regular expression', new Pattern('a'), 'class Pattern'],
+    ['an ArrayBuffer', new Payload(1), 'class Payload'],
+    ['a DataView', new PayloadReader(new ArrayBuffer(1)), 'class PayloadReader'],
     [
       'an array whose class is also called Array',
       new (Object.defineProperty(class extends Array<unknown> {}, 'name', { value: 'Array' }))(),
       'class Array',
     ],
+    [
+      'a typed array whose class is also called Uint8Array',
+      new (Object.defineProperty(class extends Uint8Array {}, 'name', { value: 'Uint8Array' }))(1),
+      'class Uint8Array',
+    ],
   ])('throws on a subclass of %s with the class name, instead of copying it as the base class', (_label, value, valueDescription) => {
     expect(catchError(() => deepClone({ value }), FoundryCloneError)).toMatchObject({ path: ['value'], valueDescription });
+  });
+
+  it.each<[string, object, string]>([
+    ['a typed array', Object.assign(new Uint8Array(1), { unit: 'kg' }), 'view property'],
+    ['a DataView', Object.assign(new DataView(new ArrayBuffer(1)), { unit: 'kg' }), 'view property'],
+    ['a regular expression', Object.assign(/a/u, { unit: 'kg' }), 'RegExp property'],
+    ['a map', Object.assign(new Map(), { unit: 'kg' }), 'Map property'],
+    ['a set', Object.assign(new Set(), { unit: 'kg' }), 'Set property'],
+    ['a date', Object.assign(new Date(2026, 0, 1), { unit: 'kg' }), 'Date property'],
+    ['an ArrayBuffer', Object.assign(new ArrayBuffer(1), { unit: 'kg' }), 'ArrayBuffer property'],
+  ])('throws on a property of %s, instead of dropping it', (_label, value, valueDescription) => {
+    expect(catchError(() => deepClone({ value }), FoundryCloneError)).toMatchObject({ path: ['value', 'unit'], valueDescription });
+  });
+
+  it('copies the lastIndex of a regular expression, and throws when it cannot be copied', () => {
+    const pattern: RegExp = /a/gu;
+    pattern.lastIndex = 3;
+    expect(deepClone({ pattern }).pattern.lastIndex).toBe(3);
+    pattern.lastIndex = ((): number => 3) as unknown as number;
+    expect(catchError(() => deepClone({ pattern }), FoundryCloneError)).toMatchObject({
+      path: ['pattern', 'lastIndex'],
+      valueDescription: 'function',
+    });
+  });
+
+  it('throws on a view over a buffer of a subclass, naming the class and the buffer', () => {
+    expect(catchError(() => deepClone({ value: new Uint8Array(new Payload(1)) }), FoundryCloneError)).toMatchObject({
+      path: ['value'],
+      valueDescription: 'class Payload (view buffer)',
+    });
   });
 
   it('throws on a symbol key, an accessor and a non-enumerable property', () => {

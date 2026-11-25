@@ -1,23 +1,22 @@
 import { ɵcopyArrayItems, ɵdefineOwnProperty, ɵgetOwnDataEntries, ɵgetValueKind } from '@antoniocorraliza/foundry-utils';
+import type { ViewParts } from '../interfaces/view-parts.interface';
 import type { ViewConstructor } from '../types/view-constructor.type';
+import { isLengthTrackingView } from './is-length-tracking-view.function';
+import { readLastIndex } from './read-last-index.function';
 import { readMapEntries } from './read-map-entries.function';
 import { readSetValues } from './read-set-values.function';
-
-function readBuiltInGetter(prototype: object, name: PropertyKey, value: object): unknown {
-  return Object.getOwnPropertyDescriptor(prototype, name)?.get?.call(value);
-}
+import { readViewParts } from './read-view-parts.function';
 
 function copyView(view: object, copies: Map<object, unknown>): ArrayBufferView {
-  const typedArrayPrototype: object = Object.getPrototypeOf(Uint8Array.prototype) as object;
-  const typedArrayName: unknown = readBuiltInGetter(typedArrayPrototype, Symbol.toStringTag, view);
-  const viewPrototype: object = typeof typedArrayName === 'string' ? typedArrayPrototype : DataView.prototype;
-  const buffer: ArrayBufferLike = copyValueWith(readBuiltInGetter(viewPrototype, 'buffer', view), copies) as ArrayBufferLike;
-  const byteOffset: number = readBuiltInGetter(viewPrototype, 'byteOffset', view) as number;
-  if (typeof typedArrayName === 'string') {
-    const viewConstructor: ViewConstructor = Reflect.get(globalThis, typedArrayName) as ViewConstructor;
-    return new viewConstructor(buffer, byteOffset, readBuiltInGetter(viewPrototype, 'length', view) as number);
+  const parts: ViewParts = readViewParts(view);
+  const buffer: ArrayBufferLike = copyValueWith(parts.buffer, copies) as ArrayBufferLike;
+  const isLengthTracking: boolean = isLengthTrackingView(view, parts);
+  if (parts.typedArrayName === null) {
+    return isLengthTracking ? new DataView(buffer, parts.byteOffset) : new DataView(buffer, parts.byteOffset, parts.byteLength);
   }
-  return new DataView(buffer, byteOffset, readBuiltInGetter(viewPrototype, 'byteLength', view) as number);
+  const viewConstructor: ViewConstructor = Reflect.get(globalThis, parts.typedArrayName) as ViewConstructor;
+  if (isLengthTracking) return new viewConstructor(buffer, parts.byteOffset);
+  return new viewConstructor(buffer, parts.byteOffset, parts.byteLength / viewConstructor.BYTES_PER_ELEMENT);
 }
 
 function copyContainer(value: object, copies: Map<object, unknown>): unknown {
@@ -50,7 +49,12 @@ function copyContainer(value: object, copies: Map<object, unknown>): unknown {
     }
     case 'date':
       return new Date(Date.prototype.getTime.call(value));
-    case 'regExp':
+    case 'regExp': {
+      const copy: RegExp = structuredClone(value as RegExp);
+      copies.set(value, copy);
+      copy.lastIndex = copyValueWith(readLastIndex(value), copies) as number;
+      return copy;
+    }
     case 'arrayBuffer':
       return structuredClone(value);
     case 'view':

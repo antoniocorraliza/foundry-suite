@@ -83,7 +83,7 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'object', symbols: 'whole-entry' }],
-    budget: { rawKilobytes: 12.7, gzipKilobytes: 4.2 },
+    budget: { rawKilobytes: 15.9, gzipKilobytes: 5.2 },
   },
   {
     name: 'utils/case: toCamelCaseKeys',
