@@ -52,7 +52,7 @@ describe('isUuid', () => {
     expect(isUuid(VERSION_7, { version } as never)).toBe(true);
   });
 
-  it('does not run a getter of its options', () => {
+  it('does not run a getter of the version option', () => {
     const getter: () => number = vi.fn(() => 4);
     expect(isUuid(VERSION_7, Object.defineProperty({}, 'version', { get: getter, enumerable: true }))).toBe(true);
     expect(getter).not.toHaveBeenCalled();

@@ -43,7 +43,7 @@ describe('isUrl', () => {
     expect(isUrl('https://empresa.es', 'https:' as never)).toBe(true);
   });
 
-  it('does not run a getter of its options', () => {
+  it('does not run a getter of the allowMissingProtocol option', () => {
     const getter: () => boolean = vi.fn(() => true);
     expect(isUrl('www.empresa.es', Object.defineProperty({}, 'allowMissingProtocol', { get: getter, enumerable: true }))).toBe(false);
     expect(getter).not.toHaveBeenCalled();

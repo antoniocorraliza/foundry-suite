@@ -2,7 +2,7 @@ import { ɵparseBooleanOption } from '@antoniocorraliza/foundry-utils';
 import type { EmptyValuesCleaning } from '../interfaces/empty-values-cleaning.interface';
 
 /**
- * Parses the options of `removeEmptyValues`.
+ * Parses the three booleans of `removeEmptyValues`, each `false` when it is missing.
  * @throws {TypeError} When an option is not a boolean.
  */
 export function parseCleaning(options: Readonly<Record<string, unknown>> | undefined): EmptyValuesCleaning {

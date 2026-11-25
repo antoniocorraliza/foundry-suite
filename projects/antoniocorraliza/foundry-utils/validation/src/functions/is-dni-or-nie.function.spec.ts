@@ -30,7 +30,7 @@ describe('isDniOrNie', () => {
     expect(isDniOrNie('X1234567L', { accept } as never)).toBe(true);
   });
 
-  it('does not run a getter of its options', () => {
+  it('does not run a getter of the accept option', () => {
     const getter: () => ReadonlyArray<string> = vi.fn(() => ['nie']);
     expect(isDniOrNie('12345678Z', Object.defineProperty({}, 'accept', { get: getter, enumerable: true }))).toBe(true);
     expect(getter).not.toHaveBeenCalled();

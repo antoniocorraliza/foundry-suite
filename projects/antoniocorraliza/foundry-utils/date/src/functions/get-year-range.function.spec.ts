@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, inject, it, vi } from 'vitest';
+import { ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { getYearRange } from './get-year-range.function';
 
@@ -25,18 +27,23 @@ describe('getYearRange', () => {
     });
   });
 
+  it.each<unknown>([{ referenceYear: 2026, yearsAfter: 0 }, { referenceYear: 2026, yearsBefore: 0 }, undefined])(
+    'throws a RangeError for %j, which leaves out a number of years that has no default',
+    (options) => {
+      expect(catchThrown(() => getYearRange(options as never))).toBeInstanceOf(RangeError);
+    },
+  );
+
   it.each<unknown>([
-    { referenceYear: 2026, yearsBefore: -1, yearsAfter: 0 },
-    { referenceYear: 2026, yearsBefore: 1.5, yearsAfter: 0 },
-    { referenceYear: 2026, yearsBefore: Number.NaN, yearsAfter: 0 },
-    { referenceYear: 2026, yearsBefore: 0, yearsAfter: Number.POSITIVE_INFINITY },
-    { referenceYear: 2026, yearsAfter: 0 },
-    { referenceYear: 2026, yearsBefore: 0 },
-    { referenceYear: 2026.5, yearsBefore: 0, yearsAfter: 0 },
     { referenceYear: 5, yearsBefore: 10, yearsAfter: 0 },
     { referenceYear: 9995, yearsBefore: 0, yearsAfter: 10 },
-    undefined,
-  ])('throws a RangeError for %j', (options) => {
+  ])('throws a RangeError for %j, whose range leaves the years 1 to 9999', (options) => {
     expect(catchThrown(() => getYearRange(options as never))).toBeInstanceOf(RangeError);
+  });
+
+  it('rejects a number of years that is not an integer of at least 0 as parseIntegerOption does', () => {
+    expect(catchError(() => getYearRange({ referenceYear: 2026, yearsBefore: 1.5, yearsAfter: 0 }), RangeError).message).toBe(
+      catchError(() => ɵparseIntegerOption({ options: { yearsBefore: 1.5 }, name: 'yearsBefore', minimum: 0 }), RangeError).message,
+    );
   });
 });

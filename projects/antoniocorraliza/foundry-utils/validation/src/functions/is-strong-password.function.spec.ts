@@ -39,7 +39,7 @@ describe('isStrongPassword', () => {
     expect(isStrongPassword('Password1', 12 as never)).toBe(true);
   });
 
-  it('does not run a getter of its options', () => {
+  it('does not run a getter of the requireSymbol option', () => {
     const getter: () => boolean = vi.fn(() => true);
     expect(isStrongPassword('Password1', Object.defineProperty({}, 'requireSymbol', { get: getter, enumerable: true }))).toBe(true);
     expect(getter).not.toHaveBeenCalled();

@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { DEFAULT_PROTOCOLS } from '../constants/default-protocols.constant';
 import { PROTOCOLS_ACCEPTED_BY_DEFAULT } from '../constants/protocols-accepted-by-default.constant';
 import { normalizeUrl } from './normalize-url.function';
 import { readUrl } from './read-url.function';
@@ -43,14 +46,25 @@ describe('normalizeUrl', () => {
     );
   });
 
-  it.each<unknown>([
-    { protocols: 'https:' },
-    { protocols: [5] },
-    { protocols: ['https:', null] },
-    { allowMissingProtocol: 'yes' },
-    { defaultProtocol: 'ftp:' },
-    { defaultProtocol: 'https' },
-  ])('throws a TypeError for the options %j', (options) => {
-    expect(catchThrown(() => normalizeUrl('https://empresa.es', options as never))).toBeInstanceOf(TypeError);
+  it.each<unknown>(['https:', [5], ['https:', null]])(
+    'throws a TypeError for the protocols %j, which are not a list of texts',
+    (protocols) => {
+      expect(catchThrown(() => normalizeUrl('https://empresa.es', { protocols } as never))).toBeInstanceOf(TypeError);
+    },
+  );
+
+  it('rejects an allowMissingProtocol that is not a boolean and an unknown defaultProtocol as the readers of the root do', () => {
+    expect(catchError(() => normalizeUrl('https://empresa.es', { allowMissingProtocol: 'yes' } as never), TypeError).message).toBe(
+      catchError(
+        () => ɵparseBooleanOption({ options: { allowMissingProtocol: 'yes' }, name: 'allowMissingProtocol', fallback: false }),
+        TypeError,
+      ).message,
+    );
+    expect(catchError(() => normalizeUrl('https://empresa.es', { defaultProtocol: 'ftp:' } as never), TypeError).message).toBe(
+      catchError(
+        () => ɵparseEnumOption({ options: { defaultProtocol: 'ftp:' }, name: 'defaultProtocol', allowedValues: DEFAULT_PROTOCOLS }),
+        TypeError,
+      ).message,
+    );
   });
 });

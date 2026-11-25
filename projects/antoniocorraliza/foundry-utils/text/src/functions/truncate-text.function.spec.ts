@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { ɵparseTextOption } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { splitGraphemes } from './split-graphemes.function';
 import { truncateText } from './truncate-text.function';
@@ -49,8 +51,10 @@ describe('truncateText', () => {
     expect(catchThrown(() => truncateText('abc', maximumLength))).toBeInstanceOf(RangeError);
   });
 
-  it.each<unknown>([5, ['...'], true])('throws a TypeError for the suffix %j, which is not a string', (suffix) => {
-    expect(catchThrown(() => truncateText('abcdef', 4, { suffix } as never))).toBeInstanceOf(TypeError);
+  it('rejects a suffix that is not a text as parseTextOption does', () => {
+    expect(catchError(() => truncateText('abcdef', 4, { suffix: 5 } as never), TypeError).message).toBe(
+      catchError(() => ɵparseTextOption({ options: { suffix: 5 }, name: 'suffix', fallback: '' }), TypeError).message,
+    );
   });
 
   it.each<unknown>([null, undefined, 5, new String('abc')])('throws a TypeError for the text %j, which is not a string', (text) => {

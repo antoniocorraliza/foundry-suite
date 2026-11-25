@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { createLocalTestDate } from '@foundry-test/functions/create-local-test-date.function';
 import { getDaysInRange } from './get-days-in-range.function';
@@ -29,10 +31,10 @@ describe('getDaysInRange', () => {
     expect(getDaysInRange(new Date(2026, 2, 1), new Date(2026, 2, 8), { stepInDays: 30 })).toEqual([new Date(2026, 2, 1)]);
   });
 
-  it.each<unknown>([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, '2'])('throws a RangeError for a step of %j days', (stepInDays) => {
-    expect(
-      catchThrown(() => getDaysInRange(new Date(2026, 2, 1), new Date(2026, 2, 8), { stepInDays: stepInDays as number })),
-    ).toBeInstanceOf(RangeError);
+  it('rejects a step of 0 days as parseIntegerOption does', () => {
+    expect(catchError(() => getDaysInRange(new Date(2026, 2, 1), new Date(2026, 2, 8), { stepInDays: 0 }), RangeError).message).toBe(
+      catchError(() => ɵparseIntegerOption({ options: { stepInDays: 0 }, name: 'stepInDays', minimum: 1 }), RangeError).message,
+    );
   });
 
   it('gives up to 36600 days and throws a RangeError, with the number asked, beyond them', () => {

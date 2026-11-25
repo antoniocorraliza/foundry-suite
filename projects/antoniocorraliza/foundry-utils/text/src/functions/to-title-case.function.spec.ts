@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ɵparseLanguageTag, ɵparseTextOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { toTitleCase } from './to-title-case.function';
@@ -42,14 +43,16 @@ describe('toTitleCase', () => {
     expect(toTitleCase('')).toBe('');
   });
 
-  it('throws its own RangeError for an invalid language tag, with the error of the engine as the cause', () => {
-    const error: RangeError = catchError(() => toTitleCase('hola', { locale: 'es_ES' }), RangeError);
-    expect(error.message).toMatch(/^\[foundry-utils\]: /u);
-    expect(error.cause).toBeInstanceOf(RangeError);
+  it('rejects a locale that is not a text as parseTextOption does', () => {
+    expect(catchError(() => toTitleCase('hola', { locale: 5 } as never), TypeError).message).toBe(
+      catchError(() => ɵparseTextOption({ options: { locale: 5 }, name: 'locale', fallback: null }), TypeError).message,
+    );
   });
 
-  it.each<unknown>([5, true, ['tr']])('throws a TypeError for the locale %j, which is not a string', (locale) => {
-    expect(catchThrown(() => toTitleCase('hola', { locale } as never))).toBeInstanceOf(TypeError);
+  it('rejects an invalid language tag as parseLanguageTag does', () => {
+    expect(catchError(() => toTitleCase('hola', { locale: 'es_ES' }), RangeError).message).toBe(
+      catchError(() => ɵparseLanguageTag('es_ES'), RangeError).message,
+    );
   });
 
   it.each<unknown>([null, undefined, 5, new String('a')])('throws a TypeError for the text %j, which is not a string', (text) => {

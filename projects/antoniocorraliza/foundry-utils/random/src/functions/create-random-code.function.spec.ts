@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { FoundryCryptoUnavailableError } from '@antoniocorraliza/foundry-utils';
+import { FoundryCryptoUnavailableError, ɵcheckOptions, ɵparseTextOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { createQueuedCrypto } from '@foundry-test/functions/create-queued-crypto.function';
@@ -101,8 +101,10 @@ describe('createRandomCode', () => {
     },
   );
 
-  it.each<unknown>([5, true, ['a', 'b'], {}])('throws a TypeError for the alphabet %j, which is not a text', (alphabet) => {
-    expect(catchThrown(() => createRandomCode(6, { alphabet: alphabet as string }))).toBeInstanceOf(TypeError);
+  it('rejects an alphabet that is not a text as parseTextOption does', () => {
+    expect(catchError(() => createRandomCode(6, { alphabet: ['a', 'b'] as never }), TypeError).message).toBe(
+      catchError(() => ɵparseTextOption({ options: { alphabet: ['a', 'b'] }, name: 'alphabet', fallback: '' }), TypeError).message,
+    );
   });
 
   it.each<[string, string]>([
@@ -116,8 +118,10 @@ describe('createRandomCode', () => {
     expect(catchThrown(() => createRandomCode(6, { alphabet }))).toBeInstanceOf(RangeError);
   });
 
-  it.each<unknown>([5, 'abc', true, null, []])('throws a TypeError for the options %j, which are not an object', (options) => {
-    expect(catchThrown(() => createRandomCode(6, options as never))).toBeInstanceOf(TypeError);
+  it('rejects options that are not an object as checkOptions does', () => {
+    expect(catchError(() => createRandomCode(6, 'abc' as never), TypeError).message).toBe(
+      catchError(() => ɵcheckOptions('abc', 'createRandomCode'), TypeError).message,
+    );
   });
 
   it('checks its arguments before looking for crypto', () => {

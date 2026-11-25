@@ -1,8 +1,13 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
+import { DECIMAL_SEPARATORS } from '../constants/decimal-separators.constant';
+import { GROUP_SEPARATORS } from '../constants/group-separators.constant';
+import { GROUP_STYLES } from '../constants/group-styles.constant';
 import type { FoundryParseDecimalOptions } from '../interfaces/foundry-parse-decimal-options.interface';
 import { parseDecimal } from './parse-decimal.function';
 import { readDecimal } from './read-decimal.function';
@@ -40,20 +45,21 @@ describe('parseDecimal', () => {
     expect(catchThrown(() => parseDecimal(null, options))).toBeInstanceOf(RangeError);
   });
 
-  it.each<unknown>([undefined, 5, ',', null, [], { decimalSeparator: undefined }, { decimalSeparator: null }, {}])(
-    'throws a TypeError for the options %j, without the required decimal separator',
-    (options) => {
-      expect(catchThrown(() => parseDecimal('1', options as FoundryParseDecimalOptions))).toBeInstanceOf(TypeError);
-    },
-  );
+  it.each<unknown>([undefined, {}])('throws a TypeError for the options %j, without the required decimal separator', (options) => {
+    expect(catchError(() => parseDecimal('1', options as FoundryParseDecimalOptions), TypeError).message).toBe(
+      catchError(() => ɵparseEnumOption({ options: {}, name: 'decimalSeparator', allowedValues: DECIMAL_SEPARATORS }), TypeError).message,
+    );
+  });
 
-  it.each<unknown>([
-    { decimalSeparator: ' ' },
-    { decimalSeparator: ',', groupSeparator: '_' },
-    { decimalSeparator: ',', groupSeparator: ' ' },
-    { decimalSeparator: ',', groupStyle: 'lakh' },
-  ])('throws a TypeError for the unknown option values %j', (options) => {
-    expect(catchThrown(() => parseDecimal('1', options as FoundryParseDecimalOptions))).toBeInstanceOf(TypeError);
+  it.each<[string, string, ReadonlyArray<string>]>([
+    ['decimalSeparator', '_', DECIMAL_SEPARATORS],
+    ['groupSeparator', '_', GROUP_SEPARATORS],
+    ['groupStyle', 'lakh', GROUP_STYLES],
+  ])('rejects an unknown %s as parseEnumOption does', (name, value, allowedValues) => {
+    const options: FoundryParseDecimalOptions = { decimalSeparator: ',', [name]: value } as never;
+    expect(catchError(() => parseDecimal('1', options), TypeError).message).toBe(
+      catchError(() => ɵparseEnumOption({ options: { [name]: value }, name, allowedValues }), TypeError).message,
+    );
   });
 
   it('leaves its options unchanged', () => {

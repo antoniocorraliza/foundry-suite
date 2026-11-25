@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { ɵcheckOptions, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
+import { ARRAY_KEY_STYLES } from '../constants/array-key-styles.constant';
 import type { FoundryFormDataEntries } from '../types/foundry-form-data-entries.type';
 import { createFormData } from './create-form-data.function';
 
@@ -274,12 +276,19 @@ describe('createFormData', () => {
     expect(catchThrown(() => createFormData(entries as FoundryFormDataEntries))).toBeInstanceOf(TypeError);
   });
 
-  it.each<unknown>([5, 'brackets', true, null, []])('throws a TypeError for the options %j, which are not an object', (options) => {
-    expect(catchThrown(() => createFormData({ a: 'x' }, options as never))).toBeInstanceOf(TypeError);
+  it('rejects options that are not an object as checkOptions does', () => {
+    expect(catchError(() => createFormData({ a: 'x' }, 'brackets' as never), TypeError).message).toBe(
+      catchError(() => ɵcheckOptions('brackets', 'createFormData'), TypeError).message,
+    );
   });
 
-  it.each<unknown>(['Brackets', 'indexed', 5, true])('throws a TypeError for the arrayKeyStyle %j', (arrayKeyStyle) => {
-    expect(catchThrown(() => createFormData({ a: ['x'] }, { arrayKeyStyle: arrayKeyStyle as 'repeat' }))).toBeInstanceOf(TypeError);
+  it('rejects an unknown arrayKeyStyle as parseEnumOption does', () => {
+    expect(catchError(() => createFormData({ a: ['x'] }, { arrayKeyStyle: 'Brackets' as 'repeat' }), TypeError).message).toBe(
+      catchError(
+        () => ɵparseEnumOption({ options: { arrayKeyStyle: 'Brackets' }, name: 'arrayKeyStyle', allowedValues: ARRAY_KEY_STYLES }),
+        TypeError,
+      ).message,
+    );
   });
 
   it.each<[string, unknown]>([

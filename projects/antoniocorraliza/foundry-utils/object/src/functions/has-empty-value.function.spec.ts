@@ -82,7 +82,7 @@ describe('hasEmptyValue', () => {
     expect([{ a: '' }, { a: 1 }].filter(hasEmptyValue as (value: unknown, index: number) => boolean)).toEqual([{ a: '' }]);
   });
 
-  it('does not run a getter of its options', () => {
+  it('does not run a getter of the fields option', () => {
     const getter: () => ReadonlyArray<string> = vi.fn(() => ['a']);
     expect(hasEmptyValue({ a: 1, b: '' }, Object.defineProperty({}, 'fields', { get: getter, enumerable: true }))).toBe(true);
     expect(getter).not.toHaveBeenCalled();

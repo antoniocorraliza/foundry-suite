@@ -1,7 +1,9 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { ROUNDING_MODES } from '../constants/rounding-modes.constant';
 import type { FoundryRoundingMode } from '../types/foundry-rounding-mode.type';
 import { roundToDecimals } from './round-to-decimals.function';
 
@@ -83,8 +85,10 @@ describe('roundToDecimals', () => {
     expect(catchThrown(() => roundToDecimals(1.5, decimals))).toBeInstanceOf(RangeError);
   });
 
-  it.each<unknown>([5, 'up', true, null, [], { mode: 'up' }, { mode: 'HalfEven' }])('throws a TypeError for the options %j', (options) => {
-    expect(catchThrown(() => roundToDecimals(1.5, 0, options as never))).toBeInstanceOf(TypeError);
+  it('rejects an unknown mode as parseEnumOption does', () => {
+    expect(catchError(() => roundToDecimals(1.5, 0, { mode: 'HalfEven' } as never), TypeError).message).toBe(
+      catchError(() => ɵparseEnumOption({ options: { mode: 'HalfEven' }, name: 'mode', allowedValues: ROUNDING_MODES }), TypeError).message,
+    );
   });
 
   it('takes a null mode as the default one', () => {

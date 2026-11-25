@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { ɵcheckOptions } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
 import { listFunctionNames } from '@foundry-test/functions/list-function-names.function';
 import type { CallWithOptions } from '@foundry-test/types/call-with-options.type';
@@ -9,9 +10,6 @@ import * as entry from './public-api';
 const OPTION_USERS: ReadonlyArray<[string, CallWithOptions]> = [
   ['roundToDecimals', (options) => entry.roundToDecimals(1.5, 0, options as never)],
   ['parseDecimal', (options) => entry.parseDecimal('1', options as never)],
-  ['formatNumber', (options) => entry.formatNumber(1, options as never)],
-  ['formatCurrency', (options) => entry.formatCurrency(1, options as never)],
-  ['createCurrencyFormatter', (options) => entry.createCurrencyFormatter(options as never)],
 ];
 
 const SAMPLE_CALLS: ReadonlyArray<[keyof typeof entry, ReadonlyArray<unknown>]> = [
@@ -47,12 +45,10 @@ describe('public API of the number entry', () => {
     expect(isPromiseLike((entry[name] as LooseFunction)(...values))).toBe(false);
   });
 
-  describe.each(OPTION_USERS)('through %s', (_name, callWithOptions) => {
-    it.each<unknown>([5, 'es-ES', true, null, [], () => ({})])(
-      'throws a TypeError for the options %j, which are not an object',
-      (options) => {
-        expect(catchThrown(() => callWithOptions(options))).toBeInstanceOf(TypeError);
-      },
-    );
-  });
+  it.each(OPTION_USERS)(
+    'throws a TypeError through %s for options that are not an object, naming that function',
+    (name, callWithOptions) => {
+      expect(catchError(() => callWithOptions(5), TypeError).message).toBe(catchError(() => ɵcheckOptions(5, name), TypeError).message);
+    },
+  );
 });

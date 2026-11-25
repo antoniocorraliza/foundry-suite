@@ -7,7 +7,7 @@ export const UUID_PATTERN: RegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-([1-8])[0-9a-f]{3}
 export const URL_SCHEME_PATTERN: RegExp = /^[a-z][a-z\d+.-]*:/i;
 /** Host of a URL as it is written, after its scheme and before its port, path, query or fragment. */
 export const WRITTEN_URL_HOST_PATTERN: RegExp = /^[a-z][a-z\d+.-]*:\/\/([^/?#:]*)/i;
-/** IPv4 address with its four numbers. */
+/** Host that the URL parser writes for an IPv4 address, also when the text gave a shorter or hexadecimal one. */
 export const IPV4_ADDRESS_PATTERN: RegExp = /^\d+\.\d+\.\d+\.\d+$/;
 /** Generic phone number with an international prefix: a plus and from 8 to 15 digits that do not start with 0. */
 export const INTERNATIONAL_PHONE_PATTERN: RegExp = /^\+[1-9]\d{7,14}$/;

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { getCalendarMonthGrid } from './get-calendar-month-grid.function';
 import { getFirstDayOfWeek } from './get-first-day-of-week.function';
+import { parseWeekdayOption } from './parse-weekday-option.function';
 
 describe('getCalendarMonthGrid', () => {
   it('gives 42 days from the Monday on or before the first day of the month by default', () => {
@@ -23,9 +24,9 @@ describe('getCalendarMonthGrid', () => {
     expect(getCalendarMonthGrid(new Date(2026, 8, 15), { firstDayOfWeek: getFirstDayOfWeek('en-US') })[0]).toEqual(new Date(2026, 7, 30));
   });
 
-  it.each([7, -1, 1.5, Number.NaN])('throws a RangeError for the first day of the week %d', (firstDayOfWeek) => {
-    expect(catchThrown(() => getCalendarMonthGrid(new Date(2026, 8, 15), { firstDayOfWeek: firstDayOfWeek as 0 }))).toBeInstanceOf(
-      RangeError,
+  it('rejects a first day of the week out of 0 to 6 as parseWeekdayOption does', () => {
+    expect(catchError(() => getCalendarMonthGrid(new Date(2026, 8, 15), { firstDayOfWeek: 7 as 0 }), RangeError).message).toBe(
+      catchError(() => parseWeekdayOption({ firstDayOfWeek: 7 }), RangeError).message,
     );
   });
 });

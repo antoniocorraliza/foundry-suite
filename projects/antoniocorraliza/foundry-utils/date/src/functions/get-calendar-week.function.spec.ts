@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { MAX_CALENDAR_WEEKS } from '../constants/date-limits.constant';
 import { getCalendarWeek } from './get-calendar-week.function';
+import { parseWeekdayOption } from './parse-weekday-option.function';
 
 describe('getCalendarWeek', () => {
   it('starts on the Monday of the week by default', () => {
@@ -26,11 +30,16 @@ describe('getCalendarWeek', () => {
     expect(catchThrown(() => getCalendarWeek(new Date(2000, 0, 3), { weeks: 5229 }))).toBeInstanceOf(RangeError);
   });
 
-  it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])('throws a RangeError for %d weeks', (weeks) => {
-    expect(catchThrown(() => getCalendarWeek(new Date(2026, 8, 3), { weeks }))).toBeInstanceOf(RangeError);
+  it('rejects 0 weeks as parseIntegerOption does', () => {
+    expect(catchError(() => getCalendarWeek(new Date(2026, 8, 3), { weeks: 0 }), RangeError).message).toBe(
+      catchError(() => ɵparseIntegerOption({ options: { weeks: 0 }, name: 'weeks', minimum: 1, maximum: MAX_CALENDAR_WEEKS }), RangeError)
+        .message,
+    );
   });
 
-  it.each([7, -1, 1.5, Number.NaN])('throws a RangeError for the first day of the week %d', (firstDayOfWeek) => {
-    expect(catchThrown(() => getCalendarWeek(new Date(2026, 8, 3), { firstDayOfWeek: firstDayOfWeek as 0 }))).toBeInstanceOf(RangeError);
+  it('rejects a first day of the week out of 0 to 6 as parseWeekdayOption does', () => {
+    expect(catchError(() => getCalendarWeek(new Date(2026, 8, 3), { firstDayOfWeek: 7 as 0 }), RangeError).message).toBe(
+      catchError(() => parseWeekdayOption({ firstDayOfWeek: 7 }), RangeError).message,
+    );
   });
 });

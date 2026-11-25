@@ -81,6 +81,18 @@ export function parseCalendarDay(text: string): FoundryCalendarDay | null {}
 
 The JSDoc of the internal definitions (constants, types and interfaces) is a noun phrase, as the public types already are: "First year that the date functions read and write.", "Values of the `format` option.", not "Gives the...", "Holds the..." or "Lists the...". A computed type that works as a function of types may start with a verb ("Tells whether...", "Computes...").
 
+The JSDoc of internal code says something that the name does not: the edge case, the unit or the reason. A sentence that only repeats the name ("Checks the cell count." on `checkCellCount`, "Milliseconds of a second." on `MILLISECONDS_PER_SECOND`) is rewritten, never removed: the JSDoc is still required.
+
+```ts
+// Yes
+/** Milliseconds of a minute, which never has a leap second in `Date`. */
+export const MILLISECONDS_PER_MINUTE: number = 60_000;
+
+// No
+/** Milliseconds of a minute. */
+export const MILLISECONDS_PER_MINUTE: number = 60_000;
+```
+
 Checked by:
 
 - ESLint `eslint-plugin-jsdoc`, in `projects/`:
@@ -89,8 +101,8 @@ Checked by:
   - no types in tags (`no-types`) and no tag that only repeats its name (`informative-docs`);
   - `@param` names that exist, and descriptions in `@param` and `@returns`;
   - `@throws` when the body throws (`require-throws`), and a one-line `@example`.
-- `tools/lint/check-text.ts`: the sales words and the filler openings in any JSDoc line; a `@throws` on an `is...` or `has...` function or method that is not in `NEVER_THROWING_NAME_EXCEPTIONS`; and, in `constants/`, `interfaces/` and `types/` of `projects/`, a declaration JSDoc that opens with a template verb (`TEMPLATE_JSDOC_VERBS` in `tools/lint/constants/comment-patterns.constant.ts`: "Gives", "Holds", "Lists", "Names", "Sets"...).
-- Review: the number of sentences, that nothing repeats the types, `@throws` for the errors of the functions it calls, whether an `@example` is needed, English, and filler that the lists do not catch.
+- `tools/lint/check-text.ts`: the sales words and the filler openings in any JSDoc line; a `@throws` on an `is...` or `has...` function or method that is not in `NEVER_THROWING_NAME_EXCEPTIONS`; and, in `constants/`, `interfaces/` and `types/` of `projects/`, a declaration JSDoc that opens with a template verb (`TEMPLATE_JSDOC_VERBS` in `tools/lint/constants/comment-patterns.constant.ts`: "Gives", "Holds", "Lists", "Names", "Sets"...); and, in the code of `projects/`, a declaration JSDoc whose first sentence has no word besides the words of the name, the verb of a function and the filler words of `JSDOC_FILLER_WORDS` (`tools/lint/constants/jsdoc-name-words.constant.ts`).
+- Review: the number of sentences, that nothing repeats the types, `@throws` for the errors of the functions it calls, whether an `@example` is needed, English, filler that the lists do not catch, and an internal JSDoc that repeats the name in other words or on a member.
 
 ### 3. No process references
 
@@ -628,6 +640,28 @@ it.runIf(timeZone !== 'UTC')('finds clock change days to walk in a time zone tha
 ```
 
 Checked by: `tools/lint/check-text.ts` reports a top-level function or type (`type`, such as `LooseFunction`) declared in more than one spec file; the interfaces of test data are left alone, like the data. Review: where a shared helper goes, copies of a helper under another name, and the time zones where a reference is tested.
+
+### 19. Test tables and the errors of the readers
+
+`it.each`, `test.each` and `describe.each` take a table of several real cases; a table of one case is a plain test. The tables of a `public-api.spec.ts` are the exception: they list the exports of the entry, however many there are.
+
+The errors of a reader of the root (`ɵcheckOptions`, the `ɵparse...Option` readers and `ɵparseLanguageTag`) are tested once, with their table of wrong values, in the spec of the reader. The spec of each function that uses it keeps one short test per option, which compares the error of the function with the error of the reader, and its title names the reader. When an internal function wraps the reader (`parseWeekdayOption`), the test compares with that function.
+
+```ts
+// Yes
+it('rejects an unknown arrays value as parseEnumOption does', () => {
+  expect(catchError(() => getObjectDifferences({}, {}, { arrays: 'deep' } as never), TypeError).message).toBe(
+    catchError(() => ɵparseEnumOption({ options: { arrays: 'deep' }, name: 'arrays', allowedValues: ARRAY_MODES }), TypeError).message,
+  );
+});
+
+// No: the table of the reader, repeated in each function that uses it
+it.each<unknown>([5, 'x', true, null, []])('throws a TypeError for the options %j, which are not an object', (options) => {
+  expect(catchThrown(() => toCsv([{ a: 1 }], options as never))).toBeInstanceOf(TypeError);
+});
+```
+
+Checked by: `tools/lint/check-text.ts` reports an `it.each`, `test.each` or `describe.each` outside a `public-api.spec.ts` whose table, written in the call or in a constant of the same file, has fewer than two cases. Review: that the errors of a reader are not tested again outside its spec, and that the short test compares with the reader.
 
 ## How each piece is written
 

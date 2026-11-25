@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
+import { DUPLICATE_HEADER_MODES } from '../constants/duplicate-header-modes.constant';
 import { excelSpanishCsvOptions } from '../constants/excel-spanish-csv-options.constant';
 import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
 import type { CsvRecordsReading } from '../interfaces/csv-records-reading.interface';
@@ -184,13 +186,28 @@ describe('parseCsv', () => {
   });
 
   describe('arguments and options', () => {
-    it.each<[string, unknown]>([
-      ['duplicateHeaders', 'rename'],
-      ['relaxColumnCount', 'yes'],
-      ['delimiter', '|'],
-    ])('throws a TypeError that names the option %s for the value %j', (name, value) => {
-      const thrown: TypeError = catchError(() => parseCsv('a', { [name]: value } as never), TypeError);
-      expect(thrown.message).toContain(name);
+    it.each<[string, unknown, () => unknown]>([
+      [
+        'duplicateHeaders',
+        'rename',
+        () =>
+          ɵparseEnumOption({ options: { duplicateHeaders: 'rename' }, name: 'duplicateHeaders', allowedValues: DUPLICATE_HEADER_MODES }),
+      ],
+      [
+        'relaxColumnCount',
+        'yes',
+        () => ɵparseBooleanOption({ options: { relaxColumnCount: 'yes' }, name: 'relaxColumnCount', fallback: false }),
+      ],
+    ])('rejects the %s %j as the reader of the root does', (name, value, readOption) => {
+      expect(catchError(() => parseCsv('a', { [name]: value } as never), TypeError).message).toBe(
+        catchError(readOption, TypeError).message,
+      );
+    });
+
+    it('rejects an unknown delimiter as readCsvRecords does', () => {
+      expect(catchError(() => parseCsv('a', { delimiter: '|' } as never), TypeError).message).toBe(
+        catchError(() => readCsvRecords('a', { delimiter: '|' } as never), TypeError).message,
+      );
     });
 
     it.each<unknown>([null, 5])('throws a TypeError for the text %j, which is not a string', (text) => {

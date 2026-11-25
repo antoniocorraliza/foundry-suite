@@ -1,5 +1,6 @@
 import fc from 'fast-check';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ɵparseLanguageTag } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { formatNumber } from './format-number.function';
@@ -110,14 +111,13 @@ describe('getParseDecimalOptions', () => {
     },
   );
 
-  it('throws its own RangeError for an invalid language tag, with the error of Intl as the cause', () => {
-    const error: RangeError = catchError(() => getParseDecimalOptions('es_ES'), RangeError);
-    expect(error.message).toMatch(/^\[foundry-utils\]: /u);
-    expect(error.cause).toBeInstanceOf(RangeError);
-  });
-
-  it.each<unknown>([5, null, undefined, new String('es-ES'), ['es-ES']])('throws a TypeError for %j, which is not a string', (locale) => {
-    expect(catchThrown(() => getParseDecimalOptions(locale as string))).toBeInstanceOf(TypeError);
+  it.each<[unknown, typeof TypeError | typeof RangeError]>([
+    [5, TypeError],
+    ['es_ES', RangeError],
+  ])('rejects the locale %j as parseLanguageTag does', (locale, errorClass) => {
+    expect(catchError(() => getParseDecimalOptions(locale as string), errorClass).message).toBe(
+      catchError(() => ɵparseLanguageTag(locale), errorClass).message,
+    );
   });
 
   it('gives options that read back what formatNumber writes in each supported language', () => {

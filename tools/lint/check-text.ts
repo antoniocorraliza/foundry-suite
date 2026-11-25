@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import {
   CHECKED_FILE,
+  LIBRARY_CODE_FILE,
   LIBRARY_COMPONENT_STYLE_FILE,
   LIBRARY_DEFINITION_FILE,
   LIBRARY_TEMPLATE_FILE,
@@ -11,15 +12,18 @@ import {
   TYPESCRIPT_FILE,
 } from './constants/file-patterns.constant.ts';
 import { SKIPPED_FILES } from './constants/skipped-files.constant.ts';
+import { EXPORT_TABLE_SPEC_FILE } from './constants/test-table-files.constant.ts';
 import { findClassNameProblems } from './functions/find-class-name-problems.function.ts';
 import { findDecoratorSuffixProblems } from './functions/find-decorator-suffix-problems.function.ts';
 import { findFileNameProblems } from './functions/find-file-name-problems.function.ts';
 import { findFolderSuffixProblem } from './functions/find-folder-suffix-problem.function.ts';
 import { findFunctionOrderProblems } from './functions/find-function-order-problems.function.ts';
 import { findLibraryCommentProblems } from './functions/find-library-comment-problems.function.ts';
+import { findNameOnlyJsdocProblems } from './functions/find-name-only-jsdoc-problems.function.ts';
 import { findOverloadSpacingProblems } from './functions/find-overload-spacing-problems.function.ts';
 import { findRepeatedSpecHelpers } from './functions/find-repeated-spec-helpers.function.ts';
 import { findSignatureProblems } from './functions/find-signature-problems.function.ts';
+import { findSingleCaseTableProblems } from './functions/find-single-case-table-problems.function.ts';
 import { findTemplateJsdocProblems } from './functions/find-template-jsdoc-problems.function.ts';
 import { findTestTitleProblems } from './functions/find-test-title-problems.function.ts';
 import { findTextProblems } from './functions/find-text-problems.function.ts';
@@ -44,6 +48,7 @@ function main(): number {
     if (TYPESCRIPT_FILE.test(path)) problems.push(...findSignatureProblems(path, text), ...findOverloadSpacingProblems(path, text));
     if (SPEC_FILE.test(path)) problems.push(...findTestTitleProblems(path, text));
     if (SPEC_FILE.test(path)) specTexts.set(path, text);
+    if (SPEC_FILE.test(path) && !EXPORT_TABLE_SPEC_FILE.test(path)) problems.push(...findSingleCaseTableProblems(path, text));
     if (TYPESCRIPT_FILE.test(path) && !SPEC_FILE.test(path)) {
       problems.push(
         ...findDecoratorSuffixProblems(path, text),
@@ -54,6 +59,7 @@ function main(): number {
     if (LIBRARY_TEMPLATE_FILE.test(path) || LIBRARY_COMPONENT_STYLE_FILE.test(path)) problems.push(...findClassNameProblems(path, text));
     if (LIBRARY_TYPESCRIPT_FILE.test(path)) problems.push(...findLibraryCommentProblems(path, text));
     if (LIBRARY_TYPESCRIPT_FILE.test(path) && !SPEC_FILE.test(path)) problems.push(...findThrowsProblems(path, text));
+    if (LIBRARY_CODE_FILE.test(path)) problems.push(...findNameOnlyJsdocProblems(path, text));
     if (LIBRARY_DEFINITION_FILE.test(path)) problems.push(...findTemplateJsdocProblems(path, text));
   });
   problems.push(...findRepeatedSpecHelpers(specTexts));
