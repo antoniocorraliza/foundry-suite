@@ -3,27 +3,27 @@ import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import type { FoundryParseDecimalOptions } from '../interfaces/foundry-parse-decimal-options.interface';
 import { getParseDecimalOptions } from './get-parse-decimal-options.function';
 
-const DECIMAL_COMMA_DOT_GROUPS: Required<FoundryParseDecimalOptions> = {
+const COMMA_DOT_GROUPS: Required<FoundryParseDecimalOptions> = {
   decimalSeparator: ',',
   groupSeparator: '.',
   groupStyle: 'thousands',
 };
-const DECIMAL_DOT_COMMA_GROUPS: Required<FoundryParseDecimalOptions> = {
+const DOT_COMMA_GROUPS: Required<FoundryParseDecimalOptions> = {
   decimalSeparator: '.',
   groupSeparator: ',',
   groupStyle: 'thousands',
 };
-const DECIMAL_COMMA_SPACE_GROUPS: Required<FoundryParseDecimalOptions> = {
+const COMMA_SPACE_GROUPS: Required<FoundryParseDecimalOptions> = {
   decimalSeparator: ',',
   groupSeparator: ' ',
   groupStyle: 'thousands',
 };
-const DECIMAL_DOT_APOSTROPHE_GROUPS: Required<FoundryParseDecimalOptions> = {
+const DOT_APOSTROPHE_GROUPS: Required<FoundryParseDecimalOptions> = {
   decimalSeparator: '.',
   groupSeparator: "'",
   groupStyle: 'thousands',
 };
-const DECIMAL_COMMA_APOSTROPHE_GROUPS: Required<FoundryParseDecimalOptions> = {
+const COMMA_APOSTROPHE_GROUPS: Required<FoundryParseDecimalOptions> = {
   decimalSeparator: ',',
   groupSeparator: "'",
   groupStyle: 'thousands',
@@ -32,20 +32,20 @@ const INDIAN_GROUPS: Required<FoundryParseDecimalOptions> = { decimalSeparator: 
 
 describe('getParseDecimalOptions with the language data of Node', () => {
   it.each<[string, Required<FoundryParseDecimalOptions>]>([
-    ['es-ES', DECIMAL_COMMA_DOT_GROUPS],
-    ['de-DE', DECIMAL_COMMA_DOT_GROUPS],
-    ['en-US', DECIMAL_DOT_COMMA_GROUPS],
-    ['fr-FR', DECIMAL_COMMA_SPACE_GROUPS],
-    ['pl-PL', DECIMAL_COMMA_SPACE_GROUPS],
-    ['sv-SE', DECIMAL_COMMA_SPACE_GROUPS],
-    ['de-CH', DECIMAL_DOT_APOSTROPHE_GROUPS],
-    ['it-CH', DECIMAL_DOT_APOSTROPHE_GROUPS],
-    ['fr-CH', DECIMAL_COMMA_APOSTROPHE_GROUPS],
+    ['es-ES', COMMA_DOT_GROUPS],
+    ['de-DE', COMMA_DOT_GROUPS],
+    ['en-US', DOT_COMMA_GROUPS],
+    ['fr-FR', COMMA_SPACE_GROUPS],
+    ['pl-PL', COMMA_SPACE_GROUPS],
+    ['sv-SE', COMMA_SPACE_GROUPS],
+    ['de-CH', DOT_APOSTROPHE_GROUPS],
+    ['it-CH', DOT_APOSTROPHE_GROUPS],
+    ['fr-CH', COMMA_APOSTROPHE_GROUPS],
     ['en-IN', INDIAN_GROUPS],
     ['hi-IN', INDIAN_GROUPS],
-    ['he-IL', DECIMAL_DOT_COMMA_GROUPS],
-    ['ar-EG-u-nu-latn', DECIMAL_DOT_COMMA_GROUPS],
-    ['ar-MA', DECIMAL_COMMA_DOT_GROUPS],
+    ['he-IL', DOT_COMMA_GROUPS],
+    ['ar-EG-u-nu-latn', DOT_COMMA_GROUPS],
+    ['ar-MA', COMMA_DOT_GROUPS],
   ])('returns the separators that Intl writes in %s', (locale, options) => {
     expect(getParseDecimalOptions(locale)).toEqual(options);
   });

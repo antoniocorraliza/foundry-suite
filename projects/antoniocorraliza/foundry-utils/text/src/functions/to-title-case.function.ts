@@ -1,5 +1,12 @@
 import { ɵisOptionsValue, ɵparseLanguageTag, ɵparseTextOption } from '@antoniocorraliza/foundry-utils';
 import { TITLE_CASE_WORD } from '../constants/title-case-word.constant';
+import { splitFirstCharacter } from './split-first-character.function';
+
+function capitalizeWord(word: string, locale: string | null): string {
+  const [firstCharacter, rest]: [string, string] = splitFirstCharacter(word);
+  if (locale === null) return `${firstCharacter.toUpperCase()}${rest.toLowerCase()}`;
+  return `${firstCharacter.toLocaleUpperCase(locale)}${rest.toLocaleLowerCase(locale)}`;
+}
 
 /**
  * Writes each word with its first letter in upper case and the rest in lower case, with the rules of `locale` when it is given.
@@ -12,11 +19,4 @@ export function toTitleCase(text: string, options?: { readonly locale?: string }
   const locale: string | null = ɵparseTextOption({ options, name: 'locale', fallback: null });
   const languageTag: string | null = locale === null ? null : ɵparseLanguageTag(locale);
   return text.replace(TITLE_CASE_WORD, (word) => capitalizeWord(word, languageTag));
-}
-
-function capitalizeWord(word: string, locale: string | null): string {
-  const firstCharacter: string = String.fromCodePoint(word.codePointAt(0) ?? 0);
-  const rest: string = word.slice(firstCharacter.length);
-  if (locale === null) return `${firstCharacter.toUpperCase()}${rest.toLowerCase()}`;
-  return `${firstCharacter.toLocaleUpperCase(locale)}${rest.toLocaleLowerCase(locale)}`;
 }

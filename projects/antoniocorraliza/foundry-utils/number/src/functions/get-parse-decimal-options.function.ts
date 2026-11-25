@@ -1,6 +1,8 @@
 import { ɵparseLanguageTag } from '@antoniocorraliza/foundry-utils';
-import { GROUP_SEPARATORS_BY_CHARACTER, SEPARATOR_SAMPLE } from '../constants/decimal-text.constant';
+import { SEPARATOR_SAMPLE } from '../constants/decimal-text.constant';
 import type { FoundryParseDecimalOptions } from '../interfaces/foundry-parse-decimal-options.interface';
+import type { GroupSeparator } from '../types/group-separator.type';
+import { readGroupSeparator } from './read-group-separator.function';
 
 /**
  * Returns the options of `parseDecimal` that read what `Intl.NumberFormat` writes in a language.
@@ -19,13 +21,14 @@ export function getParseDecimalOptions(locale: string): Required<FoundryParseDec
   const parts: Array<Intl.NumberFormatPart> = format.formatToParts(SEPARATOR_SAMPLE);
   const decimal: string | undefined = parts.find((part) => part.type === 'decimal')?.value;
   const group: string | null = parts.find((part) => part.type === 'group')?.value ?? null;
-  if ((decimal !== '.' && decimal !== ',') || (group !== null && !Object.hasOwn(GROUP_SEPARATORS_BY_CHARACTER, group))) {
+  const groupSeparator: GroupSeparator | null = group === null ? null : readGroupSeparator(group);
+  if ((decimal !== '.' && decimal !== ',') || (group !== null && groupSeparator === null)) {
     throw new RangeError(`[foundry-utils]: parseDecimal does not read the separators that ${locale} writes`);
   }
   const integers: Array<Intl.NumberFormatPart> = parts.filter((part) => part.type === 'integer');
   return {
     decimalSeparator: decimal,
-    groupSeparator: group === null ? null : (GROUP_SEPARATORS_BY_CHARACTER[group] ?? null),
+    groupSeparator,
     groupStyle: integers.length > 2 && integers[1]?.value.length === 2 ? 'indian' : 'thousands',
   };
 }
