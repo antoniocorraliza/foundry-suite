@@ -1,5 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import type { FoundryRoundingMode } from '../types/foundry-rounding-mode.type';
 import { roundToDecimals } from './round-to-decimals.function';
@@ -93,9 +94,8 @@ describe('roundToDecimals', () => {
   it.each<unknown>(['4.015', null, undefined, 4n, new Number(4.015), {}])(
     'throws a TypeError for the value %s, which is not a number',
     (value) => {
-      const error: unknown = catchThrown(() => roundToDecimals(value as number, 2));
-      expect(error).toBeInstanceOf(TypeError);
-      expect((error as TypeError).message).toMatch(/^\[foundry-utils\]: /u);
+      const error: TypeError = catchError(() => roundToDecimals(value as number, 2), TypeError);
+      expect(error.message).toMatch(/^\[foundry-utils\]: /u);
     },
   );
 

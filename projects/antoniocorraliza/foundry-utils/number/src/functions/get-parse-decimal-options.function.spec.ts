@@ -1,5 +1,6 @@
 import fc from 'fast-check';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { formatNumber } from './format-number.function';
 import { getParseDecimalOptions } from './get-parse-decimal-options.function';
@@ -104,17 +105,15 @@ describe('getParseDecimalOptions', () => {
   it.each<string>(['en-u-nu-arab', 'en-u-nu-deva', 'en-u-nu-beng'])(
     'throws a RangeError for %s, whose digits are not Latin, and suggests the Latin variant',
     (locale) => {
-      const error: unknown = catchThrown(() => getParseDecimalOptions(locale));
-      expect(error).toBeInstanceOf(RangeError);
-      expect((error as RangeError).message).toMatch(/^\[foundry-utils\]: .*-u-nu-latn/u);
+      const error: RangeError = catchError(() => getParseDecimalOptions(locale), RangeError);
+      expect(error.message).toMatch(/^\[foundry-utils\]: .*-u-nu-latn/u);
     },
   );
 
   it('throws its own RangeError for an invalid language tag, with the error of Intl as the cause', () => {
-    const error: unknown = catchThrown(() => getParseDecimalOptions('es_ES'));
-    expect(error).toBeInstanceOf(RangeError);
-    expect((error as RangeError).message).toMatch(/^\[foundry-utils\]: /u);
-    expect((error as RangeError).cause).toBeInstanceOf(RangeError);
+    const error: RangeError = catchError(() => getParseDecimalOptions('es_ES'), RangeError);
+    expect(error.message).toMatch(/^\[foundry-utils\]: /u);
+    expect(error.cause).toBeInstanceOf(RangeError);
   });
 
   it.each<unknown>([5, null, undefined, new String('es-ES'), ['es-ES']])('throws a TypeError for %j, which is not a string', (locale) => {

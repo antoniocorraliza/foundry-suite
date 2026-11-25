@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { FoundryBrowserApiUnavailableError } from '../errors/foundry-browser-api-unavailable.error';
 import { downloadBlob } from './download-blob.function';
@@ -23,9 +24,11 @@ describe('downloadBlob with jsdom', () => {
     const createObjectUrl: unknown = vi.fn(() => 'blob:probe');
     vi.stubGlobal('URL', { ...urlApi, ...('createObjectURL' in urlApi ? { createObjectURL: createObjectUrl } : {}) });
     const createElement: unknown = vi.spyOn(document, 'createElement');
-    const thrown: unknown = catchThrown(() => downloadBlob(new Blob(['a']), 'a.csv'));
-    expect(thrown).toBeInstanceOf(FoundryBrowserApiUnavailableError);
-    expect((thrown as FoundryBrowserApiUnavailableError).missingApi).toBe(missingApi);
+    const thrown: FoundryBrowserApiUnavailableError = catchError(
+      () => downloadBlob(new Blob(['a']), 'a.csv'),
+      FoundryBrowserApiUnavailableError,
+    );
+    expect(thrown.missingApi).toBe(missingApi);
     expect(createObjectUrl).not.toHaveBeenCalled();
     expect(createElement).not.toHaveBeenCalled();
   });

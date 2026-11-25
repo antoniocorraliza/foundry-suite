@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { catchRejectedError } from '@foundry-test/functions/catch-rejected-error.function';
 import { catchRejection } from '@foundry-test/functions/catch-rejection.function';
 import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
@@ -43,9 +44,11 @@ describe('readCsvFile', () => {
   });
 
   it('rejects zero bytes without a byte order mark with invalidEncoding', async () => {
-    const rejection: unknown = await catchRejection(() => readCsvFile(new Blob([new Uint8Array([0x4e, 0x00, 0xf1, 0x00])])));
-    expect(rejection).toBeInstanceOf(FoundryCsvParseError);
-    expect((rejection as FoundryCsvParseError).reason).toBe('invalidEncoding');
+    const rejection: FoundryCsvParseError = await catchRejectedError(
+      () => readCsvFile(new Blob([new Uint8Array([0x4e, 0x00, 0xf1, 0x00])])),
+      FoundryCsvParseError,
+    );
+    expect(rejection.reason).toBe('invalidEncoding');
   });
 
   it('reads with the asked encoding', async () => {
@@ -81,23 +84,20 @@ describe('readCsvFile', () => {
   );
 
   it('returns a promise rejected with a FoundryCsvParseError for a document that is not well formed', async () => {
-    const rejection: unknown = await catchRejection(() => readCsvFile(new Blob(['a,"b'])));
-    expect(rejection).toBeInstanceOf(FoundryCsvParseError);
-    expect((rejection as FoundryCsvParseError).reason).toBe('unclosedQuote');
+    const rejection: FoundryCsvParseError = await catchRejectedError(() => readCsvFile(new Blob(['a,"b'])), FoundryCsvParseError);
+    expect(rejection.reason).toBe('unclosedQuote');
   });
 
   it('rejects with a TypeError that names TextDecoder when the environment lacks it', async () => {
     vi.stubGlobal('TextDecoder', undefined);
-    const rejection: unknown = await catchRejection(() => readCsvFile(new Blob(['a'])));
-    expect(rejection).toBeInstanceOf(TypeError);
-    expect((rejection as TypeError).message).toMatch(/^\[foundry-utils\]: /);
-    expect((rejection as TypeError).message).toContain('TextDecoder');
+    const rejection: TypeError = await catchRejectedError(() => readCsvFile(new Blob(['a'])), TypeError);
+    expect(rejection.message).toMatch(/^\[foundry-utils\]: /);
+    expect(rejection.message).toContain('TextDecoder');
   });
 
   it('takes an object by its Blob tag, and rejects with a TypeError that names arrayBuffer when it lacks it', async () => {
-    const rejection: unknown = await catchRejection(() => readCsvFile(createObjectWithFakeTag('Blob') as Blob));
-    expect(rejection).toBeInstanceOf(TypeError);
-    expect((rejection as TypeError).message).toContain('arrayBuffer');
+    const rejection: TypeError = await catchRejectedError(() => readCsvFile(createObjectWithFakeTag('Blob') as Blob), TypeError);
+    expect(rejection.message).toContain('arrayBuffer');
   });
 
   it('leaves its options unchanged', async () => {

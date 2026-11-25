@@ -676,7 +676,7 @@ export type PhoneCountry = (typeof PHONE_COUNTRIES)[number];
 
 ### Checking an error in a test
 
-`catchError` of `@foundry-test` runs the action, checks the class of what it throws and returns the error with its type. A spec does not write its own helper for this.
+`catchError` of `@foundry-test` runs the action, checks the class of what it throws and returns the error with its type; `catchRejectedError` does the same with a promise that rejects. A spec does not write its own helper for this. When the test only checks the class, `expect(catchThrown(...)).toBeInstanceOf(TypeError)` is enough.
 
 ```ts
 const error: FoundryCsvParseError = catchError(() => parseCsv('a,"b'), FoundryCsvParseError);

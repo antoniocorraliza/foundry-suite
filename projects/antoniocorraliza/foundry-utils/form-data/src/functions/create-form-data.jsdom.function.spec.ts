@@ -1,6 +1,6 @@
 import { Blob as NodeBlob, File as NodeFile } from 'node:buffer';
 import { describe, expect, it } from 'vitest';
-import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { createFormData } from './create-form-data.function';
 
 describe('createFormData with jsdom', () => {
@@ -38,11 +38,10 @@ describe('createFormData with jsdom', () => {
   ])(
     'throws a TypeError with the key, and never sends a text, for a %s of Node that the FormData of jsdom refuses',
     (_kind, createValue) => {
-      const thrown: unknown = catchThrown(() => createFormData({ doc: createValue() as Blob }));
-      expect(thrown).toBeInstanceOf(TypeError);
-      expect((thrown as TypeError).message).toMatch(/^\[foundry-utils\]: /);
-      expect((thrown as TypeError).message).toContain('doc');
-      expect(((thrown as TypeError).cause as Error).name).toBe('TypeError');
+      const thrown: TypeError = catchError(() => createFormData({ doc: createValue() as Blob }), TypeError);
+      expect(thrown.message).toMatch(/^\[foundry-utils\]: /);
+      expect(thrown.message).toContain('doc');
+      expect((thrown.cause as Error).name).toBe('TypeError');
     },
   );
 });

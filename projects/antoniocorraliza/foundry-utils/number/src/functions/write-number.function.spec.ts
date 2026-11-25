@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import type { NumberWriter } from '../interfaces/number-writer.interface';
 import { writeNumber } from './write-number.function';
 
@@ -22,9 +22,8 @@ describe('writeNumber', () => {
   it.each<unknown>(['1.234', 'abc', '', 12n, new Number(5), {}, true, [5]])(
     'throws a TypeError for %s, which is not a number, instead of writing it as one',
     (value) => {
-      const error: unknown = catchThrown(() => writeNumber(value, WRITER));
-      expect(error).toBeInstanceOf(TypeError);
-      expect((error as TypeError).message).toMatch(/^\[foundry-utils\]: /u);
+      const error: TypeError = catchError(() => writeNumber(value, WRITER), TypeError);
+      expect(error.message).toMatch(/^\[foundry-utils\]: /u);
     },
   );
 });

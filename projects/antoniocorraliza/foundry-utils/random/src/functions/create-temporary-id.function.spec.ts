@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FoundryCryptoUnavailableError } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
-import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { createQueuedCrypto } from '@foundry-test/functions/create-queued-crypto.function';
 import { createTemporaryId } from './create-temporary-id.function';
 import { readRandomBytes } from './read-random-bytes.function';
@@ -47,9 +46,8 @@ describe('createTemporaryId', () => {
 
   it('throws a FoundryCryptoUnavailableError for crypto when crypto is missing', () => {
     vi.stubGlobal('crypto', undefined);
-    const thrown: unknown = catchThrown(() => createTemporaryId());
-    expect(thrown).toBeInstanceOf(FoundryCryptoUnavailableError);
-    expect((thrown as FoundryCryptoUnavailableError).missingApi).toBe('crypto');
+    const thrown: FoundryCryptoUnavailableError = catchError(() => createTemporaryId(), FoundryCryptoUnavailableError);
+    expect(thrown.missingApi).toBe('crypto');
   });
 
   it('names the API that readRandomBytes names when crypto has no getRandomValues', () => {

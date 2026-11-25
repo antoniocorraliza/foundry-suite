@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { clampNumber } from './clamp-number.function';
 
@@ -41,8 +42,7 @@ describe('clampNumber', () => {
     [5n, 0, 10],
     [new Number(5), 0, 10],
   ])('throws a TypeError for clampNumber(%s, %s, %s), whose arguments are not all numbers', (value, minimum, maximum) => {
-    const error: unknown = catchThrown(() => clampNumber(value as number, minimum as number, maximum as number));
-    expect(error).toBeInstanceOf(TypeError);
-    expect((error as TypeError).message).toMatch(/^\[foundry-utils\]: /u);
+    const error: TypeError = catchError(() => clampNumber(value as number, minimum as number, maximum as number), TypeError);
+    expect(error.message).toMatch(/^\[foundry-utils\]: /u);
   });
 });

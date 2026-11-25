@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import type { NumberWriter } from '../interfaces/number-writer.interface';
 import { createNumberFormat } from './create-number-format.function';
@@ -65,17 +66,15 @@ describe('createNumberFormat', () => {
   it.each<unknown>([{}, { locale: undefined }, { locale: null }, { locale: 5 }, { locale: ['es-ES'] }])(
     'throws a TypeError for %j, without a language tag that is a string, instead of using the language of the device',
     (options) => {
-      const error: unknown = catchThrown(() => createNumberFormat(options, 'decimal'));
-      expect(error).toBeInstanceOf(TypeError);
-      expect((error as TypeError).message).toMatch(/^\[foundry-utils\]: .*\blocale\b/u);
+      const error: TypeError = catchError(() => createNumberFormat(options, 'decimal'), TypeError);
+      expect(error.message).toMatch(/^\[foundry-utils\]: .*\blocale\b/u);
     },
   );
 
   it('throws its own RangeError for an invalid language tag, with the error of Intl as the cause', () => {
-    const error: unknown = catchThrown(() => createNumberFormat({ locale: 'es_ES' }, 'decimal'));
-    expect(error).toBeInstanceOf(RangeError);
-    expect((error as RangeError).message).toMatch(/^\[foundry-utils\]: /u);
-    expect((error as RangeError).cause).toBeInstanceOf(RangeError);
+    const error: RangeError = catchError(() => createNumberFormat({ locale: 'es_ES' }, 'decimal'), RangeError);
+    expect(error.message).toMatch(/^\[foundry-utils\]: /u);
+    expect(error.cause).toBeInstanceOf(RangeError);
   });
 
   it.each<unknown>([
@@ -88,10 +87,9 @@ describe('createNumberFormat', () => {
   });
 
   it('throws its own RangeError for a malformed currency code, with the error of Intl as the cause', () => {
-    const error: unknown = catchThrown(() => createNumberFormat({ locale: 'es-ES', currency: 'EURO' }, 'currency'));
-    expect(error).toBeInstanceOf(RangeError);
-    expect((error as RangeError).message).toMatch(/^\[foundry-utils\]: /u);
-    expect((error as RangeError).cause).toBeInstanceOf(RangeError);
+    const error: RangeError = catchError(() => createNumberFormat({ locale: 'es-ES', currency: 'EURO' }, 'currency'), RangeError);
+    expect(error.message).toMatch(/^\[foundry-utils\]: /u);
+    expect(error.cause).toBeInstanceOf(RangeError);
   });
 
   it('accepts any well-formed currency code, as Intl does, in any case', () => {
@@ -105,11 +103,11 @@ describe('createNumberFormat', () => {
   });
 
   it('throws its own RangeError when the minimum fraction digits are more than the maximum', () => {
-    const error: unknown = catchThrown(() =>
-      createNumberFormat({ locale: 'es-ES', minimumFractionDigits: 3, maximumFractionDigits: 2 }, 'decimal'),
+    const error: RangeError = catchError(
+      () => createNumberFormat({ locale: 'es-ES', minimumFractionDigits: 3, maximumFractionDigits: 2 }, 'decimal'),
+      RangeError,
     );
-    expect(error).toBeInstanceOf(RangeError);
-    expect((error as RangeError).message).toMatch(/^\[foundry-utils\]: /u);
+    expect(error.message).toMatch(/^\[foundry-utils\]: /u);
   });
 
   it.each<unknown>([

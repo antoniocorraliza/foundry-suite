@@ -1,5 +1,6 @@
 import type { Mock } from 'vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import type { FoundryDebouncer } from '../interfaces/foundry-debouncer.interface';
 import { createDebouncer } from './create-debouncer.function';
@@ -280,9 +281,8 @@ describe('createDebouncer', () => {
     it.each<unknown>([1.5, -0.5, -1, 2 ** 31, Number.NaN, Number.POSITIVE_INFINITY, '500', null])(
       'throws a RangeError when it is created with the wait %s',
       (wait) => {
-        const thrown: unknown = catchThrown(() => createDebouncer(vi.fn(), wait as number));
-        expect(thrown).toBeInstanceOf(RangeError);
-        expect((thrown as RangeError).message).toMatch(/^\[foundry-utils\]: /);
+        const thrown: RangeError = catchError(() => createDebouncer(vi.fn(), wait as number), RangeError);
+        expect(thrown.message).toMatch(/^\[foundry-utils\]: /);
       },
     );
 
