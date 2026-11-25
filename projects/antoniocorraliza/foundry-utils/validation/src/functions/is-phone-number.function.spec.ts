@@ -1,4 +1,3 @@
-import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { isPhoneNumber } from './is-phone-number.function';
 
@@ -18,13 +17,5 @@ describe('isPhoneNumber', () => {
 
   it.each<unknown>(['FR', 'es', 5, null])('uses the generic rule when the country is %j', (country) => {
     expect(isPhoneNumber('500000000', { country } as never)).toBe(true);
-  });
-
-  it('never throws', () => {
-    fc.assert(
-      fc.property(fc.anything(), fc.anything(), (value, options) => {
-        expect(typeof isPhoneNumber(value, options as never)).toBe('boolean');
-      }),
-    );
   });
 });

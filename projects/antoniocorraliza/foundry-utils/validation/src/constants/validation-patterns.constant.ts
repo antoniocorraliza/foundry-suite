@@ -15,7 +15,12 @@ export const INTERNATIONAL_PHONE_PATTERN: RegExp = /^\+[1-9]\d{7,14}$/;
 export const LOCAL_PHONE_PATTERN: RegExp = /^\d{9,15}$/;
 /** Spanish phone number: 9 digits that start with 6, 7, 8 or 9, with an optional `+34`. */
 export const SPANISH_PHONE_PATTERN: RegExp = /^(?:\+34)?[6-9]\d{8}$/;
-/** DNI of 8 digits or NIE of `X`, `Y` or `Z` and 7 digits, followed by the control letter. */
-export const DNI_OR_NIE_PATTERN: RegExp = /^(\d{8}|[XYZ]\d{7})([A-Z])$/;
+/** Letters that start a NIE, in the order of the digit that each one stands for. */
+export const NIE_PREFIXES: string = 'XYZ';
+/** DNI of 8 digits or NIE of a letter of `NIE_PREFIXES` and 7 digits, followed by the control letter, with named groups. */
+export const DNI_OR_NIE_PATTERN: RegExp = /* @__PURE__ */ new RegExp(
+  `^(?:(?<niePrefix>[${NIE_PREFIXES}])(?<nieDigits>\\d{7})|(?<dniDigits>\\d{8}))(?<letter>[A-Z])$`,
+  'u',
+);
 /** Control letters of a DNI or NIE, by the remainder of its number divided by 23. */
 export const DNI_CONTROL_LETTERS: string = 'TRWAGMYFPDXBNJZSQVHLCKE';

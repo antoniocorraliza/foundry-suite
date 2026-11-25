@@ -1,5 +1,5 @@
 import { ɵgetOwnDataValue, ɵisTextList, ɵreadBooleanOption } from '@antoniocorraliza/foundry-utils';
-import { DEFAULT_ACCEPTED_PROTOCOLS } from '../constants/accepted-protocols.constant';
+import { PROTOCOLS_ACCEPTED_BY_DEFAULT } from '../constants/protocols-accepted-by-default.constant';
 import type { FoundryUrlOptions } from '../interfaces/foundry-url-options.interface';
 import { readUrl } from './read-url.function';
 
@@ -8,7 +8,7 @@ export function isUrl(value: unknown, options?: FoundryUrlOptions): boolean {
   const protocols: unknown = ɵgetOwnDataValue(options, 'protocols');
   return (
     readUrl(value, {
-      protocols: ɵisTextList(protocols) ? protocols : DEFAULT_ACCEPTED_PROTOCOLS,
+      protocols: ɵisTextList(protocols) ? protocols : PROTOCOLS_ACCEPTED_BY_DEFAULT,
       allowMissingProtocol: ɵreadBooleanOption({ options, name: 'allowMissingProtocol', fallback: false }),
       defaultProtocol: 'https:',
     }) !== null

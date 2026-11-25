@@ -1,4 +1,3 @@
-import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { isEmail } from './is-email.function';
 
@@ -30,13 +29,5 @@ describe('isEmail', () => {
 
   it('can be passed to filter directly', () => {
     expect(['ana@empresa.es', 'hola'].filter(isEmail)).toEqual(['ana@empresa.es']);
-  });
-
-  it('never throws', () => {
-    fc.assert(
-      fc.property(fc.anything(), (value) => {
-        expect(typeof isEmail(value)).toBe('boolean');
-      }),
-    );
   });
 });

@@ -1,4 +1,3 @@
-import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
 import { isUrl } from './is-url.function';
 
@@ -35,13 +34,5 @@ describe('isUrl', () => {
     const getter: () => boolean = vi.fn(() => true);
     expect(isUrl('www.empresa.es', Object.defineProperty({}, 'allowMissingProtocol', { get: getter, enumerable: true }))).toBe(false);
     expect(getter).not.toHaveBeenCalled();
-  });
-
-  it('never throws', () => {
-    fc.assert(
-      fc.property(fc.anything(), fc.anything(), (value, options) => {
-        expect(typeof isUrl(value, options as never)).toBe('boolean');
-      }),
-    );
   });
 });

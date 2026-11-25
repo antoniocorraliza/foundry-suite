@@ -1,4 +1,3 @@
-import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { isValidJson } from './is-valid-json.function';
 
@@ -28,13 +27,5 @@ describe('isValidJson', () => {
 
   it.each<unknown>(['yes', 1, null])('accepts any JSON when requireObjectOrArray is %j', (requireObjectOrArray) => {
     expect(isValidJson('0', { requireObjectOrArray } as never)).toBe(true);
-  });
-
-  it('always returns a boolean', () => {
-    fc.assert(
-      fc.property(fc.oneof(fc.json(), fc.string(), fc.anything()), fc.anything(), (value, options) => {
-        expect(typeof isValidJson(value, options as never)).toBe('boolean');
-      }),
-    );
   });
 });

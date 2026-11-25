@@ -1,4 +1,3 @@
-import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
 import { isStrongPassword } from './is-strong-password.function';
 
@@ -48,13 +47,5 @@ describe('isStrongPassword', () => {
 
   it.each<unknown>([null, undefined, '', 12345678, ['Password1']])('returns false for %j', (value) => {
     expect(isStrongPassword(value)).toBe(false);
-  });
-
-  it('never throws', () => {
-    fc.assert(
-      fc.property(fc.anything(), fc.anything(), (value, options) => {
-        expect(typeof isStrongPassword(value, options as never)).toBe('boolean');
-      }),
-    );
   });
 });

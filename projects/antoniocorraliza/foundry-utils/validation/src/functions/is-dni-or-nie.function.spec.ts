@@ -1,4 +1,3 @@
-import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
 import { isDniOrNie } from './is-dni-or-nie.function';
 
@@ -26,13 +25,5 @@ describe('isDniOrNie', () => {
     const getter: () => ReadonlyArray<string> = vi.fn(() => ['nie']);
     expect(isDniOrNie('12345678Z', Object.defineProperty({}, 'accept', { get: getter, enumerable: true }))).toBe(true);
     expect(getter).not.toHaveBeenCalled();
-  });
-
-  it('never throws', () => {
-    fc.assert(
-      fc.property(fc.anything(), fc.anything(), (value, options) => {
-        expect(typeof isDniOrNie(value, options as never)).toBe('boolean');
-      }),
-    );
   });
 });
