@@ -1,10 +1,13 @@
 import { describe, expect, it } from '@jest/globals';
 import { runInNewContext } from 'node:vm';
-import { FoundryUtilsError } from '@antoniocorraliza/foundry-utils';
+import { FoundryCryptoUnavailableError, FoundryUtilsError } from '@antoniocorraliza/foundry-utils';
 import { downloadBlob, FoundryBrowserApiUnavailableError } from '@antoniocorraliza/foundry-utils/browser';
 import { FoundryKeyCollisionError, toCamelCaseKeys } from '@antoniocorraliza/foundry-utils/case';
 import { readCsvFile } from '@antoniocorraliza/foundry-utils/csv';
+import { createFormData } from '@antoniocorraliza/foundry-utils/form-data';
+import { sha256 } from '@antoniocorraliza/foundry-utils/hash';
 import { deepClone, isPlainObject } from '@antoniocorraliza/foundry-utils/object';
+import { createUuidV4 } from '@antoniocorraliza/foundry-utils/random';
 
 describe('Foundry Utils under Jest with jsdom', () => {
   it('keeps a jsdom file by reference in a deep clone', () => {
@@ -43,5 +46,24 @@ describe('Foundry Utils under Jest with jsdom', () => {
     expect(thrown).toBeInstanceOf(FoundryBrowserApiUnavailableError);
     expect(thrown.missingApi).toBe('URL.createObjectURL');
     expect(document.querySelector('a')).toBeNull();
+  });
+
+  it('sends a jsdom file in a form with its own name, and not as a text', () => {
+    const doc = new File(['%PDF'], 'factura.pdf', { type: 'application/pdf' });
+    const body = createFormData({ subject: 'Hola', priority: 2, doc });
+    expect(body.get('priority')).toBe('2');
+    expect(typeof body.get('doc')).not.toBe('string');
+    expect(body.get('doc').name).toBe('factura.pdf');
+    expect(body.get('doc').type).toBe('application/pdf');
+  });
+
+  it('creates a version 4 UUID with the crypto of jsdom', () => {
+    expect(createUuidV4()).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  });
+
+  it('rejects a hash with its named error, because the crypto of jsdom has no subtle', async () => {
+    const hashing = sha256('abc');
+    await expect(hashing).rejects.toThrow(FoundryCryptoUnavailableError);
+    await expect(hashing).rejects.toMatchObject({ missingApi: 'crypto.subtle' });
   });
 });

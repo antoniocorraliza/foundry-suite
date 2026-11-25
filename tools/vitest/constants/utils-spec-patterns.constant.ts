@@ -13,4 +13,7 @@ export const UTILS_BROWSER_SPECS: ReadonlyArray<string> = [
   'number/src/**/*.spec.ts',
   'text/src/**/*.spec.ts',
   'validation/src/functions/read-url.function.spec.ts',
+  'random/src/**/*.spec.ts',
+  'hash/src/**/*.spec.ts',
+  'form-data/src/**/*.spec.ts',
 ];
