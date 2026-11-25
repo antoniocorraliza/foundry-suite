@@ -96,6 +96,18 @@ describe('sleep', () => {
     expect(await waiting).toBeUndefined();
   });
 
+  it('reads the signal only as an own data property, without running a getter', async () => {
+    const controller: AbortController = new AbortController();
+    controller.abort('stopped');
+    const getter: () => unknown = vi.fn(() => controller.signal);
+    const withGetter: object = Object.defineProperty({}, 'signal', { get: getter, enumerable: true });
+    const inherited: object = Object.create({ signal: controller.signal }) as object;
+    const waiting: Promise<Array<void>> = Promise.all([sleep(10, withGetter), sleep(10, inherited)]);
+    await vi.advanceTimersByTimeAsync(10);
+    expect(await waiting).toEqual([undefined, undefined]);
+    expect(getter).not.toHaveBeenCalled();
+  });
+
   it.each<[string, unknown]>([
     ['an error', new Error('[test]: stopped')],
     ['a text', 'stopped'],

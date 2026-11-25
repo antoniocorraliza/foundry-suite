@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { ɵparseEnumOption } from './parse-enum-option.function';
 
@@ -15,6 +15,15 @@ describe('ɵparseEnumOption', () => {
     expect(ɵparseEnumOption({ options: {}, name: 'mode', allowedValues: MODES, fallback: 'down' })).toBe('down');
     expect(ɵparseEnumOption({ options: { mode: undefined }, name: 'mode', allowedValues: MODES, fallback: 'up' })).toBe('up');
     expect(ɵparseEnumOption({ options: { mode: null }, name: 'mode', allowedValues: MODES, fallback: 'down' })).toBe('down');
+  });
+
+  it('reads only own data properties, without running a getter', () => {
+    const getter: () => unknown = vi.fn(() => 'down');
+    const withGetter: Readonly<Record<string, unknown>> = Object.defineProperty({}, 'mode', { get: getter, enumerable: true });
+    const inherited: Readonly<Record<string, unknown>> = Object.create({ mode: 'down' }) as Readonly<Record<string, unknown>>;
+    expect(ɵparseEnumOption({ options: withGetter, name: 'mode', allowedValues: MODES, fallback: 'up' })).toBe('up');
+    expect(ɵparseEnumOption({ options: inherited, name: 'mode', allowedValues: MODES, fallback: 'up' })).toBe('up');
+    expect(getter).not.toHaveBeenCalled();
   });
 
   it('returns null when the fallback is null and the option is missing, undefined or null', () => {

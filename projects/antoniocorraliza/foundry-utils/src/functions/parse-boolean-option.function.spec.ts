@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { ɵparseBooleanOption } from './parse-boolean-option.function';
 
@@ -12,6 +12,15 @@ describe('ɵparseBooleanOption', () => {
     expect(ɵparseBooleanOption({ options: undefined, name: 'strict', fallback: true })).toBe(true);
     expect(ɵparseBooleanOption({ options: { strict: undefined }, name: 'strict', fallback: false })).toBe(false);
     expect(ɵparseBooleanOption({ options: { strict: null }, name: 'strict', fallback: false })).toBe(false);
+  });
+
+  it('reads only own data properties, without running a getter', () => {
+    const getter: () => unknown = vi.fn(() => true);
+    const withGetter: Readonly<Record<string, unknown>> = Object.defineProperty({}, 'strict', { get: getter, enumerable: true });
+    const inherited: Readonly<Record<string, unknown>> = Object.create({ strict: true }) as Readonly<Record<string, unknown>>;
+    expect(ɵparseBooleanOption({ options: withGetter, name: 'strict', fallback: false })).toBe(false);
+    expect(ɵparseBooleanOption({ options: inherited, name: 'strict', fallback: false })).toBe(false);
+    expect(getter).not.toHaveBeenCalled();
   });
 
   it.each<unknown>([0, 1, 'true', {}])('throws a TypeError for %j, naming the option and the type of the value', (strict) => {

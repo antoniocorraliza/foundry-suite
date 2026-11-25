@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { ɵparseTextOption } from './parse-text-option.function';
 
@@ -14,6 +14,15 @@ describe('ɵparseTextOption', () => {
     expect(ɵparseTextOption({ options: {}, name: 'suffix', fallback: '...' })).toBe('...');
     expect(ɵparseTextOption({ options: { suffix: undefined }, name: 'suffix', fallback: '...' })).toBe('...');
     expect(ɵparseTextOption({ options: { suffix: null }, name: 'suffix', fallback: '...' })).toBe('...');
+  });
+
+  it('reads only own data properties, without running a getter', () => {
+    const getter: () => unknown = vi.fn(() => 'es-ES');
+    const withGetter: Readonly<Record<string, unknown>> = Object.defineProperty({}, 'locale', { get: getter, enumerable: true });
+    const inherited: Readonly<Record<string, unknown>> = Object.create({ locale: 'es-ES' }) as Readonly<Record<string, unknown>>;
+    expect(ɵparseTextOption({ options: withGetter, name: 'locale', fallback: 'en-US' })).toBe('en-US');
+    expect(ɵparseTextOption({ options: inherited, name: 'locale', fallback: 'en-US' })).toBe('en-US');
+    expect(getter).not.toHaveBeenCalled();
   });
 
   it('returns null when the fallback is null and the option is missing, undefined or null', () => {

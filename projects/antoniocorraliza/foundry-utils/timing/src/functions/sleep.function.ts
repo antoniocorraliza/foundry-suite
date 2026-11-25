@@ -1,8 +1,8 @@
-import { ɵcheckOptions, ɵgetValueTag } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵgetOwnDataValue, ɵgetValueTag } from '@antoniocorraliza/foundry-utils';
 import { checkTimerDelay } from './check-timer-delay.function';
 
 function readSignal(options: Readonly<Record<string, unknown>> | undefined): AbortSignal | null {
-  const signal: unknown = options?.['signal'] ?? null;
+  const signal: unknown = ɵgetOwnDataValue(options, 'signal') ?? null;
   if (signal === null || ɵgetValueTag(signal) === '[object AbortSignal]') return signal as AbortSignal | null;
   throw new TypeError('[foundry-utils]: the signal option of sleep must be an AbortSignal');
 }

@@ -4,7 +4,8 @@ import type { KeyFrame } from '../interfaces/key-frame.interface';
 export function splitKey(key: string): KeyFrame {
   const leading: string = /^_*/.exec(key)?.[0] ?? '';
   const rest: string = key.slice(leading.length);
-  const trailing: string = /_*$/.exec(rest)?.[0] ?? '';
-  const body: string = rest.slice(0, rest.length - trailing.length);
-  return { leading, words: body.split(/[_\- ]+/).filter((word) => word !== ''), trailing };
+  let bodyEnd: number = rest.length;
+  while (bodyEnd > 0 && rest[bodyEnd - 1] === '_') bodyEnd -= 1;
+  const body: string = rest.slice(0, bodyEnd);
+  return { leading, words: body.split(/[_\- ]+/).filter((word) => word !== ''), trailing: rest.slice(bodyEnd) };
 }

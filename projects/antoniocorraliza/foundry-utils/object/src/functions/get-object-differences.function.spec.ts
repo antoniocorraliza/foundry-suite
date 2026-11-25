@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
 import { ɵcheckOptions, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
@@ -117,6 +117,22 @@ describe('getObjectDifferences', () => {
     expect(
       getObjectDifferences({ box: { locked: 1, a: 1 } }, { box: { locked: 1, a: 1 } }, options).map((difference) => difference.path),
     ).toEqual([['box']]);
+  });
+
+  it('reads customEquality only as an own data property, without running a getter, and takes null as missing', () => {
+    const getter: () => unknown = vi.fn(() => (): boolean => true);
+    const withGetter: FoundryDeepEqualOptions = Object.defineProperty({}, 'customEquality', { get: getter, enumerable: true });
+    const inherited: FoundryDeepEqualOptions = Object.create({ customEquality: (): boolean => true }) as FoundryDeepEqualOptions;
+    [withGetter, inherited, { customEquality: null } as never].forEach((options) => {
+      expect(getObjectDifferences({ a: 1 }, { a: 2 }, options)).toEqual([{ path: ['a'], kind: 'changed', previous: 1, current: 2 }]);
+    });
+    expect(getter).not.toHaveBeenCalled();
+  });
+
+  it('rejects a customEquality that is not a function', () => {
+    expect(catchError(() => getObjectDifferences({}, {}, { customEquality: 5 } as never), TypeError).message).toBe(
+      '[foundry-utils]: the customEquality option must be a function',
+    );
   });
 
   it('builds a patch payload from the first key of each path: complete first-level values and null for removed keys', () => {
