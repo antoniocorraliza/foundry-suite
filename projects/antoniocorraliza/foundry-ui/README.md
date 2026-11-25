@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Angular components of The Foundry Suite.
+Angular components of Foundry Suite.
 
 ## Status
 

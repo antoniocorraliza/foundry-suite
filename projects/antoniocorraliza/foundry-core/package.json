@@ -1,7 +1,7 @@
 {
   "name": "@antoniocorraliza/foundry-core",
   "version": "2.0.0-rc.0",
-  "description": "Infrastructure layer of The Foundry Suite for Angular. Version 2.0 is in development.",
+  "description": "Infrastructure layer of Foundry Suite for Angular. Version 2.0 is in development.",
   "author": "Antonio Corraliza León",
   "license": "MIT",
   "repository": {

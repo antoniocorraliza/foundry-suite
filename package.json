@@ -1,7 +1,7 @@
 {
   "name": "@antoniocorraliza/foundry-suite",
   "version": "2.0.0-rc.0",
-  "description": "Monorepo of The Foundry Suite 2.0 (Core, UI and Utils). In development.",
+  "description": "Monorepo of Foundry Suite 2.0 (Core, UI and Utils). In development.",
   "author": "Antonio Corraliza León",
   "license": "MIT",
   "homepage": "https://github.com/antoniocorraliza/foundry-suite#readme",

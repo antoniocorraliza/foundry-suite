@@ -1,8 +1,8 @@
-# The Foundry Suite
+# Foundry Suite
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Monorepo of The Foundry Suite 2.0: three libraries for Angular and TypeScript.
+Monorepo of Foundry Suite 2.0: three libraries for Angular and TypeScript.
 
 | Package                           | What it is                                    |
 | :-------------------------------- | :-------------------------------------------- |
