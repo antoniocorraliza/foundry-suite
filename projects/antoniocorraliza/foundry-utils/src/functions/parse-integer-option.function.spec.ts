@@ -28,14 +28,23 @@ describe('ɵparseIntegerOption', () => {
     expect(ɵparseIntegerOption({ options: { count: Number.MAX_SAFE_INTEGER }, name: 'count', minimum: 0 })).toBe(Number.MAX_SAFE_INTEGER);
   });
 
-  it.each<unknown>([0, 6, 1.5, Number.NaN, Number.POSITIVE_INFINITY, '2', true])('throws a RangeError for %j', (weeks) => {
+  it.each<unknown>([0, 6, 1.5, Number.NaN, Number.POSITIVE_INFINITY])('throws a RangeError for %j', (weeks) => {
     expect(catchThrown(() => ɵparseIntegerOption({ options: { weeks }, name: 'weeks', minimum: 1, maximum: 5 }))).toBeInstanceOf(
       RangeError,
     );
   });
 
-  it('throws a RangeError when the option is missing and has no fallback', () => {
-    expect(catchThrown(() => ɵparseIntegerOption({ options: {}, name: 'yearsBefore', minimum: 0 }))).toBeInstanceOf(RangeError);
+  it.each<unknown>(['2', true, {}])('throws a TypeError for %j, which is not a number, naming its type', (weeks) => {
+    const error: TypeError = catchError(
+      () => ɵparseIntegerOption({ options: { weeks }, name: 'weeks', minimum: 1, maximum: 5 }),
+      TypeError,
+    );
+    expect(error.message).toBe(`[foundry-utils]: the weeks option must be a number, got ${typeof weeks}`);
+  });
+
+  it('throws a TypeError when the option is missing and has no fallback', () => {
+    const error: TypeError = catchError(() => ɵparseIntegerOption({ options: {}, name: 'yearsBefore', minimum: 0 }), TypeError);
+    expect(error.message).toBe('[foundry-utils]: the yearsBefore option must be a number, got null');
   });
 
   it('names the option, its limits and the value in the message', () => {

@@ -36,16 +36,31 @@ describe('ɵparseEnumOption', () => {
     expect(ɵparseEnumOption({ options: { mode: 'down' }, name: 'mode', allowedValues: MODES, fallback: null })).toBe('down');
   });
 
-  it.each<unknown>(['UP', 'sideways', '', 1, true, {}])(
-    'throws a TypeError for %j, naming the option, its values and the value',
-    (mode) => {
-      const error: TypeError = catchError(
-        () => ɵparseEnumOption({ options: { mode }, name: 'mode', allowedValues: MODES, fallback: null }),
-        TypeError,
-      );
-      expect(error.message).toBe(`[foundry-utils]: the mode option must be one of up, down, got ${String(mode)}`);
-    },
-  );
+  it.each(['UP', 'sideways', ''])('throws a TypeError for the text %j, naming the option, its values and the text', (mode) => {
+    const error: TypeError = catchError(
+      () => ɵparseEnumOption({ options: { mode }, name: 'mode', allowedValues: MODES, fallback: null }),
+      TypeError,
+    );
+    expect(error.message).toBe(`[foundry-utils]: the mode option must be one of up, down, got ${mode}`);
+  });
+
+  it.each<unknown>([1, true, {}, Object.create(null)])('throws a TypeError for %j, which is not a text, naming its type', (mode) => {
+    const error: TypeError = catchError(
+      () => ɵparseEnumOption({ options: { mode }, name: 'mode', allowedValues: MODES, fallback: null }),
+      TypeError,
+    );
+    expect(error.message).toBe(`[foundry-utils]: the mode option must be one of up, down, got ${typeof mode}`);
+  });
+
+  it('does not run the toString of a value that is not a text', () => {
+    const toString: () => string = vi.fn(() => 'up');
+    const error: TypeError = catchError(
+      () => ɵparseEnumOption({ options: { mode: { toString } }, name: 'mode', allowedValues: MODES, fallback: null }),
+      TypeError,
+    );
+    expect(error.message).toBe('[foundry-utils]: the mode option must be one of up, down, got object');
+    expect(toString).not.toHaveBeenCalled();
+  });
 
   it.each<[string, Readonly<Record<string, unknown>> | undefined]>([
     ['missing options', undefined],

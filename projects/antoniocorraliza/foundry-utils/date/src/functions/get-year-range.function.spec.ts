@@ -28,9 +28,9 @@ describe('getYearRange', () => {
   });
 
   it.each<unknown>([{ referenceYear: 2026, yearsAfter: 0 }, { referenceYear: 2026, yearsBefore: 0 }, undefined])(
-    'throws a RangeError for %j, which leaves out a number of years that has no default',
+    'throws a TypeError for %j, which leaves out a number of years that has no default',
     (options) => {
-      expect(catchThrown(() => getYearRange(options as never))).toBeInstanceOf(RangeError);
+      expect(catchThrown(() => getYearRange(options as never))).toBeInstanceOf(TypeError);
     },
   );
 
