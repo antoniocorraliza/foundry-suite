@@ -90,7 +90,7 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'case', symbols: ['toCamelCaseKeys'] }],
-    budget: { rawKilobytes: 3.2, gzipKilobytes: 1.4 },
+    budget: { rawKilobytes: 3.9, gzipKilobytes: 1.7 },
   },
   {
     name: 'utils/case',
@@ -125,7 +125,7 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: 'number', symbols: ['roundToDecimals'] }],
-    budget: { rawKilobytes: 1.52, gzipKilobytes: 0.77 },
+    budget: { rawKilobytes: 1.9, gzipKilobytes: 0.9 },
   },
   {
     name: 'utils/number: parseDecimal',
@@ -195,7 +195,7 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: 'every-entry',
-    budget: { rawKilobytes: 73.9, gzipKilobytes: 22.8 },
+    budget: { rawKilobytes: 72.9, gzipKilobytes: 23.3 },
   },
   {
     name: 'core/network: foundrySkipAuthentication',

@@ -1,5 +1,5 @@
 import type { FoundryBinaryInput } from '@antoniocorraliza/foundry-utils';
-import { FoundryCryptoUnavailableError, ɵgetValueKind } from '@antoniocorraliza/foundry-utils';
+import { FoundryCryptoUnavailableError, ɵisArrayBuffer } from '@antoniocorraliza/foundry-utils';
 import type { HashAlgorithm } from '../types/hash-algorithm.type';
 
 function readInputBytes(input: string | FoundryBinaryInput): Uint8Array<ArrayBuffer> {
@@ -20,7 +20,7 @@ function readInputBytes(input: string | FoundryBinaryInput): Uint8Array<ArrayBuf
  * @throws {FoundryCryptoUnavailableError} When `crypto` or `crypto.subtle` is missing.
  */
 export async function createHexDigest(algorithm: HashAlgorithm, input: string | FoundryBinaryInput): Promise<string> {
-  if (typeof input !== 'string' && ɵgetValueKind(input) !== 'arrayBuffer' && !ArrayBuffer.isView(input)) {
+  if (typeof input !== 'string' && !ɵisArrayBuffer(input) && !ArrayBuffer.isView(input)) {
     throw new TypeError(`[foundry-utils]: the input of ${algorithm} must be a string, an ArrayBuffer or a view of one`);
   }
   if (typeof crypto === 'undefined') throw new FoundryCryptoUnavailableError({ missingApi: 'crypto' });

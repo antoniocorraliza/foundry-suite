@@ -9,6 +9,7 @@ export { ɵgetOwnDataEntries } from './functions/get-own-data-entries.function';
 export { ɵgetOwnDataValue } from './functions/get-own-data-value.function';
 export { ɵgetValueKind } from './functions/get-value-kind.function';
 export { ɵgetValueTag } from './functions/get-value-tag.function';
+export { ɵisArrayBuffer } from './functions/is-array-buffer.function';
 export { ɵisArrayIndex } from './functions/is-array-index.function';
 export { ɵisBlobLike } from './functions/is-blob-like.function';
 export { ɵisEmptyValue } from './functions/is-empty-value.function';
