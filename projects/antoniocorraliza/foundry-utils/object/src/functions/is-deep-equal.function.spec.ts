@@ -113,7 +113,7 @@ describe('isDeepEqual', () => {
     ).toThrow(failure);
   });
 
-  it('does not run a getter of its options', () => {
+  it('does not run a getter of the customEquality option', () => {
     const getter: () => () => boolean = vi.fn(() => () => true);
     expect(isDeepEqual({ a: 1 }, { a: 2 }, Object.defineProperty({}, 'customEquality', { get: getter, enumerable: true }))).toBe(false);
     expect(getter).not.toHaveBeenCalled();

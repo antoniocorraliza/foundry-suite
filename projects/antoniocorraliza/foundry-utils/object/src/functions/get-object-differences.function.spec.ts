@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
+import { ɵcheckOptions, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
+import { ARRAY_MODES } from '../constants/array-modes.constant';
 import type { FoundryDeepEqualOptions } from '../interfaces/foundry-deep-equal-options.interface';
 import type { FoundryObjectDifference } from '../interfaces/foundry-object-difference.interface';
 import { getObjectDifferences } from './get-object-differences.function';
@@ -131,8 +134,12 @@ describe('getObjectDifferences', () => {
     expect([...previous.listChanges(), ...current.listChanges()]).toEqual([]);
   });
 
-  it('rejects options that are not an object and unknown array modes', () => {
-    expect(() => getObjectDifferences({}, {}, 5 as never)).toThrow(TypeError);
-    expect(() => getObjectDifferences({}, {}, { arrays: 'deep' } as never)).toThrow(TypeError);
+  it('rejects options that are not an object and an unknown arrays value as checkOptions and parseEnumOption do', () => {
+    expect(catchError(() => getObjectDifferences({}, {}, 5 as never), TypeError).message).toBe(
+      catchError(() => ɵcheckOptions(5, 'getObjectDifferences'), TypeError).message,
+    );
+    expect(catchError(() => getObjectDifferences({}, {}, { arrays: 'deep' } as never), TypeError).message).toBe(
+      catchError(() => ɵparseEnumOption({ options: { arrays: 'deep' }, name: 'arrays', allowedValues: ARRAY_MODES }), TypeError).message,
+    );
   });
 });

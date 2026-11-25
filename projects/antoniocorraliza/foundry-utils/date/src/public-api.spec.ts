@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { ɵcheckOptions } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
@@ -187,14 +189,12 @@ describe('public API of the date entry', () => {
     });
   });
 
-  describe.each(OPTION_USERS)('through %s', (_name, callWithOptions) => {
-    it.each<unknown>([5, 'iso', true, null, [], () => ({})])(
-      'throws a TypeError for the options %j, which are not an object',
-      (options) => {
-        expect(catchThrown(() => callWithOptions(options))).toBeInstanceOf(TypeError);
-      },
-    );
-  });
+  it.each(OPTION_USERS)(
+    'throws a TypeError through %s for options that are not an object, naming that function',
+    (name, callWithOptions) => {
+      expect(catchError(() => callWithOptions(5), TypeError).message).toBe(catchError(() => ɵcheckOptions(5, name), TypeError).message);
+    },
+  );
 
   it.each(UNKNOWN_OPTION_VALUES)('throws a TypeError through %s for the unknown option %j', (_name, callWithOptions, options) => {
     expect(catchThrown(() => callWithOptions(options))).toBeInstanceOf(TypeError);

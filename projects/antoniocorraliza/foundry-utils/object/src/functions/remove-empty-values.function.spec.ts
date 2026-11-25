@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { FoundryCircularReferenceError } from '@antoniocorraliza/foundry-utils';
+import { FoundryCircularReferenceError, ɵcheckOptions, ɵparseBooleanOption } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
@@ -119,9 +120,16 @@ describe('removeEmptyValues', () => {
     expect(error).toMatchObject({ path: ['inner', 'back'] });
   });
 
-  it('rejects options that are not an object or options that are not booleans', () => {
-    expect(() => removeEmptyValues({ a: 1 }, 5 as never)).toThrow(TypeError);
-    expect(() => removeEmptyValues({ a: 1 }, { removeEmptyStrings: 'yes' } as never)).toThrow(TypeError);
+  it('rejects options that are not an object and an option that is not a boolean as checkOptions and parseBooleanOption do', () => {
+    expect(catchError(() => removeEmptyValues({ a: 1 }, 5 as never), TypeError).message).toBe(
+      catchError(() => ɵcheckOptions(5, 'removeEmptyValues'), TypeError).message,
+    );
+    expect(catchError(() => removeEmptyValues({ a: 1 }, { removeEmptyStrings: 'yes' } as never), TypeError).message).toBe(
+      catchError(
+        () => ɵparseBooleanOption({ options: { removeEmptyStrings: 'yes' }, name: 'removeEmptyStrings', fallback: false }),
+        TypeError,
+      ).message,
+    );
   });
 
   it('throws when map passes the index as its options', () => {

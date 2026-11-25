@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { FoundryCircularReferenceError } from '@antoniocorraliza/foundry-utils';
+import { FoundryCircularReferenceError, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
+import { COLLISION_MODES } from '../constants/collision-modes.constant';
 import { FoundryKeyCollisionError } from '../errors/foundry-key-collision.error';
 import type { FoundryKeyConversionOptions } from '../interfaces/foundry-key-conversion-options.interface';
 import { toCamelCaseKeys } from './to-camel-case-keys.function';
@@ -101,8 +103,13 @@ describe('convertKeys', () => {
       expect(convert({ [sourceKey]: 1, [targetKey]: 2 }, { onCollision: 'keepLast' })).toEqual({ [targetKey]: 2 });
     });
 
-    it('rejects an unknown collision option', () => {
-      expect(() => convert({ a: 1 }, { onCollision: 'merge' } as never)).toThrow(TypeError);
+    it('rejects an unknown onCollision value as parseEnumOption does', () => {
+      expect(catchError(() => convert({ a: 1 }, { onCollision: 'merge' } as never), TypeError).message).toBe(
+        catchError(
+          () => ɵparseEnumOption({ options: { onCollision: 'merge' }, name: 'onCollision', allowedValues: COLLISION_MODES }),
+          TypeError,
+        ).message,
+      );
     });
 
     it('throws a circular reference error with the path that points back', () => {
