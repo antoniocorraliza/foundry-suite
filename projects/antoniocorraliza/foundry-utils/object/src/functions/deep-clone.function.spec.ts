@@ -188,8 +188,23 @@ describe('deepClone', () => {
     ['a typed array', Object.assign(new Uint8Array(1), { unit: 'kg' }), 'view property'],
     ['a DataView', Object.assign(new DataView(new ArrayBuffer(1)), { unit: 'kg' }), 'view property'],
     ['a regular expression', Object.assign(/a/u, { unit: 'kg' }), 'RegExp property'],
+    ['a map', Object.assign(new Map(), { unit: 'kg' }), 'Map property'],
+    ['a set', Object.assign(new Set(), { unit: 'kg' }), 'Set property'],
+    ['a date', Object.assign(new Date(2026, 0, 1), { unit: 'kg' }), 'Date property'],
+    ['an ArrayBuffer', Object.assign(new ArrayBuffer(1), { unit: 'kg' }), 'ArrayBuffer property'],
   ])('throws on a property of %s, instead of dropping it', (_label, value, valueDescription) => {
     expect(catchError(() => deepClone({ value }), FoundryCloneError)).toMatchObject({ path: ['value', 'unit'], valueDescription });
+  });
+
+  it('copies the lastIndex of a regular expression, and throws when it cannot be copied', () => {
+    const pattern: RegExp = /a/gu;
+    pattern.lastIndex = 3;
+    expect(deepClone({ pattern }).pattern.lastIndex).toBe(3);
+    pattern.lastIndex = ((): number => 3) as unknown as number;
+    expect(catchError(() => deepClone({ pattern }), FoundryCloneError)).toMatchObject({
+      path: ['pattern', 'lastIndex'],
+      valueDescription: 'function',
+    });
   });
 
   it('throws on a view over a buffer of a subclass, naming the class and the buffer', () => {

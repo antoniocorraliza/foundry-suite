@@ -2,6 +2,7 @@ import { ɵcopyArrayItems, ɵdefineOwnProperty, ɵgetOwnDataEntries, ɵgetValueK
 import type { ViewParts } from '../interfaces/view-parts.interface';
 import type { ViewConstructor } from '../types/view-constructor.type';
 import { isLengthTrackingView } from './is-length-tracking-view.function';
+import { readLastIndex } from './read-last-index.function';
 import { readMapEntries } from './read-map-entries.function';
 import { readSetValues } from './read-set-values.function';
 import { readViewParts } from './read-view-parts.function';
@@ -48,7 +49,12 @@ function copyContainer(value: object, copies: Map<object, unknown>): unknown {
     }
     case 'date':
       return new Date(Date.prototype.getTime.call(value));
-    case 'regExp':
+    case 'regExp': {
+      const copy: RegExp = structuredClone(value as RegExp);
+      copies.set(value, copy);
+      copy.lastIndex = copyValueWith(readLastIndex(value), copies) as number;
+      return copy;
+    }
     case 'arrayBuffer':
       return structuredClone(value);
     case 'view':

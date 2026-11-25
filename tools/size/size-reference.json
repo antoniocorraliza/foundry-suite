@@ -237,12 +237,12 @@
   },
   "utils/object": {
     "esbuild": {
-      "raw": 13187,
-      "gzip": 4312
+      "raw": 13485,
+      "gzip": 4368
     },
     "rollup": {
-      "raw": 12979,
-      "gzip": 4130
+      "raw": 13279,
+      "gzip": 4192
     }
   },
   "utils/object: isDeepEqual": {
@@ -307,12 +307,12 @@
   },
   "utils: every entry": {
     "esbuild": {
-      "raw": 61982,
-      "gzip": 19702
+      "raw": 62283,
+      "gzip": 19767
     },
     "rollup": {
-      "raw": 61142,
-      "gzip": 18805
+      "raw": 61449,
+      "gzip": 18870
     }
   }
 }

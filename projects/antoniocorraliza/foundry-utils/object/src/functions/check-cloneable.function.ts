@@ -3,6 +3,7 @@ import { BUILT_IN_PROTOTYPE_COUNT, TYPED_ARRAY_PROTOTYPE_COUNT } from '../consta
 import { FoundryCloneError } from '../errors/foundry-clone.error';
 import type { CloneLocation } from '../interfaces/clone-location.interface';
 import type { ViewParts } from '../interfaces/view-parts.interface';
+import { readLastIndex } from './read-last-index.function';
 import { readMapEntries } from './read-map-entries.function';
 import { readSetValues } from './read-set-values.function';
 import { readViewParts } from './read-view-parts.function';
@@ -85,6 +86,7 @@ function checkValue(value: unknown, location: CloneLocation, visited: WeakSet<ob
       return;
     case 'map':
       checkBuiltInPrototype(value, 'Map', BUILT_IN_PROTOTYPE_COUNT, location);
+      checkExtraProperties(value, 'Map property', () => false, location);
       readMapEntries(value).forEach(([key, entry]) => {
         checkValue(key, { path: location.path, place: location.place ?? 'Map key' }, visited);
         checkValue(entry, { path: location.path, place: location.place ?? 'Map value' }, visited);
@@ -92,17 +94,21 @@ function checkValue(value: unknown, location: CloneLocation, visited: WeakSet<ob
       return;
     case 'set':
       checkBuiltInPrototype(value, 'Set', BUILT_IN_PROTOTYPE_COUNT, location);
+      checkExtraProperties(value, 'Set property', () => false, location);
       readSetValues(value).forEach((item) => checkValue(item, { path: location.path, place: location.place ?? 'Set element' }, visited));
       return;
     case 'date':
       checkBuiltInPrototype(value, 'Date', BUILT_IN_PROTOTYPE_COUNT, location);
+      checkExtraProperties(value, 'Date property', () => false, location);
       return;
     case 'regExp':
       checkBuiltInPrototype(value, 'RegExp', BUILT_IN_PROTOTYPE_COUNT, location);
       checkExtraProperties(value, 'RegExp property', (key) => key === 'lastIndex', location);
+      checkValue(readLastIndex(value), enterLocation(location, 'lastIndex'), visited);
       return;
     case 'arrayBuffer':
       checkBuiltInPrototype(value, 'ArrayBuffer', BUILT_IN_PROTOTYPE_COUNT, location);
+      checkExtraProperties(value, 'ArrayBuffer property', () => false, location);
       return;
     case 'view':
       checkView(value, location, visited);
