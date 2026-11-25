@@ -114,7 +114,7 @@ it('returns the first instant of a day without midnight', () => {});
 it('U17: parseDate in Santiago', () => {});
 ```
 
-Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `describe`, `it` and `test` (read with the TypeScript parser). It looks for anything shaped like a code (capitals and digits joined by hyphens, or one to four capitals followed by one to three digits) and for decision numbers. Names that look like a code are listed as exceptions in `REVIEW_CODE_EXCEPTIONS` (`tools/lint/constants/review-codes.constant.ts`) (`UTF-8`, `ISO-8601`, `ES2022`, `V8`, `F2`...): add one there when a real name is rejected.
+Checked by: `tools/lint/check-text.ts`, on every line and on the titles of `describe`, `it` and `test` (read with the TypeScript parser). It looks for anything shaped like a code (capitals and digits joined by hyphens, or one to four capitals followed by one to three digits) and for decision numbers. Names that look like a code are listed as exceptions in `REVIEW_CODE_EXCEPTIONS` (`tools/lint/constants/review-codes.constant.ts`) (`UTF-8`, `ISO-8601`, `ES2022`, `V8`, `F2`...): add one there when a real name is rejected. It also rejects test titles that tell how the code was made instead of what the test checks: "the design", "loose reference", "old version" and "of this entry" (`PROCESS_TITLE_PHRASE` in `tools/lint/constants/test-title-phrases.constant.ts`).
 
 ### 4. Only characters you can type
 
@@ -291,9 +291,16 @@ Checked by: ESLint `curly` (`multi-line`).
 throw new Error('[strip-tslib]: unknown package folder "foundry-x"');
 ```
 
+A `TypeError` says the type it got (`typeof`); a `RangeError`, the value. A text that cannot be empty is "a text that is not empty".
+
+```ts
+throw new TypeError(`[foundry-utils]: the rows of toCsv must be an array, got ${typeof rows}`);
+throw new RangeError(`[foundry-utils]: the weeks option must be an integer from 1 to 5228, got ${String(value)}`);
+```
+
 The problem lists of the tools are an exception (see Exceptions).
 
-Checked by: ESLint `no-restricted-syntax`, on string literals and on the start of template literals.
+Checked by: ESLint `no-restricted-syntax`, on string literals and on the start of template literals. Review: the type or the value after `got`.
 
 ### 10. Imports
 
@@ -480,6 +487,14 @@ for (const file of files) await upload(file);
 for (const item of items) console.log(item);
 ```
 
+In a file with an exported function, the private functions go before it: the file reads from the details to the function it exports.
+
+```ts
+function splitAlphabet(text: string): Array<string> {}
+
+export function createRandomCode(length: number, options?: { readonly alphabet?: string }): string {}
+```
+
 Private members use the TypeScript `private` modifier, not `#`.
 
 ```ts
@@ -490,7 +505,7 @@ private readonly items: Array<Item> = [];
 readonly #items: Array<Item> = [];
 ```
 
-Checked by: ESLint `no-restricted-syntax` (top-level constants whose value is a function; `for...of` and `for...in` loops without `await`, `break` or `return` inside; any `#` name). A `return` or `break` inside a nested callback also lets a loop through: review.
+Checked by: ESLint `no-restricted-syntax` (top-level constants whose value is a function; `for...of` and `for...in` loops without `await`, `break` or `return` inside; any `#` name). A `return` or `break` inside a nested callback also lets a loop through: review. `tools/lint/check-text.ts` reports a private top-level function after the exported one, in every TypeScript file that is not a spec.
 
 ### 16. Angular
 
@@ -597,7 +612,7 @@ const version: number | null = ɵreadIntegerOption({ options, name: 'version', m
 const weeks: number = (options?.['weeks'] as number | undefined) ?? 1;
 ```
 
-Checked by: ESLint `no-restricted-syntax` in `projects/` (not in spec files): reading a property of `options`, also through a cast, and destructuring `options`.
+Checked by: ESLint `no-restricted-syntax` in `projects/` (not in spec files): reading a property of `options`, also through a cast, destructuring `options`, and reading an option with `ɵgetOwnDataValue(options, ...)`.
 
 ### 18. Test helpers and references
 
@@ -612,7 +627,63 @@ it.runIf(timeZone !== 'UTC')('finds clock change days to walk in a time zone tha
 });
 ```
 
-Checked by: `tools/lint/check-text.ts` reports a top-level function declared in more than one spec file. Review: where a shared helper goes, copies of a helper under another name, and the time zones where a reference is tested.
+Checked by: `tools/lint/check-text.ts` reports a top-level function or type (`type`, such as `LooseFunction`) declared in more than one spec file; the interfaces of test data are left alone, like the data. Review: where a shared helper goes, copies of a helper under another name, and the time zones where a reference is tested.
+
+## How each piece is written
+
+These conventions are in the code of every entry. A new entry follows them.
+
+### The `public-api.spec.ts` of an entry
+
+The same shape in every entry: the exact list of exports; `SAMPLE_CALLS`, one call `[name, arguments]` for each function; "has a sample call for each export", compared with `listFunctionNames(entry)`; and "returns no promise from %s", with `isPromiseLike` and the function called as a `LooseFunction`. A function that returns a promise goes in `PROMISE_CALLS`, with "returns a promise from %s". The helpers and the type come from `@foundry-test`.
+
+```ts
+it.each(SAMPLE_CALLS)('returns no promise from %s', (name, values) => {
+  expect(isPromiseLike((entry[name] as LooseFunction)(...values))).toBe(false);
+});
+```
+
+### The short test of a shared contract
+
+When public functions share an internal function (rule 13), the spec of each public function has one test that compares it with the internal function over a list of inputs. Its title says the behavior, not that the reader is shared.
+
+```ts
+it('accepts and rejects URLs as readUrl reads them', () => {
+  urls.forEach((url) => expect(isUrl(url)).toBe(readUrl(url, settings) !== null));
+});
+```
+
+### Limits in messages
+
+A limit that has a constant is written in the message through the constant. The JSDoc can keep the number written.
+
+```ts
+throw new RangeError(
+  `[foundry-utils]: the length of createRandomCode must be an integer from 1 to ${MAX_RANDOM_CODE_LENGTH}, got ${String(length)}`,
+);
+```
+
+### Closed lists
+
+The internal code uses the type derived from the constant (rule 6), never the union written again.
+
+```ts
+// constants/phone-countries.constant.ts
+export const PHONE_COUNTRIES = ['ES'] as const;
+// types/phone-country.type.ts
+export type PhoneCountry = (typeof PHONE_COUNTRIES)[number];
+```
+
+### Checking an error in a test
+
+`catchError` of `@foundry-test` runs the action, checks the class of what it throws and returns the error with its type. A spec does not write its own helper for this.
+
+```ts
+const error: FoundryCsvParseError = catchError(() => parseCsv('a,"b'), FoundryCsvParseError);
+expect(error.reason).toBe('unclosedQuote');
+```
+
+Checked by: `tools/lint/check-text.ts` (a type or a helper repeated in specs, rule 18). Review: the rest.
 
 ## Exceptions
 
@@ -637,7 +708,7 @@ Six options are not an enum, a boolean, an integer or a text, and keep their own
 const customEquality: unknown = options?.['customEquality'];
 ```
 
-Checked by: ESLint skips these six property names when it looks for options read by hand; any other option read in the same files is still checked.
+Checked by: ESLint skips these six property names when it looks for options read by hand, with `options?.[...]` or with `ɵgetOwnDataValue(options, ...)`; any other option read in the same files is still checked.
 
 ### Loops with an index
 

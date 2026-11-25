@@ -1,4 +1,5 @@
 import ts from 'typescript';
+import { PROCESS_TITLE_PHRASE } from '../constants/test-title-phrases.constant.ts';
 import { getTestTitleArgument } from './get-test-title-argument.function.ts';
 import { hasReviewCode } from './has-review-code.function.ts';
 
@@ -14,9 +15,12 @@ export function findTestTitleProblems(path: string, text: string): Array<string>
   const source: ts.SourceFile = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
   const visit = (node: ts.Node): void => {
     const title: string | null = getTestTitleText(getTestTitleArgument(node));
-    if (title !== null && hasReviewCode(title)) {
+    if (title !== null) {
       const { line } = source.getLineAndCharacterOfPosition(node.getStart(source));
-      problems.push(`${path}:${line + 1}: review code in a test title: ${title.slice(0, 100)}`);
+      if (hasReviewCode(title)) problems.push(`${path}:${line + 1}: review code in a test title: ${title.slice(0, 100)}`);
+      if (PROCESS_TITLE_PHRASE.test(title)) {
+        problems.push(`${path}:${line + 1}: test title that tells how the code was made: ${title.slice(0, 100)}`);
+      }
     }
     ts.forEachChild(node, visit);
   };

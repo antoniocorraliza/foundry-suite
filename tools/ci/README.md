@@ -66,7 +66,7 @@ Two small apps check Foundry Utils as an app would use it. Each has its own mani
 
 | App                       | Script                    | What it checks                                                                                                                                                                                                                                  |
 | :------------------------ | :------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tools/jest-smoke/`       | `npm run test:jest`       | Jest 30 with `jest-environment-jsdom` and Babel 7, configured with the Jest recipe of the Utils README; `utils-node.test.js` runs in the `node` environment, where `readCsvFile` can read files                                                 |
+| `tools/jest-smoke/`       | `npm run test:jest`       | Jest 30 with `jest-environment-jsdom` and Babel 7, configured with the Jest recipe of the Utils README; `utils-node.test.js` runs in the `node` environment, where `readCsvFile` reads files and `sha256` computes a hash                       |
 | `tools/typescript-smoke/` | `npm run test:typescript` | `tsc` 5.5, 6.0 and 7, strict and without `skipLibCheck`: with the DOM types, with `@types/node` only, and a `.cts` file with `nodenext`, which must fail with TS1479 on 5.5 (`tools/packages/constants/typescript-consumer-checks.constant.ts`) |
 
 To run them locally:
