@@ -10,7 +10,9 @@ export class FoundryCryptoUnavailableError extends FoundryUtilsError {
     details: { readonly missingApi: 'crypto' | 'crypto.getRandomValues' | 'crypto.subtle' },
     options?: { readonly cause?: unknown },
   ) {
-    super(`[foundry-utils]: ${details.missingApi} is not available in this environment`, options);
+    const secureContextNote: string =
+      details.missingApi === 'crypto.subtle' ? '; a browser only has it in a secure context (HTTPS or localhost)' : '';
+    super(`[foundry-utils]: ${details.missingApi} is not available in this environment${secureContextNote}`, options);
     this.missingApi = details.missingApi;
   }
 }

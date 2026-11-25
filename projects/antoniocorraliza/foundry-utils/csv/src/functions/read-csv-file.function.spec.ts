@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { catchRejection } from '@foundry-test/functions/catch-rejection.function';
 import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
@@ -6,19 +7,6 @@ import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
 import type { FoundryCsvTableOptions } from '../interfaces/foundry-csv-table-options.interface';
 import type { FoundryTextEncoding } from '../types/foundry-text-encoding.type';
 import { readCsvFile } from './read-csv-file.function';
-
-async function catchRejection(start: () => Promise<unknown>): Promise<unknown> {
-  let reading: Promise<unknown> | null = null;
-  expect(() => {
-    reading = start();
-  }).not.toThrow();
-  try {
-    await reading;
-  } catch (rejection) {
-    return rejection;
-  }
-  return null;
-}
 
 describe('readCsvFile', () => {
   afterEach(() => {

@@ -22,11 +22,17 @@ import {
   parseLocalDateTime,
   toInstantRange,
 } from '@antoniocorraliza/foundry-utils/date';
+import type { FoundryFormDataEntries, FoundryFormDataFile } from '@antoniocorraliza/foundry-utils/form-data';
+import { createFormData } from '@antoniocorraliza/foundry-utils/form-data';
+import { sha256, sha512 } from '@antoniocorraliza/foundry-utils/hash';
 import type { FoundryCurrencyFormatOptions, FoundryParseDecimalOptions } from '@antoniocorraliza/foundry-utils/number';
 import { createCurrencyFormatter, getParseDecimalOptions, parseDecimal, roundToDecimals } from '@antoniocorraliza/foundry-utils/number';
 import type { FoundryObjectDifference } from '@antoniocorraliza/foundry-utils/object';
 import { deepClone, getObjectDifferences, isDeepEqual, removeEmptyValues } from '@antoniocorraliza/foundry-utils/object';
+import { createRandomCode, createTemporaryId, createUuidV4 } from '@antoniocorraliza/foundry-utils/random';
 import { toSlug, truncateText } from '@antoniocorraliza/foundry-utils/text';
+import type { FoundryDebouncer } from '@antoniocorraliza/foundry-utils/timing';
+import { createDebouncer, sleep } from '@antoniocorraliza/foundry-utils/timing';
 import type { FoundryValidatableControl, FoundryValidationErrors } from '@antoniocorraliza/foundry-utils/validation';
 import { createControlValidator, isDniOrNie, isEmail } from '@antoniocorraliza/foundry-utils/validation';
 import type { TicketDto } from './interfaces/ticket-dto.interface';
@@ -65,6 +71,17 @@ export function useUtils(dto: TicketDto): ReadonlyArray<unknown> {
   const isCsvError: boolean = new Error('[typescript-smoke]: compiled') instanceof FoundryCsvParseError;
   const isBrowserError: boolean = error instanceof FoundryBrowserApiUnavailableError;
   const download: (file: Blob, fileName: string) => void = downloadBlob;
+  const uuid: string = createUuidV4();
+  const code: string = createRandomCode(6, { alphabet: 'abcdef0123456789' });
+  const temporaryId: number = createTemporaryId();
+  const digests: Promise<Array<string>> = Promise.all([sha256('abc'), sha512(new Uint8Array([97, 98, 99]))]);
+  const controller: AbortController = new AbortController();
+  const waiting: Promise<void> = sleep(10, { signal: controller.signal });
+  const saveDraft: FoundryDebouncer<[draft: TicketDto]> = createDebouncer((draft: TicketDto) => draft, 500);
+  saveDraft.schedule(dto);
+  const attachment: FoundryFormDataFile = { file: blob, fileName: 'tickets.csv', contentType: 'text/csv' };
+  const fields: FoundryFormDataEntries = { subject: 'Hola', priority: 2, attachments: [blob, attachment], metadata: { json: dto } };
+  const body: FormData = createFormData(fields, { arrayKeyStyle: 'brackets' });
   return [
     createdAt,
     firstName,
@@ -89,5 +106,12 @@ export function useUtils(dto: TicketDto): ReadonlyArray<unknown> {
     isCsvError,
     isBrowserError,
     download,
+    uuid,
+    code,
+    temporaryId,
+    digests,
+    waiting,
+    saveDraft.isPending(),
+    body,
   ];
 }

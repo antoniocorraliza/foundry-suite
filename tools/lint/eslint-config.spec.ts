@@ -680,6 +680,46 @@ describe.skipIf(IS_ESLINT_MISSING)('function names', () => {
     expect(await findRuleLines(code, path, ruleId)).toEqual([10]);
   });
 
+  it('lets sha256 and sha512 keep their design names, and no other name of that shape', async () => {
+    const path: string = 'projects/antoniocorraliza/foundry-utils/hash/src/functions/probe.function.ts';
+    const code: string = [
+      '/**',
+      ' * Computes the digest.',
+      ' */',
+      'export function sha256(): string {',
+      "  return '';",
+      '}',
+      '/**',
+      ' * Computes the digest.',
+      ' */',
+      'export function sha512(): string {',
+      "  return '';",
+      '}',
+      '/**',
+      ' * Computes the digest.',
+      ' */',
+      'export function sha1(): string {',
+      "  return '';",
+      '}',
+      '',
+    ].join('\n');
+    expect(await findRuleLines(code, path, ruleId)).toEqual([16]);
+  });
+
+  it('accepts cancel, flush and dispose as verbs of the methods of an interface', async () => {
+    const code: string = [
+      'export interface Debouncer {',
+      '  schedule(): void;',
+      '  cancel(): void;',
+      '  flush(): void;',
+      '  dispose(): void;',
+      '  isPending(): boolean;',
+      '}',
+      '',
+    ].join('\n');
+    expect(await findRuleLines(code, 'tools/probe/probe.ts', ruleId)).toEqual([]);
+  });
+
   it('checks the functions of the tests too', async () => {
     const code: string = ['function tarballOf(): string {', "  return '';", '}', 'tarballOf();', ''].join('\n');
     expect(await findRuleLines(code, 'tools/probe/probe.spec.ts', ruleId)).toEqual([1]);
@@ -743,6 +783,20 @@ describe.skipIf(IS_ESLINT_MISSING)('options of the library functions', () => {
     expect(await findMessageLines(code, 'projects/antoniocorraliza/foundry-utils/csv/src/functions/probe.function.ts', message)).toEqual([
       3,
     ]);
+  });
+
+  it('accepts the signal option, which keeps its own reader, and still rejects any other', async () => {
+    const code: string = [
+      'export function readSignal(options: Readonly<Record<string, unknown>> | undefined): number {',
+      "  const signal: unknown = options?.['signal'];",
+      "  const delay: unknown = options?.['delay'];",
+      '  return Number(signal) + Number(delay);',
+      '}',
+      '',
+    ].join('\n');
+    expect(await findMessageLines(code, 'projects/antoniocorraliza/foundry-utils/timing/src/functions/probe.function.ts', message)).toEqual(
+      [3],
+    );
   });
 
   it('leaves the tools and the specs alone', async () => {

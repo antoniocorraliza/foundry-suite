@@ -133,6 +133,32 @@ describe('createUtilsProjects', () => {
     expect(listProjectsRunning(file)).toEqual(['utils:UTC']);
   });
 
+  it.each([
+    `${UTILS}/random/src/functions/create-random-code.function.spec.ts`,
+    `${UTILS}/random/src/public-api.spec.ts`,
+    `${UTILS}/hash/src/functions/create-hex-digest.function.spec.ts`,
+    `${UTILS}/hash/src/functions/sha256.function.spec.ts`,
+    `${UTILS}/form-data/src/functions/create-form-data.function.spec.ts`,
+    `${UTILS}/form-data/src/public-api.spec.ts`,
+  ])('runs %s once in UTC and in the browser, where each engine brings its own crypto and FormData', (file) => {
+    expect(listProjectsRunning(file)).toEqual(['utils:UTC', 'utils-browser']);
+  });
+
+  it('runs the comparison of the hash with node:crypto once, in UTC, and not in the browser', () => {
+    expect(listProjectsRunning(`${UTILS}/hash/src/functions/create-hex-digest.node.function.spec.ts`)).toEqual(['utils:UTC']);
+  });
+
+  it.each([`${UTILS}/timing/src/functions/sleep.function.spec.ts`, `${UTILS}/timing/src/public-api.spec.ts`])(
+    'runs the timing spec %s once, in UTC, and not in the browser',
+    (file) => {
+      expect(listProjectsRunning(file)).toEqual(['utils:UTC']);
+    },
+  );
+
+  it('runs the spec of createFormData with the File of jsdom only in jsdom', () => {
+    expect(listProjectsRunning(`${UTILS}/form-data/src/functions/create-form-data.jsdom.function.spec.ts`)).toEqual(['utils-jsdom']);
+  });
+
   it('runs the time zone guard in every time zone project', () => {
     expect(listProjectsRunning('tools/vitest/smoke/timezone-node.smoke.spec.ts')).toEqual(ZONE_PROJECTS);
   });
