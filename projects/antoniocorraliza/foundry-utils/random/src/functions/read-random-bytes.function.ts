@@ -1,7 +1,7 @@
 import { FoundryCryptoUnavailableError } from '@antoniocorraliza/foundry-utils';
 
 /**
- * Reads `length` random bytes from `crypto.getRandomValues`.
+ * Reads `length` random bytes from `crypto.getRandomValues`, looking `crypto` up on each call so that nothing is read at import.
  * @throws {FoundryCryptoUnavailableError} When `crypto` or `crypto.getRandomValues` is missing.
  */
 export function readRandomBytes(length: number): Uint8Array {

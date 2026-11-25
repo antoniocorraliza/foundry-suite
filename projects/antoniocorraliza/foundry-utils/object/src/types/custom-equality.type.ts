@@ -1,4 +1,4 @@
 import type { FoundryDeepEqualOptions } from '../interfaces/foundry-deep-equal-options.interface';
 
-/** The comparison that an app passes in `customEquality`. */
+/** Comparison that an app passes in `customEquality`, without the `undefined` of an option that is left out. */
 export type CustomEquality = NonNullable<FoundryDeepEqualOptions['customEquality']>;
