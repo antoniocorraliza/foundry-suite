@@ -1,9 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { catchRejection } from '@foundry-test/functions/catch-rejection.function';
+import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
+import { listFunctionNames } from '@foundry-test/functions/list-function-names.function';
+import type { LooseFunction } from '@foundry-test/types/loose-function.type';
 import type { FoundryDebouncer } from './public-api';
 import * as entry from './public-api';
 
-type LooseFunction = (...values: Array<unknown>) => unknown;
+const SAMPLE_CALLS: ReadonlyArray<[keyof typeof entry, ReadonlyArray<unknown>]> = [['createDebouncer', [(): void => undefined, 10]]];
+
+const PROMISE_CALLS: ReadonlyArray<[keyof typeof entry, ReadonlyArray<unknown>]> = [['sleep', [10]]];
 
 const DEBOUNCER_METHODS: ReadonlyArray<keyof FoundryDebouncer<[]>> = ['schedule', 'cancel', 'flush', 'dispose', 'isPending'];
 
@@ -21,15 +26,17 @@ describe('public API of the timing entry', () => {
     expect(Object.keys(entry).sort()).toEqual(['createDebouncer', 'sleep']);
   });
 
-  it('works through createDebouncer as a loose reference, and returns no promise', () => {
-    const looseFunction: LooseFunction = entry.createDebouncer as LooseFunction;
-    expect(looseFunction.call(undefined, vi.fn(), 10)).not.toBeInstanceOf(Promise);
+  it('has a sample call for each export', () => {
+    expect([...SAMPLE_CALLS, ...PROMISE_CALLS].map(([name]) => name).sort()).toEqual(listFunctionNames(entry));
   });
 
-  it('works through sleep as a loose reference, and returns a promise', async () => {
-    const looseFunction: LooseFunction = entry.sleep as LooseFunction;
-    const waiting: unknown = looseFunction.call(undefined, 10);
-    expect(waiting).toBeInstanceOf(Promise);
+  it.each(SAMPLE_CALLS)('returns no promise from %s', (name, values) => {
+    expect(isPromiseLike((entry[name] as LooseFunction)(...values))).toBe(false);
+  });
+
+  it.each(PROMISE_CALLS)('returns a promise from %s', async (name, values) => {
+    const waiting: unknown = (entry[name] as LooseFunction)(...values);
+    expect(isPromiseLike(waiting)).toBe(true);
     await vi.advanceTimersByTimeAsync(10);
     expect(await waiting).toBeUndefined();
   });
@@ -44,7 +51,7 @@ describe('public API of the timing entry', () => {
     expect([...DEBOUNCER_METHODS].sort()).toEqual(Object.keys(entry.createDebouncer(vi.fn(), 10)).sort());
   });
 
-  it.each(DEBOUNCER_METHODS)('works through the method %s of a debouncer as a loose reference, without this', (name) => {
+  it.each(DEBOUNCER_METHODS)('works through the method %s of a debouncer taken out of it and called without this', (name) => {
     const looseMethod: LooseFunction = entry.createDebouncer(vi.fn(), 10)[name] as LooseFunction;
     expect(() => looseMethod.call(undefined)).not.toThrow();
   });

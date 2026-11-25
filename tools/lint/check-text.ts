@@ -15,6 +15,7 @@ import { findClassNameProblems } from './functions/find-class-name-problems.func
 import { findDecoratorSuffixProblems } from './functions/find-decorator-suffix-problems.function.ts';
 import { findFileNameProblems } from './functions/find-file-name-problems.function.ts';
 import { findFolderSuffixProblem } from './functions/find-folder-suffix-problem.function.ts';
+import { findFunctionOrderProblems } from './functions/find-function-order-problems.function.ts';
 import { findLibraryCommentProblems } from './functions/find-library-comment-problems.function.ts';
 import { findOverloadSpacingProblems } from './functions/find-overload-spacing-problems.function.ts';
 import { findRepeatedSpecHelpers } from './functions/find-repeated-spec-helpers.function.ts';
@@ -44,7 +45,11 @@ function main(): number {
     if (SPEC_FILE.test(path)) problems.push(...findTestTitleProblems(path, text));
     if (SPEC_FILE.test(path)) specTexts.set(path, text);
     if (TYPESCRIPT_FILE.test(path) && !SPEC_FILE.test(path)) {
-      problems.push(...findDecoratorSuffixProblems(path, text), ...findFileNameProblems(path, text));
+      problems.push(
+        ...findDecoratorSuffixProblems(path, text),
+        ...findFileNameProblems(path, text),
+        ...findFunctionOrderProblems(path, text),
+      );
     }
     if (LIBRARY_TEMPLATE_FILE.test(path) || LIBRARY_COMPONENT_STYLE_FILE.test(path)) problems.push(...findClassNameProblems(path, text));
     if (LIBRARY_TYPESCRIPT_FILE.test(path)) problems.push(...findLibraryCommentProblems(path, text));

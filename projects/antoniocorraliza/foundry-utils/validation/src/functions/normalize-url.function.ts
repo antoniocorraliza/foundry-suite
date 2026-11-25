@@ -1,8 +1,7 @@
-import { ɵisOptionsValue, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
-import { DEFAULT_ACCEPTED_PROTOCOLS } from '../constants/accepted-protocols.constant';
+import { ɵisOptionsValue, ɵisTextList, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { DEFAULT_PROTOCOLS } from '../constants/default-protocols.constant';
+import { PROTOCOLS_ACCEPTED_BY_DEFAULT } from '../constants/protocols-accepted-by-default.constant';
 import type { FoundryUrlOptions } from '../interfaces/foundry-url-options.interface';
-import { isProtocolList } from './is-protocol-list.function';
 import { readUrl } from './read-url.function';
 
 /**
@@ -14,8 +13,8 @@ export function normalizeUrl(
   options?: FoundryUrlOptions & { readonly defaultProtocol?: 'https:' | 'http:' },
 ): string | null {
   if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of normalizeUrl must be an object');
-  const protocols: unknown = options?.['protocols'] ?? DEFAULT_ACCEPTED_PROTOCOLS;
-  if (!isProtocolList(protocols)) throw new TypeError('[foundry-utils]: the protocols option must be a list of texts');
+  const protocols: unknown = options?.['protocols'] ?? PROTOCOLS_ACCEPTED_BY_DEFAULT;
+  if (!ɵisTextList(protocols)) throw new TypeError('[foundry-utils]: the protocols option must be a list of texts');
   return readUrl(value, {
     protocols,
     allowMissingProtocol: ɵparseBooleanOption({ options, name: 'allowMissingProtocol', fallback: false }),

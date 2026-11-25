@@ -1,21 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
+import { listFunctionNames } from '@foundry-test/functions/list-function-names.function';
+import type { LooseFunction } from '@foundry-test/types/loose-function.type';
 import * as entry from './public-api';
 
-type LooseFunction = (...values: Array<unknown>) => unknown;
+const SAMPLE_CALLS: ReadonlyArray<[keyof typeof entry, ReadonlyArray<unknown>]> = [['createFormData', [{ a: 'x' }]]];
 
 describe('public API of the form-data entry', () => {
   it('exports exactly these functions', () => {
     expect(Object.keys(entry).sort()).toEqual(['createFormData']);
   });
 
-  it('works through createFormData as a loose reference, without this, and returns no promise', () => {
-    const looseFunction: LooseFunction = entry.createFormData as LooseFunction;
-    let result: unknown = null;
-    expect(() => {
-      result = looseFunction.call(undefined, { a: 'x' });
-    }).not.toThrow();
-    expect(result).not.toBeInstanceOf(Promise);
+  it('has a sample call for each export', () => {
+    expect(SAMPLE_CALLS.map(([name]) => name).sort()).toEqual(listFunctionNames(entry));
+  });
+
+  it.each(SAMPLE_CALLS)('returns no promise from %s', (name, values) => {
+    expect(isPromiseLike((entry[name] as LooseFunction)(...values))).toBe(false);
   });
 
   it('throws a TypeError through map, which passes the index as the options', () => {

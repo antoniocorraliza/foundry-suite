@@ -1,3 +1,4 @@
+import { BLOB_TAGS } from '../constants/blob-tags.constant';
 import type { ɵValueKind } from '../types/value-kind.type';
 import { ɵgetValueTag } from './get-value-tag.function';
 import { ɵisPlainObject } from './is-plain-object.function';
@@ -22,7 +23,7 @@ function getTaggedObjectKind(value: object, tag: string): ɵValueKind {
   if (tag === '[object Map]') return isBrandCheckPassed(() => Map.prototype.has.call(value, null)) ? 'map' : 'other';
   if (tag === '[object Set]') return isBrandCheckPassed(() => Set.prototype.has.call(value, null)) ? 'set' : 'other';
   if (tag === '[object ArrayBuffer]') return isBrandCheckPassed(() => readArrayBufferLength(value)) ? 'arrayBuffer' : 'other';
-  if (tag === '[object Blob]' || tag === '[object File]') return 'blob';
+  if (BLOB_TAGS.includes(tag)) return 'blob';
   if (tag === '[object Error]') return 'error';
   if (tag === '[object WeakMap]' || tag === '[object WeakSet]') return 'weakCollection';
   return 'other';

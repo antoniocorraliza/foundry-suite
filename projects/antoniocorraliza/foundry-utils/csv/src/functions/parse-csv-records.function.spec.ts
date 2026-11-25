@@ -1,22 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
-import type { FoundryCsvParseOptions } from '../interfaces/foundry-csv-parse-options.interface';
 import { parseCsvRecords } from './parse-csv-records.function';
-
-function catchRecordsError(text: string, options?: FoundryCsvParseOptions): FoundryCsvParseError {
-  const thrown: unknown = catchThrown(() => parseCsvRecords(text, options));
-  expect(thrown).toBeInstanceOf(FoundryCsvParseError);
-  return thrown as FoundryCsvParseError;
-}
+import { readCsvRecords } from './read-csv-records.function';
 
 describe('parseCsvRecords', () => {
-  it('reads the records with the shared reader of this entry', () => {
-    expect(parseCsvRecords('﻿nombre;importe\r\nAna;"12,50"\r\n')).toEqual([
-      ['nombre', 'importe'],
-      ['Ana', '12,50'],
-    ]);
-    expect(catchRecordsError('a,"b').reason).toBe('unclosedQuote');
+  it('returns the cells of the records that readCsvRecords reads', () => {
+    const texts: ReadonlyArray<string> = ['\ufeffnombre;importe\r\nAna;"12,50"\r\n', 'a,b\r\n1,2', 'a\tb\n1\t2\n', 'a', ''];
+    texts.forEach((text) => expect(parseCsvRecords(text)).toEqual(readCsvRecords(text, undefined).records.map((record) => record.cells)));
   });
 
   it('does not take the first line as headers: an empty or repeated one is a cell like any other', () => {
@@ -37,9 +29,9 @@ describe('parseCsvRecords', () => {
   });
 
   it('throws columnCountMismatch when a record has another number of cells than the first one', () => {
-    const extra: FoundryCsvParseError = catchRecordsError('a,b\r\n1,2,3');
+    const extra: FoundryCsvParseError = catchError(() => parseCsvRecords('a,b\r\n1,2,3'), FoundryCsvParseError);
     expect([extra.reason, extra.line, extra.column]).toEqual(['columnCountMismatch', 2, 3]);
-    const missing: FoundryCsvParseError = catchRecordsError('a,b\r\n1');
+    const missing: FoundryCsvParseError = catchError(() => parseCsvRecords('a,b\r\n1'), FoundryCsvParseError);
     expect([missing.reason, missing.line, missing.column]).toEqual(['columnCountMismatch', 2, 2]);
   });
 

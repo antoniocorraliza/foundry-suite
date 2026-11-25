@@ -1,4 +1,4 @@
-import { ɵparseBooleanOption } from '@antoniocorraliza/foundry-utils';
+import { ɵisOptionsValue, ɵparseBooleanOption } from '@antoniocorraliza/foundry-utils';
 import { BYTE_ORDER_MARK } from '../constants/byte-order-mark.constant';
 import type { FoundryCsvWriteOptions } from '../interfaces/foundry-csv-write-options.interface';
 import { toCsv } from './to-csv.function';
@@ -13,10 +13,7 @@ export function createCsvBlob<Row extends object>(
   options?: FoundryCsvWriteOptions<Row> & { readonly byteOrderMark?: boolean },
 ): Blob {
   const text: string = toCsv(rows, options);
-  const hasByteOrderMark: boolean = ɵparseBooleanOption({
-    options: options as Readonly<Record<string, unknown>> | undefined,
-    name: 'byteOrderMark',
-    fallback: true,
-  });
+  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of createCsvBlob must be an object');
+  const hasByteOrderMark: boolean = ɵparseBooleanOption({ options, name: 'byteOrderMark', fallback: true });
   return new Blob([hasByteOrderMark ? `${BYTE_ORDER_MARK}${text}` : text], { type: 'text/csv;charset=utf-8' });
 }

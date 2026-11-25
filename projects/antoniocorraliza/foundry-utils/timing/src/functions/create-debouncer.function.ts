@@ -1,5 +1,5 @@
-import { MAX_TIMER_DELAY } from '../constants/max-timer-delay.constant';
 import type { FoundryDebouncer } from '../interfaces/foundry-debouncer.interface';
+import { checkTimerDelay } from './check-timer-delay.function';
 
 /**
  * Creates a debouncer with its own timer, which runs the callback `waitInMilliseconds` after the last `schedule`.
@@ -11,11 +11,7 @@ export function createDebouncer<Arguments extends ReadonlyArray<unknown>>(
   waitInMilliseconds: number,
 ): FoundryDebouncer<Arguments> {
   if (typeof callback !== 'function') throw new TypeError('[foundry-utils]: the callback of createDebouncer must be a function');
-  if (!Number.isInteger(waitInMilliseconds) || waitInMilliseconds < 0 || waitInMilliseconds > MAX_TIMER_DELAY) {
-    throw new RangeError(
-      `[foundry-utils]: the wait of createDebouncer must be an integer from 0 to 2147483647, got ${String(waitInMilliseconds)}`,
-    );
-  }
+  checkTimerDelay(waitInMilliseconds, 'wait of createDebouncer');
   let timer: ReturnType<typeof setTimeout> | null = null;
   let pendingArguments: Arguments | null = null;
   let isDisposed: boolean = false;

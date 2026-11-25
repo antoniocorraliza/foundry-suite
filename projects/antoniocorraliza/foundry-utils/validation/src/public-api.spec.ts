@@ -1,9 +1,10 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
+import { listFunctionNames } from '@foundry-test/functions/list-function-names.function';
+import type { LooseFunction } from '@foundry-test/types/loose-function.type';
 import * as entry from './public-api';
-
-type LooseFunction = (...values: Array<unknown>) => unknown;
 
 const NEVER_THROWING: ReadonlyArray<[string, LooseFunction]> = [
   ['isEmail', entry.isEmail as LooseFunction],
@@ -54,15 +55,12 @@ describe('public API of the validation entry', () => {
     ]);
   });
 
-  it.each(SAMPLE_CALLS)('returns no promise from %s', (name, values) => {
-    const looseFunction: LooseFunction = entry[name] as LooseFunction;
-    const result: unknown = looseFunction(...values);
-    expect(result instanceof Promise || typeof (result as { then?: unknown } | null)?.then === 'function').toBe(false);
+  it('has a sample call for each export', () => {
+    expect(SAMPLE_CALLS.map(([name]) => name).sort()).toEqual(listFunctionNames(entry));
   });
 
-  it.each(SAMPLE_CALLS)('works through %s as a loose reference, without this', (name, values) => {
-    const looseFunction: LooseFunction = entry[name] as LooseFunction;
-    expect(() => looseFunction.call(undefined, ...values)).not.toThrow();
+  it.each(SAMPLE_CALLS)('returns no promise from %s', (name, values) => {
+    expect(isPromiseLike((entry[name] as LooseFunction)(...values))).toBe(false);
   });
 
   it.each(NEVER_THROWING)('never throws through %s, whatever its arguments are', (_name, check) => {

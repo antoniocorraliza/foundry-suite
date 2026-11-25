@@ -1,6 +1,13 @@
 import { ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { MAX_ROUNDING_DECIMALS } from '../constants/number-limits.constant';
 import { ROUNDING_MODES } from '../constants/rounding-modes.constant';
 import type { FoundryRoundingMode } from '../types/foundry-rounding-mode.type';
+
+function readScaledInteger(integer: bigint, decimals: number): number {
+  if (decimals === 0) return Number(integer);
+  const digits: string = integer.toString().padStart(decimals + 1, '0');
+  return Number(`${digits.slice(0, -decimals)}.${digits.slice(-decimals)}`);
+}
 
 /**
  * Rounds a number as it is written in decimal, not its binary value; ties go away from zero unless `mode` says otherwise.
@@ -9,8 +16,10 @@ import type { FoundryRoundingMode } from '../types/foundry-rounding-mode.type';
  */
 export function roundToDecimals(value: number, decimals: number, options?: { readonly mode?: FoundryRoundingMode }): number {
   if (typeof value !== 'number') throw new TypeError(`[foundry-utils]: the value of roundToDecimals must be a number, got ${typeof value}`);
-  if (!Number.isInteger(decimals) || decimals < 0 || decimals > 20) {
-    throw new RangeError(`[foundry-utils]: the decimals of roundToDecimals must be an integer from 0 to 20, got ${String(decimals)}`);
+  if (!Number.isInteger(decimals) || decimals < 0 || decimals > MAX_ROUNDING_DECIMALS) {
+    throw new RangeError(
+      `[foundry-utils]: the decimals of roundToDecimals must be an integer from 0 to ${MAX_ROUNDING_DECIMALS}, got ${String(decimals)}`,
+    );
   }
   if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of roundToDecimals must be an object');
   const mode: FoundryRoundingMode = ɵparseEnumOption({
@@ -19,7 +28,8 @@ export function roundToDecimals(value: number, decimals: number, options?: { rea
     allowedValues: ROUNDING_MODES,
     fallback: 'halfAwayFromZero',
   });
-  if (!Number.isFinite(value) || value === 0) return value === 0 ? 0 : value;
+  if (value === 0) return 0;
+  if (!Number.isFinite(value)) return value;
   const [mantissa = '', exponentText = '0']: Array<string> = String(Math.abs(value)).split('e');
   const [integerDigits = '', fractionDigits = '']: Array<string> = mantissa.split('.');
   const exponent: number = Number(exponentText) - fractionDigits.length;
@@ -32,10 +42,4 @@ export function roundToDecimals(value: number, decimals: number, options?: { rea
   const isRoundedUp: boolean = twiceRemainder > divisor || (isTie && (mode === 'halfAwayFromZero' || quotient % 2n === 1n));
   const rounded: number = readScaledInteger(isRoundedUp ? quotient + 1n : quotient, decimals);
   return value < 0 && rounded !== 0 ? -rounded : rounded;
-}
-
-function readScaledInteger(integer: bigint, decimals: number): number {
-  if (decimals === 0) return Number(integer);
-  const digits: string = integer.toString().padStart(decimals + 1, '0');
-  return Number(`${digits.slice(0, -decimals)}.${digits.slice(-decimals)}`);
 }

@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FoundryCryptoUnavailableError } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { createQueuedCrypto } from '@foundry-test/functions/create-queued-crypto.function';
 import { createUuidV4 } from './create-uuid-v4.function';
+import { readRandomBytes } from './read-random-bytes.function';
 
 const UUID_V4: RegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
@@ -58,10 +60,10 @@ describe('createUuidV4', () => {
     expect((thrown as FoundryCryptoUnavailableError).missingApi).toBe('crypto');
   });
 
-  it('reads its bytes with the shared reader of this entry: without randomUUID or getRandomValues, it names getRandomValues', () => {
+  it('names the API that readRandomBytes names when crypto has neither randomUUID nor getRandomValues', () => {
     vi.stubGlobal('crypto', {});
-    const thrown: unknown = catchThrown(() => createUuidV4());
-    expect(thrown).toBeInstanceOf(FoundryCryptoUnavailableError);
-    expect((thrown as FoundryCryptoUnavailableError).missingApi).toBe('crypto.getRandomValues');
+    expect(catchError(() => createUuidV4(), FoundryCryptoUnavailableError).missingApi).toBe(
+      catchError(() => readRandomBytes(1), FoundryCryptoUnavailableError).missingApi,
+    );
   });
 });

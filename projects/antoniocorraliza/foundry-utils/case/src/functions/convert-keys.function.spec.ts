@@ -147,7 +147,7 @@ describe('convertKeys', () => {
       expect(Reflect.ownKeys(convert(value) as object)).toEqual([targetKey]);
     });
 
-    it('works as a loose reference with nested data', () => {
+    it('converts nested data through map', () => {
       expect([{ [sourceKey]: { [sourceKey]: 1 } }].map((item) => convert(item))).toEqual([{ [targetKey]: { [targetKey]: 1 } }]);
     });
 

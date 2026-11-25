@@ -1,5 +1,4 @@
-import { ɵgetValueTag } from '@antoniocorraliza/foundry-utils';
-import { BLOB_TAGS } from '../constants/blob-tags.constant';
+import { ɵisBlobLike } from '@antoniocorraliza/foundry-utils';
 import { URL_REVOCATION_DELAY } from '../constants/download-timing.constant';
 import { FoundryBrowserApiUnavailableError } from '../errors/foundry-browser-api-unavailable.error';
 import { sanitizeFileName } from './sanitize-file-name.function';
@@ -10,11 +9,11 @@ import { sanitizeFileName } from './sanitize-file-name.function';
  * @throws {FoundryBrowserApiUnavailableError} When `document`, `URL.createObjectURL` or `URL.revokeObjectURL` is missing.
  */
 export function downloadBlob(blob: Blob, fileName: string): void {
-  if (!BLOB_TAGS.includes(ɵgetValueTag(blob))) {
-    throw new TypeError(`[foundry-utils]: downloadBlob needs a Blob or a File, got ${String(blob)}`);
+  if (!ɵisBlobLike(blob)) {
+    throw new TypeError(`[foundry-utils]: downloadBlob needs a Blob or a File, got ${typeof blob}`);
   }
   if (typeof fileName !== 'string') {
-    throw new TypeError(`[foundry-utils]: the name of downloadBlob must be a string, got ${String(fileName)}`);
+    throw new TypeError(`[foundry-utils]: the name of downloadBlob must be a string, got ${typeof fileName}`);
   }
   if (typeof document === 'undefined') throw new FoundryBrowserApiUnavailableError({ missingApi: 'document' });
   if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {

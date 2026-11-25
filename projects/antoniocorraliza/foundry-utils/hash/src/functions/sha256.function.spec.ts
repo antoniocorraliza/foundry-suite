@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FoundryCryptoUnavailableError } from '@antoniocorraliza/foundry-utils';
 import { catchRejection } from '@foundry-test/functions/catch-rejection.function';
+import { createHexDigest } from './create-hex-digest.function';
 import { sha256 } from './sha256.function';
 
 describe('sha256', () => {
@@ -15,10 +16,19 @@ describe('sha256', () => {
     expect(await sha256(text)).toBe(digest);
   });
 
-  it('computes with the shared digest of this entry: only the bytes of a view, and the named error without crypto.subtle', async () => {
-    expect(await sha256(new Uint8Array([0, 97, 98, 99, 0]).subarray(1, 4))).toBe(await sha256('abc'));
+  it('returns what createHexDigest returns with SHA-256, also for a view and without crypto.subtle', async () => {
+    const inputs: ReadonlyArray<string | Uint8Array | ArrayBuffer> = [
+      'abc',
+      '',
+      new Uint8Array([0, 97, 98, 99, 0]).subarray(1, 4),
+      new ArrayBuffer(2),
+    ];
+    expect(await Promise.all(inputs.map((input) => sha256(input)))).toEqual(
+      await Promise.all(inputs.map((input) => createHexDigest('SHA-256', input))),
+    );
     vi.stubGlobal('crypto', {});
     const rejection: unknown = await catchRejection(() => sha256('abc'));
-    expect((rejection as FoundryCryptoUnavailableError).missingApi).toBe('crypto.subtle');
+    const digestRejection: unknown = await catchRejection(() => createHexDigest('SHA-256', 'abc'));
+    expect((rejection as FoundryCryptoUnavailableError).missingApi).toBe((digestRejection as FoundryCryptoUnavailableError).missingApi);
   });
 });

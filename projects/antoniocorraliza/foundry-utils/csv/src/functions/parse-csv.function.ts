@@ -1,4 +1,4 @@
-import { ɵdefineOwnProperty, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import { ɵdefineOwnProperty, ɵisOptionsValue, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { DUPLICATE_HEADER_MODES } from '../constants/duplicate-header-modes.constant';
 import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
 import type { CsvRecord } from '../interfaces/csv-record.interface';
@@ -6,6 +6,8 @@ import type { CsvRecordsReading } from '../interfaces/csv-records-reading.interf
 import type { FoundryCsvTable } from '../interfaces/foundry-csv-table.interface';
 import type { FoundryCsvTableOptions } from '../interfaces/foundry-csv-table-options.interface';
 import type { DuplicateHeaderMode } from '../types/duplicate-header-mode.type';
+import { checkCellCount } from './check-cell-count.function';
+import { getCellLine } from './get-cell-line.function';
 import { readCsvRecords } from './read-csv-records.function';
 
 function findFreeHeader(header: string, takenHeaders: ReadonlySet<string>): string {
@@ -18,7 +20,7 @@ function readHeaders(record: CsvRecord, duplicateHeaders: DuplicateHeaderMode): 
   const takenHeaders: Set<string> = new Set<string>(record.cells);
   const usedHeaders: Set<string> = new Set<string>();
   return record.cells.map((cell, index) => {
-    const line: number = record.cellLines[index] ?? record.endLine;
+    const line: number = getCellLine(record, index);
     if (cell.trim() === '') throw new FoundryCsvParseError({ reason: 'emptyHeader', line, column: index + 1 });
     if (usedHeaders.has(cell) && duplicateHeaders === 'error') {
       throw new FoundryCsvParseError({ reason: 'duplicateHeader', line, column: index + 1 });
@@ -31,17 +33,7 @@ function readHeaders(record: CsvRecord, duplicateHeaders: DuplicateHeaderMode): 
 }
 
 function readRowCells(record: CsvRecord, headerCount: number, isRelaxed: boolean): ReadonlyArray<string> {
-  const extraIndex: number = record.cells.findIndex((cell, index) => index >= headerCount && (!isRelaxed || cell !== ''));
-  if (extraIndex !== -1) {
-    throw new FoundryCsvParseError({
-      reason: 'columnCountMismatch',
-      line: record.cellLines[extraIndex] ?? record.endLine,
-      column: extraIndex + 1,
-    });
-  }
-  if (record.cells.length < headerCount && !isRelaxed) {
-    throw new FoundryCsvParseError({ reason: 'columnCountMismatch', line: record.endLine, column: record.cells.length + 1 });
-  }
+  checkCellCount(record, headerCount, isRelaxed);
   return Array.from({ length: headerCount }, (_value, index) => record.cells[index] ?? '');
 }
 
@@ -58,10 +50,10 @@ function writeRow(headers: ReadonlyArray<string>, cells: ReadonlyArray<string>):
  */
 export function parseCsv(text: string, options?: FoundryCsvTableOptions): FoundryCsvTable {
   const reading: CsvRecordsReading = readCsvRecords(text, options);
-  const checkedOptions: Readonly<Record<string, unknown>> | undefined = options as Readonly<Record<string, unknown>> | undefined;
-  const isRelaxed: boolean = ɵparseBooleanOption({ options: checkedOptions, name: 'relaxColumnCount', fallback: false });
+  if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of parseCsv must be an object');
+  const isRelaxed: boolean = ɵparseBooleanOption({ options, name: 'relaxColumnCount', fallback: false });
   const duplicateHeaders: DuplicateHeaderMode = ɵparseEnumOption({
-    options: checkedOptions,
+    options,
     name: 'duplicateHeaders',
     allowedValues: DUPLICATE_HEADER_MODES,
     fallback: 'error',

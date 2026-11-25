@@ -23,11 +23,11 @@ describe('ɵparseTextOption', () => {
   });
 
   it.each<unknown>([5, true, {}, ['es-ES'], new String('es-ES')])(
-    'throws a TypeError for %j, naming the option and the value',
+    'throws a TypeError for %j, naming the option and the type of the value',
     (locale) => {
       const error: unknown = catchThrown(() => ɵparseTextOption({ options: { locale }, name: 'locale', fallback: null }));
       expect(error).toBeInstanceOf(TypeError);
-      expect((error as TypeError).message).toBe(`[foundry-utils]: the locale option must be a string, got ${String(locale)}`);
+      expect((error as TypeError).message).toBe(`[foundry-utils]: the locale option must be a string, got ${typeof locale}`);
     },
   );
 
@@ -39,6 +39,6 @@ describe('ɵparseTextOption', () => {
   ])('throws a TypeError for %s when there is no fallback', (_case, options) => {
     const error: unknown = catchThrown(() => ɵparseTextOption({ options, name: 'currency' }));
     expect(error).toBeInstanceOf(TypeError);
-    expect((error as TypeError).message).toMatch(/^\[foundry-utils\]: the currency option must be a string, got (?:undefined|null)$/u);
+    expect((error as TypeError).message).toMatch(/^\[foundry-utils\]: the currency option must be a string, got null$/u);
   });
 });

@@ -14,9 +14,9 @@ describe('ɵparseBooleanOption', () => {
     expect(ɵparseBooleanOption({ options: { strict: null }, name: 'strict', fallback: false })).toBe(false);
   });
 
-  it.each<unknown>([0, 1, 'true', {}])('throws a TypeError for %j, naming the option and the value', (strict) => {
+  it.each<unknown>([0, 1, 'true', {}])('throws a TypeError for %j, naming the option and the type of the value', (strict) => {
     const error: unknown = catchThrown(() => ɵparseBooleanOption({ options: { strict }, name: 'strict', fallback: false }));
     expect(error).toBeInstanceOf(TypeError);
-    expect((error as TypeError).message).toBe(`[foundry-utils]: the strict option must be a boolean, got ${String(strict)}`);
+    expect((error as TypeError).message).toBe(`[foundry-utils]: the strict option must be a boolean, got ${typeof strict}`);
   });
 });

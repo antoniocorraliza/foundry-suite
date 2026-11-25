@@ -1,14 +1,22 @@
-import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
+import { IDENTITY_DOCUMENT_KINDS } from '../constants/identity-document-kinds.constant';
 import { isDniOrNie } from './is-dni-or-nie.function';
+import { readDniOrNie } from './read-dni-or-nie.function';
 
 describe('isDniOrNie', () => {
-  it('checks documents with the shared reader of this entry', () => {
-    expect(isDniOrNie('12.345.678-Z')).toBe(true);
-    expect(isDniOrNie('x1234567l')).toBe(true);
-    expect(isDniOrNie('12345678A')).toBe(false);
-    expect(isDniOrNie('K1234567L')).toBe(false);
-    expect(isDniOrNie(null)).toBe(false);
+  it('accepts and rejects documents as readDniOrNie reads them', () => {
+    const documents: ReadonlyArray<unknown> = [
+      '12.345.678-Z',
+      '12.345.678-z',
+      'x1234567l',
+      'x-1234567-l',
+      '12345678A',
+      'K1234567L',
+      'Y1234567X',
+      '',
+      null,
+    ];
+    documents.forEach((document) => expect(isDniOrNie(document)).toBe(readDniOrNie(document, IDENTITY_DOCUMENT_KINDS) !== null));
   });
 
   it('accepts only the kinds of the accept option', () => {
@@ -26,13 +34,5 @@ describe('isDniOrNie', () => {
     const getter: () => ReadonlyArray<string> = vi.fn(() => ['nie']);
     expect(isDniOrNie('12345678Z', Object.defineProperty({}, 'accept', { get: getter, enumerable: true }))).toBe(true);
     expect(getter).not.toHaveBeenCalled();
-  });
-
-  it('never throws', () => {
-    fc.assert(
-      fc.property(fc.anything(), fc.anything(), (value, options) => {
-        expect(typeof isDniOrNie(value, options as never)).toBe('boolean');
-      }),
-    );
   });
 });

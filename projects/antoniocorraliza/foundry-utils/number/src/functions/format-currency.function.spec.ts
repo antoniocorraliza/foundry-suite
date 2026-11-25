@@ -10,7 +10,7 @@ import { writeNumber } from './write-number.function';
 const EUROS: FoundryCurrencyFormatOptions = { locale: 'es-ES', currency: 'EUR' };
 
 describe('formatCurrency', () => {
-  it('writes with the shared currency format and fallback of this entry', () => {
+  it('writes what writeNumber writes with the format of createNumberFormat, and the fallback for undefined', () => {
     const options: FoundryCurrencyFormatOptions = { locale: 'en-GB', currency: 'GBP', grouping: 'never', fallback: '?' };
     expect(formatCurrency(1234.5, options)).toBe(writeNumber(1234.5, createNumberFormat(options, 'currency')));
     expect(formatCurrency(undefined, options)).toBe('?');

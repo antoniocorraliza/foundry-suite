@@ -19,10 +19,8 @@ export class FoundryCsvParseError extends FoundryUtilsError {
     },
     options?: { readonly cause?: unknown },
   ) {
-    super(
-      `[foundry-utils]: ${CSV_PARSE_ERROR_SENTENCES[details.reason]} (${details.reason}${details.line === 0 ? '' : ` at line ${details.line}, column ${details.column}`})`,
-      options,
-    );
+    const position: string = details.line === 0 ? '' : ` at line ${details.line}, column ${details.column}`;
+    super(`[foundry-utils]: ${CSV_PARSE_ERROR_SENTENCES[details.reason]} (${details.reason}${position})`, options);
     this.reason = details.reason;
     this.line = details.line;
     this.column = details.column;

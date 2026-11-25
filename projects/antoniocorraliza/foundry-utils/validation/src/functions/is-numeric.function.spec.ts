@@ -1,4 +1,3 @@
-import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
 import { parseDecimal } from '@antoniocorraliza/foundry-utils/number';
 import { isNumeric } from './is-numeric.function';
@@ -47,13 +46,5 @@ describe('isNumeric', () => {
     const getter: () => string = vi.fn(() => ',');
     expect(isNumeric('12,5', Object.defineProperty({}, 'decimalSeparator', { get: getter, enumerable: true }))).toBe(false);
     expect(getter).not.toHaveBeenCalled();
-  });
-
-  it('never throws', () => {
-    fc.assert(
-      fc.property(fc.anything(), fc.anything(), (value, options) => {
-        expect(typeof isNumeric(value, options as never)).toBe('boolean');
-      }),
-    );
   });
 });

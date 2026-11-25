@@ -1,4 +1,3 @@
-import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
 import { isUuid } from './is-uuid.function';
 
@@ -67,13 +66,5 @@ describe('isUuid', () => {
 
   it.each<unknown>([null, undefined, 5, new String(VERSION_7)])('returns false for %j, which is not a string', (value) => {
     expect(isUuid(value)).toBe(false);
-  });
-
-  it('never throws', () => {
-    fc.assert(
-      fc.property(fc.anything(), fc.anything(), (value, options) => {
-        expect(typeof isUuid(value, options as never)).toBe('boolean');
-      }),
-    );
   });
 });

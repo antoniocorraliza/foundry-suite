@@ -2,7 +2,7 @@ import { describe, expectTypeOf, it } from 'vitest';
 import { createRandomCode, createTemporaryId, createUuidV4 } from './public-api';
 
 describe('types of the random entry', () => {
-  it('declares the functions as the design fixes them', () => {
+  it('declares the functions', () => {
     expectTypeOf(createUuidV4).toEqualTypeOf<() => string>();
     expectTypeOf(createRandomCode).toEqualTypeOf<(length: number, options?: { readonly alphabet?: string }) => string>();
     expectTypeOf(createTemporaryId).toEqualTypeOf<() => number>();

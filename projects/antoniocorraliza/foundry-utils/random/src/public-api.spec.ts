@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
+import { listFunctionNames } from '@foundry-test/functions/list-function-names.function';
+import type { LooseFunction } from '@foundry-test/types/loose-function.type';
 import * as entry from './public-api';
-
-type LooseFunction = (...values: Array<unknown>) => unknown;
 
 const SAMPLE_CALLS: ReadonlyArray<[keyof typeof entry, ReadonlyArray<unknown>]> = [
   ['createRandomCode', [6]],
@@ -22,16 +23,11 @@ describe('public API of the random entry', () => {
   });
 
   it('has a sample call for each export', () => {
-    expect(SAMPLE_CALLS.map(([name]) => name).sort()).toEqual(Object.keys(entry).sort());
+    expect(SAMPLE_CALLS.map(([name]) => name).sort()).toEqual(listFunctionNames(entry));
   });
 
-  it.each(SAMPLE_CALLS)('works through %s as a loose reference, without this, and returns no promise', (name, values) => {
-    const looseFunction: LooseFunction = entry[name] as LooseFunction;
-    let result: unknown = null;
-    expect(() => {
-      result = looseFunction.call(undefined, ...values);
-    }).not.toThrow();
-    expect(result).not.toBeInstanceOf(Promise);
+  it.each(SAMPLE_CALLS)('returns no promise from %s', (name, values) => {
+    expect(isPromiseLike((entry[name] as LooseFunction)(...values))).toBe(false);
   });
 
   it('works through map with the functions without parameters, which ignore the arguments', () => {

@@ -17,7 +17,7 @@ interface Ticket {
 }
 
 describe('types of the csv entry', () => {
-  it('declares the public types as the design fixes them', () => {
+  it('declares the public types', () => {
     expectTypeOf<FoundryCsvDelimiter>().toEqualTypeOf<',' | ';' | '\t'>();
     expectTypeOf<FoundryTextEncoding>().toEqualTypeOf<'auto' | 'utf-8' | 'utf-16le' | 'windows-1252'>();
     expectTypeOf(excelSpanishCsvOptions).toEqualTypeOf<Readonly<{ delimiter: ';'; decimalSeparator: ',' }>>();

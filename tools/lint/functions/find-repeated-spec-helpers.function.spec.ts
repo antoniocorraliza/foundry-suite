@@ -12,6 +12,16 @@ describe('findRepeatedSpecHelpers', () => {
     ]);
   });
 
+  it('reports a type declared in a second spec, also when it is not a function, and leaves interfaces of test data alone', () => {
+    const specTexts: ReadonlyMap<string, string> = new Map([
+      ['a.spec.ts', 'type LooseFunction = (...values: Array<unknown>) => unknown;\ninterface Ticket {\n  readonly id: string;\n}\n'],
+      ['b.spec.ts', 'interface Ticket {\n  readonly subject: string;\n}\ntype LooseFunction = (...values: Array<unknown>) => unknown;\n'],
+    ]);
+    expect(findRepeatedSpecHelpers(specTexts)).toEqual([
+      'b.spec.ts:4: repeated test helper: LooseFunction is also declared in a.spec.ts; move it to a shared file',
+    ]);
+  });
+
   it('accepts different names, functions inside a test and a helper imported from a shared file', () => {
     const specTexts: ReadonlyMap<string, string> = new Map([
       [

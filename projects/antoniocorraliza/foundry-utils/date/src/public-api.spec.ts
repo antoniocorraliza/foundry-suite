@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
+import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
+import { listFunctionNames } from '@foundry-test/functions/list-function-names.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
+import type { CallWithOptions } from '@foundry-test/types/call-with-options.type';
+import type { LooseFunction } from '@foundry-test/types/loose-function.type';
 import * as entry from './public-api';
 
 type UseDate = (date: Date) => unknown;
-
-type CallWithOptions = (options: unknown) => unknown;
-
-type LooseFunction = (...values: Array<unknown>) => unknown;
 
 const DATE_USERS: ReadonlyArray<[string, UseDate]> = [
   ['parseDate', (date) => entry.parseDate(date)],
@@ -166,10 +166,12 @@ describe('public API of the date entry', () => {
     ]);
   });
 
+  it('has a sample call for each export', () => {
+    expect(SAMPLE_CALLS.map(([name]) => name).sort()).toEqual(listFunctionNames(entry));
+  });
+
   it.each(SAMPLE_CALLS)('returns no promise from %s', (name, values) => {
-    const looseFunction: LooseFunction = entry[name] as LooseFunction;
-    const result: unknown = looseFunction(...values);
-    expect(result instanceof Promise || typeof (result as { then?: unknown } | null)?.then === 'function').toBe(false);
+    expect(isPromiseLike((entry[name] as LooseFunction)(...values))).toBe(false);
   });
 
   it.each(DATE_USERS)('leaves the date it receives unchanged through %s', (_name, useDate) => {

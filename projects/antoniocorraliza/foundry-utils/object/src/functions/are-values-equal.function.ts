@@ -1,10 +1,15 @@
 import type { ɵValueKind } from '@antoniocorraliza/foundry-utils';
-import { ɵgetOwnDataEntries, ɵgetValueKind, ɵgetValueTag, ɵreadRegExpSource } from '@antoniocorraliza/foundry-utils';
+import {
+  ɵgetOwnDataEntries,
+  ɵgetValueKind,
+  ɵgetValueTag,
+  ɵreadMapSize,
+  ɵreadRegExpSource,
+  ɵreadSetSize,
+} from '@antoniocorraliza/foundry-utils';
 import type { CompareValues } from '../types/compare-values.type';
 import type { CustomEquality } from '../types/custom-equality.type';
 import { readMapEntries } from './read-map-entries.function';
-import { readMapSize } from './read-map-size.function';
-import { readSetSize } from './read-set-size.function';
 import { readSetValues } from './read-set-values.function';
 
 function getBytes(value: ArrayBuffer | ArrayBufferView): Uint8Array {
@@ -45,13 +50,13 @@ function areSameKindValuesEqual(first: object, second: object, kind: ɵValueKind
     case 'regExp':
       return getRegExpParts(first) === getRegExpParts(second);
     case 'map': {
-      if (readMapSize(first) !== readMapSize(second)) return false;
+      if (ɵreadMapSize(first) !== ɵreadMapSize(second)) return false;
       return readMapEntries(first).every(
         ([key, value]) => Map.prototype.has.call(second, key) && compare(value, Map.prototype.get.call(second, key)),
       );
     }
     case 'set': {
-      if (readSetSize(first) !== readSetSize(second)) return false;
+      if (ɵreadSetSize(first) !== ɵreadSetSize(second)) return false;
       return readSetValues(first).every((item) => Set.prototype.has.call(second, item));
     }
     case 'arrayBuffer':

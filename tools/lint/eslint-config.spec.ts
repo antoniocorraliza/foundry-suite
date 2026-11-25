@@ -654,8 +654,21 @@ describe.skipIf(IS_ESLINT_MISSING)('function names', () => {
     expect(await findMessageLines(code, 'tools/probe/probe.ts', message)).toEqual([2, 6]);
   });
 
-  it('checks the internal functions with the private prefix and lets deepClone keep its design name', async () => {
-    const path: string = 'projects/antoniocorraliza/foundry-utils/src/functions/probe.function.ts';
+  it.each<[string, string]>([
+    ['deepClone', 'object'],
+    ['localDateTimeToDate', 'date'],
+    ['startOfDay', 'date'],
+    ['endOfDay', 'date'],
+    ['sha256', 'hash'],
+    ['sha512', 'hash'],
+  ])('lets %s keep its name', async (name, entry) => {
+    const code: string = ['/**', ' * Returns the value.', ' */', `export function ${name}(): string {`, "  return '';", '}', ''].join('\n');
+    expect(await findRuleLines(code, `projects/antoniocorraliza/foundry-utils/${entry}/src/functions/probe.function.ts`, ruleId)).toEqual(
+      [],
+    );
+  });
+
+  it('checks the internal functions with the private prefix, and rejects a name of the shape of an exception that is not one', async () => {
     const code: string = [
       '/**',
       ' * Returns the kind.',
@@ -670,32 +683,6 @@ describe.skipIf(IS_ESLINT_MISSING)('function names', () => {
       "  return '';",
       '}',
       '/**',
-      ' * Returns a copy.',
-      ' */',
-      'export function deepClone<T>(value: T): T {',
-      '  return value;',
-      '}',
-      '',
-    ].join('\n');
-    expect(await findRuleLines(code, path, ruleId)).toEqual([10]);
-  });
-
-  it('lets sha256 and sha512 keep their design names, and no other name of that shape', async () => {
-    const path: string = 'projects/antoniocorraliza/foundry-utils/hash/src/functions/probe.function.ts';
-    const code: string = [
-      '/**',
-      ' * Computes the digest.',
-      ' */',
-      'export function sha256(): string {',
-      "  return '';",
-      '}',
-      '/**',
-      ' * Computes the digest.',
-      ' */',
-      'export function sha512(): string {',
-      "  return '';",
-      '}',
-      '/**',
       ' * Computes the digest.',
       ' */',
       'export function sha1(): string {',
@@ -703,20 +690,13 @@ describe.skipIf(IS_ESLINT_MISSING)('function names', () => {
       '}',
       '',
     ].join('\n');
-    expect(await findRuleLines(code, path, ruleId)).toEqual([16]);
+    expect(await findRuleLines(code, 'projects/antoniocorraliza/foundry-utils/hash/src/functions/probe.function.ts', ruleId)).toEqual([
+      10, 16,
+    ]);
   });
 
-  it('accepts cancel, flush and dispose as verbs of the methods of an interface', async () => {
-    const code: string = [
-      'export interface Debouncer {',
-      '  schedule(): void;',
-      '  cancel(): void;',
-      '  flush(): void;',
-      '  dispose(): void;',
-      '  isPending(): boolean;',
-      '}',
-      '',
-    ].join('\n');
+  it.each<string>(['cancel', 'flush', 'dispose'])('accepts %s as the verb of a method of an interface', async (verb) => {
+    const code: string = ['export interface Debouncer {', `  ${verb}(): void;`, '}', ''].join('\n');
     expect(await findRuleLines(code, 'tools/probe/probe.ts', ruleId)).toEqual([]);
   });
 
@@ -743,61 +723,36 @@ describe.skipIf(IS_ESLINT_MISSING)('options of the library functions', () => {
     expect(await findMessageLines(code, libraryFile, message)).toEqual([2, 3, 4]);
   });
 
-  it('accepts the readers of the root and the options that keep their own reader', async () => {
+  it('accepts the readers of the root', async () => {
     const code: string = [
       "import { ɵparseIntegerOption } from '@antoniocorraliza/foundry-utils';",
       'export function readWeeks(options: Readonly<Record<string, unknown>> | undefined): number {',
-      "  const customEquality: unknown = options?.['customEquality'];",
-      "  const fields: unknown = (options as Readonly<Record<string, unknown>>)['fields'];",
-      "  return ɵparseIntegerOption({ options, name: 'weeks', minimum: 1 }) + Number(customEquality) + Number(fields);",
+      "  return ɵparseIntegerOption({ options, name: 'weeks', minimum: 1 });",
       '}',
       '',
     ].join('\n');
     expect(await findMessageLines(code, libraryFile, message)).toEqual([]);
   });
 
-  it('accepts the protocols and accept options, which keep their own reader, and still rejects any other', async () => {
-    const code: string = [
-      'export function readLists(options: Readonly<Record<string, unknown>> | undefined): number {',
-      "  const protocols: unknown = options?.['protocols'];",
-      "  const accept: unknown = (options as Readonly<Record<string, unknown>>)['accept'];",
-      "  const suffix: unknown = options?.['suffix'];",
-      '  return Number(protocols) + Number(accept) + Number(suffix);',
-      '}',
-      '',
-    ].join('\n');
-    expect(
-      await findMessageLines(code, 'projects/antoniocorraliza/foundry-utils/validation/src/functions/probe.function.ts', message),
-    ).toEqual([4]);
-  });
-
-  it('accepts the columns option, which keeps its own reader, and still rejects any other', async () => {
-    const code: string = [
-      'export function readColumns(options: Readonly<Record<string, unknown>> | undefined): number {',
-      "  const columns: unknown = options?.['columns'];",
-      "  const delimiter: unknown = options?.['delimiter'];",
-      '  return Number(columns) + Number(delimiter);',
-      '}',
-      '',
-    ].join('\n');
-    expect(await findMessageLines(code, 'projects/antoniocorraliza/foundry-utils/csv/src/functions/probe.function.ts', message)).toEqual([
-      3,
-    ]);
-  });
-
-  it('accepts the signal option, which keeps its own reader, and still rejects any other', async () => {
-    const code: string = [
-      'export function readSignal(options: Readonly<Record<string, unknown>> | undefined): number {',
-      "  const signal: unknown = options?.['signal'];",
-      "  const delay: unknown = options?.['delay'];",
-      '  return Number(signal) + Number(delay);',
-      '}',
-      '',
-    ].join('\n');
-    expect(await findMessageLines(code, 'projects/antoniocorraliza/foundry-utils/timing/src/functions/probe.function.ts', message)).toEqual(
-      [3],
-    );
-  });
+  it.each<string>(['customEquality', 'fields', 'protocols', 'accept', 'columns', 'signal'])(
+    'accepts the %s option, which keeps its own reader, and still rejects any other, also read as own data',
+    async (name) => {
+      const code: string = [
+        "import { ɵgetOwnDataValue } from '@antoniocorraliza/foundry-utils';",
+        'export function readOptions(options: Readonly<Record<string, unknown>> | undefined): Array<unknown> {',
+        '  return [',
+        `    options?.['${name}'],`,
+        `    (options as Readonly<Record<string, unknown>>)['${name}'],`,
+        `    ɵgetOwnDataValue(options, '${name}'),`,
+        "    options?.['version'],",
+        "    ɵgetOwnDataValue(options, 'version'),",
+        '  ];',
+        '}',
+        '',
+      ].join('\n');
+      expect(await findMessageLines(code, libraryFile, message)).toEqual([7, 8]);
+    },
+  );
 
   it('leaves the tools and the specs alone', async () => {
     const code: string = ["export const weeks: unknown = ({} as Readonly<Record<string, unknown>>)['weeks'];", ''].join('\n');

@@ -1,10 +1,8 @@
-import { ɵgetOwnDataEntries, ɵgetOwnDataValue, ɵgetValueKind } from '@antoniocorraliza/foundry-utils';
-import { readMapSize } from './read-map-size.function';
-import { readSetSize } from './read-set-size.function';
+import { ɵgetOwnDataEntries, ɵgetOwnDataValue, ɵgetValueKind, ɵisEmptyValue, ɵisTextList } from '@antoniocorraliza/foundry-utils';
 
 function readFields(options: unknown): ReadonlyArray<string> | null {
   const fields: unknown = ɵgetOwnDataValue(options, 'fields');
-  return Array.isArray(fields) && fields.every((field) => typeof field === 'string') ? (fields as ReadonlyArray<string>) : null;
+  return ɵisTextList(fields) ? fields : null;
 }
 
 function hasHoles(array: ReadonlyArray<unknown>, entries: ReadonlyArray<[string, unknown]>): boolean {
@@ -12,27 +10,13 @@ function hasHoles(array: ReadonlyArray<unknown>, entries: ReadonlyArray<[string,
 }
 
 function isEmpty(value: unknown, ancestors: ReadonlyArray<object>): boolean {
-  if (value === null || value === undefined) return true;
-  if (typeof value === 'string') return value.trim() === '';
-  if (typeof value === 'number') return Number.isNaN(value);
-  if (typeof value !== 'object' || ancestors.includes(value)) return false;
-  const inner: ReadonlyArray<object> = [...ancestors, value];
-  switch (ɵgetValueKind(value)) {
-    case 'date':
-      return Number.isNaN(Date.prototype.getTime.call(value));
-    case 'map':
-      return readMapSize(value) === 0;
-    case 'set':
-      return readSetSize(value) === 0;
-    case 'array':
-    case 'plainObject': {
-      const entries: Array<[string, unknown]> = ɵgetOwnDataEntries(value);
-      if (Array.isArray(value) && (value.length === 0 || hasHoles(value, entries))) return true;
-      return entries.length === 0 || entries.some(([, item]) => isEmpty(item, inner));
-    }
-    default:
-      return false;
-  }
+  if (typeof value === 'object' && value !== null && ancestors.includes(value)) return false;
+  return ɵisEmptyValue(value, (container, entries) => hasEmptyEntry(container, entries, [...ancestors, container]));
+}
+
+function hasEmptyEntry(container: object, entries: ReadonlyArray<[string, unknown]>, ancestors: ReadonlyArray<object>): boolean {
+  if (Array.isArray(container) && hasHoles(container, entries)) return true;
+  return entries.some(([, item]) => isEmpty(item, ancestors));
 }
 
 /** Tells whether a value, or any value inside it, is empty: `null`, `undefined`, blank text, `NaN`, an invalid date or an empty collection. */

@@ -53,7 +53,7 @@ describe('hasValue', () => {
     expect(getter).not.toHaveBeenCalled();
   });
 
-  it('never throws', () => {
+  it('never throws for maps, sets, dates and sparse arrays', () => {
     fc.assert(
       fc.property(
         fc.anything({ withMap: true, withSet: true, withDate: true, withSparseArray: true, withNullPrototype: true }),

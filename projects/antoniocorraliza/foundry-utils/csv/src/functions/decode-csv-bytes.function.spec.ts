@@ -1,19 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
-import type { FoundryTextEncoding } from '../types/foundry-text-encoding.type';
 import { decodeCsvBytes } from './decode-csv-bytes.function';
 
 const WINDOWS_1252_HIGH_CONTROLS: string = '€\u0081‚ƒ„…†‡ˆ‰Š‹Œ\u008dŽ\u008f' + '\u0090‘’“”•–—˜™š›œ\u009džŸ';
 
 function createBytes(...values: Array<number>): Uint8Array {
   return new Uint8Array(values);
-}
-
-function catchEncodingError(bytes: Uint8Array, encoding: FoundryTextEncoding): FoundryCsvParseError {
-  const thrown: unknown = catchThrown(() => decodeCsvBytes(bytes, encoding));
-  expect(thrown).toBeInstanceOf(FoundryCsvParseError);
-  return thrown as FoundryCsvParseError;
 }
 
 describe('decodeCsvBytes', () => {
@@ -30,7 +23,7 @@ describe('decodeCsvBytes', () => {
     it.each([[[0x4e, 0x00, 0xf1, 0x00]], [[0x4e, 0x00, 0x75, 0x00]], [[0x41, 0x42, 0x00]]])(
       'rejects the zero bytes of %j without a byte order mark as invalidEncoding, without a position',
       (values) => {
-        const error: FoundryCsvParseError = catchEncodingError(createBytes(...values), 'auto');
+        const error: FoundryCsvParseError = catchError(() => decodeCsvBytes(createBytes(...values), 'auto'), FoundryCsvParseError);
         expect([error.reason, error.line, error.column]).toEqual(['invalidEncoding', 0, 0]);
       },
     );
@@ -55,7 +48,10 @@ describe('decodeCsvBytes', () => {
     });
 
     it('rejects bytes that are not valid UTF-8 after the UTF-8 byte order mark, with the error of the decoder as the cause', () => {
-      const error: FoundryCsvParseError = catchEncodingError(createBytes(0xef, 0xbb, 0xbf, 0x4e, 0xf1), 'auto');
+      const error: FoundryCsvParseError = catchError(
+        () => decodeCsvBytes(createBytes(0xef, 0xbb, 0xbf, 0x4e, 0xf1), 'auto'),
+        FoundryCsvParseError,
+      );
       expect([error.reason, error.line, error.column]).toEqual(['invalidEncoding', 0, 0]);
       expect(error.cause).toBeInstanceOf(TypeError);
     });
@@ -63,7 +59,7 @@ describe('decodeCsvBytes', () => {
     it.each([[[0xff, 0xfe, 0x4e, 0x00, 0xf1]], [[0xff, 0xfe, 0x00, 0xd8, 0x41, 0x00]], [[0xfe, 0xff, 0x00, 0x4e, 0x00]]])(
       'rejects %j, an odd number of bytes or a lone surrogate after a UTF-16 byte order mark',
       (values) => {
-        expect(catchEncodingError(createBytes(...values), 'auto').reason).toBe('invalidEncoding');
+        expect(catchError(() => decodeCsvBytes(createBytes(...values), 'auto'), FoundryCsvParseError).reason).toBe('invalidEncoding');
       },
     );
 
@@ -92,8 +88,12 @@ describe('decodeCsvBytes', () => {
     });
 
     it('rejects bytes that are not valid in the asked encoding instead of writing replacement characters', () => {
-      expect(catchEncodingError(createBytes(0x4e, 0x75, 0xf1, 0x65, 0x7a), 'utf-8').reason).toBe('invalidEncoding');
-      expect(catchEncodingError(createBytes(0x4e, 0x00, 0xf1), 'utf-16le').reason).toBe('invalidEncoding');
+      expect(catchError(() => decodeCsvBytes(createBytes(0x4e, 0x75, 0xf1, 0x65, 0x7a), 'utf-8'), FoundryCsvParseError).reason).toBe(
+        'invalidEncoding',
+      );
+      expect(catchError(() => decodeCsvBytes(createBytes(0x4e, 0x00, 0xf1), 'utf-16le'), FoundryCsvParseError).reason).toBe(
+        'invalidEncoding',
+      );
     });
   });
 });

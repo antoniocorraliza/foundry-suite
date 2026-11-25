@@ -253,6 +253,7 @@ const OPTION_SELECTORS = forbid(
     `MemberExpression[object.expression.name='options']${OTHER_THAN_OWN_READER_OPTIONS}`,
     "VariableDeclarator[id.type='ObjectPattern'][init.name='options']",
     "VariableDeclarator[id.type='ObjectPattern'][init.left.name='options']",
+    `CallExpression[callee.name='\u0275getOwnDataValue'][arguments.0.name='options']:not([arguments.1.value=${OWN_READER_OPTIONS}])`,
   ],
   'Options are read with the readers of the root: \u0275parseEnumOption, \u0275parseBooleanOption, \u0275parseIntegerOption or \u0275parseTextOption, and \u0275read...Option in the is... functions.',
 );

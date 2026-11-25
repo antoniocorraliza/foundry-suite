@@ -8,7 +8,7 @@ import { formatNumber } from './format-number.function';
 import { writeNumber } from './write-number.function';
 
 describe('formatNumber', () => {
-  it('writes with the shared number format and fallback of this entry', () => {
+  it('writes what writeNumber writes with the format of createNumberFormat, and the fallback for null', () => {
     const options: FoundryNumberFormatOptions = { locale: 'de-DE', maximumFractionDigits: 1, grouping: 'always', fallback: '?' };
     expect(formatNumber(1234.56, options)).toBe(writeNumber(1234.56, createNumberFormat(options, 'decimal')));
     expect(formatNumber(null, options)).toBe('?');

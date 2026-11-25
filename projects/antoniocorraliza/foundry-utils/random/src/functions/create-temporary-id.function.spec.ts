@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FoundryCryptoUnavailableError } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { createQueuedCrypto } from '@foundry-test/functions/create-queued-crypto.function';
 import { createTemporaryId } from './create-temporary-id.function';
+import { readRandomBytes } from './read-random-bytes.function';
 
 describe('createTemporaryId', () => {
   afterEach(() => {
@@ -50,9 +52,10 @@ describe('createTemporaryId', () => {
     expect((thrown as FoundryCryptoUnavailableError).missingApi).toBe('crypto');
   });
 
-  it('reads its bytes with the shared reader of this entry: without getRandomValues, it names it', () => {
+  it('names the API that readRandomBytes names when crypto has no getRandomValues', () => {
     vi.stubGlobal('crypto', {});
-    const thrown: unknown = catchThrown(() => createTemporaryId());
-    expect((thrown as FoundryCryptoUnavailableError).missingApi).toBe('crypto.getRandomValues');
+    expect(catchError(() => createTemporaryId(), FoundryCryptoUnavailableError).missingApi).toBe(
+      catchError(() => readRandomBytes(1), FoundryCryptoUnavailableError).missingApi,
+    );
   });
 });

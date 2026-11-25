@@ -7,6 +7,3 @@ export const TRANSLITERATED_LETTERS: Readonly<Record<string, string>> = {
   '\u0142': 'l',
   '\u0111': 'd',
 };
-
-/** Letters of `TRANSLITERATED_LETTERS`, as a regular expression. */
-export const TRANSLITERATED_LETTER_PATTERN: RegExp = /[\u00df\u00e6\u0153\u00f8\u0142\u0111]/gu;

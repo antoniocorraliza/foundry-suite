@@ -23,10 +23,10 @@ It has no dependencies and no peer dependencies.
 ## Compatibility
 
 - Node 22.12 or later.
-- ES modules only. Every entry is imported on its own: `@antoniocorraliza/foundry-utils/object`, `@antoniocorraliza/foundry-utils/case`, `@antoniocorraliza/foundry-utils/date`.
+- ES modules only. Every entry is imported on its own, such as `@antoniocorraliza/foundry-utils/object`, `@antoniocorraliza/foundry-utils/case` or `@antoniocorraliza/foundry-utils/date`.
 - TypeScript 5.5 or later, with `moduleResolution` set to `bundler` or `nodenext`. A CommonJS file (`.cts`) that imports it compiles with TypeScript 6.0 and 7.0, and fails with 5.5 (TS1479). `node10` is not supported: the secondary entries do not resolve.
 - Jest 30 with `jest-environment-jsdom`, with the recipe below. Not tested with `ts-jest`.
-- `/date` is tested in the time zones `Europe/Madrid`, `America/Mexico_City`, `America/Santiago` and `UTC`, plus `Pacific/Apia` and `Australia/Lord_Howe` for their clock changes.
+- `/date` and `/csv` are tested in the time zones `Europe/Madrid`, `America/Mexico_City`, `America/Santiago` and `UTC`, plus `Pacific/Apia` and `Australia/Lord_Howe` for their clock changes.
 
 ### Jest
 
@@ -50,7 +50,7 @@ module.exports = {
 module.exports = { presets: [['@babel/preset-env', { targets: { node: 'current' } }]] };
 ```
 
-`readCsvFile` needs `TextDecoder` and `Blob.prototype.arrayBuffer`, which `jest-environment-jsdom` lacks: there it rejects with a `TypeError` that names them. A test that reads a file runs in the `node` environment, with this comment at the top of the file:
+`readCsvFile` needs `TextDecoder` and `Blob.prototype.arrayBuffer`, which `jest-environment-jsdom` lacks: there it rejects with a `TypeError` that names them. `sha256` and `sha512` reject with `FoundryCryptoUnavailableError`, because the `crypto` of jsdom has no `crypto.subtle`. A test that reads a file or computes a hash runs in the `node` environment, with this comment at the top of the file:
 
 ```js
 /** @jest-environment node */

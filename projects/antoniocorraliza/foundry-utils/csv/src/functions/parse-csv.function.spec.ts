@@ -1,25 +1,25 @@
 import { describe, expect, it } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { excelSpanishCsvOptions } from '../constants/excel-spanish-csv-options.constant';
 import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
+import type { CsvRecordsReading } from '../interfaces/csv-records-reading.interface';
 import type { FoundryCsvTable } from '../interfaces/foundry-csv-table.interface';
 import type { FoundryCsvTableOptions } from '../interfaces/foundry-csv-table-options.interface';
 import { parseCsv } from './parse-csv.function';
-
-function catchTableError(text: string, options?: FoundryCsvTableOptions): FoundryCsvParseError {
-  const thrown: unknown = catchThrown(() => parseCsv(text, options));
-  expect(thrown).toBeInstanceOf(FoundryCsvParseError);
-  return thrown as FoundryCsvParseError;
-}
+import { readCsvRecords } from './read-csv-records.function';
 
 describe('parseCsv', () => {
-  it('reads the records with the shared reader of this entry', () => {
-    expect(parseCsv('﻿nombre;importe\r\nAna;12,50')).toEqual({
-      delimiter: ';',
-      headers: ['nombre', 'importe'],
-      rows: [{ nombre: 'Ana', importe: '12,50' }],
+  it('takes the first record that readCsvRecords reads as the headers, and its delimiter', () => {
+    const texts: ReadonlyArray<string> = ['\ufeffnombre;importe\r\nAna;"12,50"\r\n', 'a,b\r\n1,2', 'a\tb\n1\t2\n', 'a', ''];
+    texts.forEach((text) => {
+      const reading: CsvRecordsReading = readCsvRecords(text, undefined);
+      const table: FoundryCsvTable = parseCsv(text);
+      expect(table.delimiter).toBe(reading.delimiter);
+      expect(table.headers).toEqual(reading.records[0]?.cells ?? []);
+      expect(table.rows.map((row) => Object.values(row))).toEqual(reading.records.slice(1).map((record) => record.cells));
     });
   });
 
@@ -62,7 +62,7 @@ describe('parseCsv', () => {
     });
 
     it('reads an empty first line as an empty header when skipEmptyLines is false', () => {
-      const error: FoundryCsvParseError = catchTableError('\r\n', { skipEmptyLines: false });
+      const error: FoundryCsvParseError = catchError(() => parseCsv('\r\n', { skipEmptyLines: false }), FoundryCsvParseError);
       expect([error.reason, error.line, error.column]).toEqual(['emptyHeader', 1, 1]);
     });
 
@@ -77,7 +77,10 @@ describe('parseCsv', () => {
 
   describe('number of cells', () => {
     it('throws columnCountMismatch at the first extra cell instead of moving the columns', () => {
-      const error: FoundryCsvParseError = catchTableError('Nombre,Importe,Fecha\r\nAna,12.5,2026-01-01,extra');
+      const error: FoundryCsvParseError = catchError(
+        () => parseCsv('Nombre,Importe,Fecha\r\nAna,12.5,2026-01-01,extra'),
+        FoundryCsvParseError,
+      );
       expect([error.reason, error.line, error.column]).toEqual(['columnCountMismatch', 2, 4]);
       expect(error.message).toMatch(/^\[foundry-utils\]: /);
       expect(error.message).toContain('line 2');
@@ -85,14 +88,17 @@ describe('parseCsv', () => {
     });
 
     it('throws columnCountMismatch at the first missing cell', () => {
-      const error: FoundryCsvParseError = catchTableError('Nombre,Importe,Fecha\r\nLuis,7');
+      const error: FoundryCsvParseError = catchError(() => parseCsv('Nombre,Importe,Fecha\r\nLuis,7'), FoundryCsvParseError);
       expect([error.reason, error.line, error.column]).toEqual(['columnCountMismatch', 2, 3]);
     });
 
     it('reports the physical line of the extra cell, and the line where a row with missing cells ends', () => {
-      const extra: FoundryCsvParseError = catchTableError('Nombre,Importe,Fecha\r\n"Ana\r\nMaria",12.5,2026-01-01,extra');
+      const extra: FoundryCsvParseError = catchError(
+        () => parseCsv('Nombre,Importe,Fecha\r\n"Ana\r\nMaria",12.5,2026-01-01,extra'),
+        FoundryCsvParseError,
+      );
       expect([extra.line, extra.column]).toEqual([3, 4]);
-      const missing: FoundryCsvParseError = catchTableError('a,b,c\r\n1,"x\r\ny"');
+      const missing: FoundryCsvParseError = catchError(() => parseCsv('a,b,c\r\n1,"x\r\ny"'), FoundryCsvParseError);
       expect([missing.line, missing.column]).toEqual([3, 3]);
     });
 
@@ -104,14 +110,20 @@ describe('parseCsv', () => {
     });
 
     it('still throws for an extra cell with content when relaxColumnCount is true, at that cell', () => {
-      const error: FoundryCsvParseError = catchTableError('A;B;C\n1;2\n4;5;6;7\n', { delimiter: ';', relaxColumnCount: true });
+      const error: FoundryCsvParseError = catchError(
+        () => parseCsv('A;B;C\n1;2\n4;5;6;7\n', { delimiter: ';', relaxColumnCount: true }),
+        FoundryCsvParseError,
+      );
       expect([error.reason, error.line, error.column]).toEqual(['columnCountMismatch', 3, 4]);
-      const later: FoundryCsvParseError = catchTableError('Nombre,Importe,Fecha\r\nAna,12.5,2026-01-01,,x', { relaxColumnCount: true });
+      const later: FoundryCsvParseError = catchError(
+        () => parseCsv('Nombre,Importe,Fecha\r\nAna,12.5,2026-01-01,,x', { relaxColumnCount: true }),
+        FoundryCsvParseError,
+      );
       expect([later.line, later.column]).toEqual([2, 5]);
     });
 
     it('measures an extra cell as empty after trimming it, when trimCells is true', () => {
-      expect(catchTableError('a,b\r\n1,2,  ', { relaxColumnCount: true }).column).toBe(3);
+      expect(catchError(() => parseCsv('a,b\r\n1,2,  ', { relaxColumnCount: true }), FoundryCsvParseError).column).toBe(3);
       expect(parseCsv('a,b\r\n1,2,  ', { relaxColumnCount: true, trimCells: true }).rows).toEqual([{ a: '1', b: '2' }]);
     });
   });
@@ -119,17 +131,20 @@ describe('parseCsv', () => {
   describe('empty and repeated headers', () => {
     it.each(['', '  ', '\t'])('throws emptyHeader for the header %j, with or without trimCells and suffixes', (header) => {
       [{}, { trimCells: true }, { duplicateHeaders: 'suffix' as const }].forEach((options) => {
-        const error: FoundryCsvParseError = catchTableError(`a,${header}\r\n1,2`, { delimiter: ',', ...options });
+        const error: FoundryCsvParseError = catchError(
+          () => parseCsv(`a,${header}\r\n1,2`, { delimiter: ',', ...options }),
+          FoundryCsvParseError,
+        );
         expect([error.reason, error.line, error.column]).toEqual(['emptyHeader', 1, 2]);
       });
     });
 
     it('throws emptyHeader at the first column too', () => {
-      expect(catchTableError(',b\r\n1,2').column).toBe(1);
+      expect(catchError(() => parseCsv(',b\r\n1,2'), FoundryCsvParseError).column).toBe(1);
     });
 
     it('throws duplicateHeader at the second time a header appears', () => {
-      const error: FoundryCsvParseError = catchTableError('Importe,Fecha,Importe\r\n1,2,3');
+      const error: FoundryCsvParseError = catchError(() => parseCsv('Importe,Fecha,Importe\r\n1,2,3'), FoundryCsvParseError);
       expect([error.reason, error.line, error.column]).toEqual(['duplicateHeader', 1, 3]);
     });
 
@@ -139,7 +154,9 @@ describe('parseCsv', () => {
 
     it('compares the headers after trimming them when trimCells is true', () => {
       expect(parseCsv('Importe,Importe \r\n1,2').headers).toEqual(['Importe', 'Importe ']);
-      expect(catchTableError('Importe,Importe \r\n1,2', { trimCells: true }).reason).toBe('duplicateHeader');
+      expect(catchError(() => parseCsv('Importe,Importe \r\n1,2', { trimCells: true }), FoundryCsvParseError).reason).toBe(
+        'duplicateHeader',
+      );
     });
 
     it('renames a repeated header with the next free suffix and never takes the name of a real header', () => {

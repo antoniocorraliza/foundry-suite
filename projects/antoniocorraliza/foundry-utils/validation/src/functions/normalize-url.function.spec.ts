@@ -1,12 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { PROTOCOLS_ACCEPTED_BY_DEFAULT } from '../constants/protocols-accepted-by-default.constant';
 import { normalizeUrl } from './normalize-url.function';
+import { readUrl } from './read-url.function';
 
 describe('normalizeUrl', () => {
-  it('returns URLs as the shared reader of this entry writes them, or null', () => {
-    expect(normalizeUrl('HTTPS://WWW.Empresa.ES')).toBe('https://www.empresa.es/');
-    expect(normalizeUrl('http://intranet')).toBeNull();
-    expect(normalizeUrl(null)).toBeNull();
+  it('returns URLs as readUrl writes them, or null', () => {
+    const urls: ReadonlyArray<unknown> = [
+      'https://www.empresa.es',
+      'HTTPS://WWW.Empresa.ES',
+      'http://intranet',
+      'https://banco.es@malo.es',
+      'javascript:alert(1)',
+      'empresa.es',
+      '',
+      null,
+    ];
+    urls.forEach((url) =>
+      expect(normalizeUrl(url)).toBe(
+        readUrl(url, { protocols: PROTOCOLS_ACCEPTED_BY_DEFAULT, allowMissingProtocol: false, defaultProtocol: 'https:' }),
+      ),
+    );
   });
 
   it('adds https to a text without a scheme only when a missing protocol is allowed', () => {

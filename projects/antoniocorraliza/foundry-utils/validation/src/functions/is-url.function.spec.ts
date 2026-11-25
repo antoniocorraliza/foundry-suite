@@ -1,13 +1,25 @@
-import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
+import { PROTOCOLS_ACCEPTED_BY_DEFAULT } from '../constants/protocols-accepted-by-default.constant';
 import { isUrl } from './is-url.function';
+import { readUrl } from './read-url.function';
 
 describe('isUrl', () => {
-  it('checks URLs with the shared reader of this entry', () => {
-    expect(isUrl('https://www.empresa.es')).toBe(true);
-    expect(isUrl('http://intranet')).toBe(false);
-    expect(isUrl('https://banco.es@malo.es')).toBe(false);
-    expect(isUrl('javascript:alert(1)')).toBe(false);
+  it('accepts and rejects URLs as readUrl reads them', () => {
+    const urls: ReadonlyArray<unknown> = [
+      'https://www.empresa.es',
+      'HTTPS://WWW.Empresa.ES',
+      'http://intranet',
+      'https://banco.es@malo.es',
+      'javascript:alert(1)',
+      'empresa.es',
+      '',
+      null,
+    ];
+    urls.forEach((url) =>
+      expect(isUrl(url)).toBe(
+        readUrl(url, { protocols: PROTOCOLS_ACCEPTED_BY_DEFAULT, allowMissingProtocol: false, defaultProtocol: 'https:' }) !== null,
+      ),
+    );
   });
 
   it('reads the options', () => {
@@ -35,13 +47,5 @@ describe('isUrl', () => {
     const getter: () => boolean = vi.fn(() => true);
     expect(isUrl('www.empresa.es', Object.defineProperty({}, 'allowMissingProtocol', { get: getter, enumerable: true }))).toBe(false);
     expect(getter).not.toHaveBeenCalled();
-  });
-
-  it('never throws', () => {
-    fc.assert(
-      fc.property(fc.anything(), fc.anything(), (value, options) => {
-        expect(typeof isUrl(value, options as never)).toBe('boolean');
-      }),
-    );
   });
 });

@@ -2,7 +2,7 @@ import { ɵisOptionsValue, ɵparseBooleanOption, ɵparseEnumOption } from '@anto
 import { BYTE_ORDER_MARK } from '../constants/byte-order-mark.constant';
 import { CSV_DELIMITERS } from '../constants/csv-delimiters.constant';
 import { CSV_PARSE_DELIMITERS } from '../constants/csv-parse-delimiters.constant';
-import { DECIMAL_COMMA_PATTERN, DELIMITER_SAMPLE_LINES, DELIMITER_TIE_ORDER } from '../constants/csv-reading.constant';
+import { DECIMAL_COMMA_PATTERN, DELIMITER_SAMPLE_LINES } from '../constants/csv-reading.constant';
 import { FORMULA_ESCAPINGS } from '../constants/formula-escapings.constant';
 import { ESCAPED_FORMULA_PATTERN } from '../constants/formula-patterns.constant';
 import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
@@ -116,7 +116,7 @@ function findAutoDelimiter(text: string): FoundryCsvDelimiter {
   );
   const semicolonEnd: number | null = sampleEnds.get(';') ?? null;
   if (semicolonEnd !== null && DECIMAL_COMMA_PATTERN.test(text.slice(0, semicolonEnd))) return ';';
-  return DELIMITER_TIE_ORDER.find((delimiter) => (sampleEnds.get(delimiter) ?? null) !== null) ?? ',';
+  return CSV_DELIMITERS.find((delimiter) => (sampleEnds.get(delimiter) ?? null) !== null) ?? ',';
 }
 
 function readCellText(cell: string, isTrimmed: boolean, formulaEscaping: CsvFormulaEscaping): string {
@@ -130,7 +130,7 @@ function readCellText(cell: string, isTrimmed: boolean, formulaEscaping: CsvForm
  * @throws {FoundryCsvParseError} When a quote is not closed or is out of place.
  */
 export function readCsvRecords(text: string, options: FoundryCsvParseOptions | undefined): CsvRecordsReading {
-  if (typeof text !== 'string') throw new TypeError(`[foundry-utils]: the CSV text must be a string, got ${String(text)}`);
+  if (typeof text !== 'string') throw new TypeError(`[foundry-utils]: the CSV text must be a string, got ${typeof text}`);
   if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of a CSV reading must be an object');
   const askedDelimiter: CsvParseDelimiter = ɵparseEnumOption({
     options,

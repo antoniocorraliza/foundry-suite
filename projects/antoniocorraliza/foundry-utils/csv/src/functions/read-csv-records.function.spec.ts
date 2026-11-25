@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
 import type { FoundryCsvParseOptions } from '../interfaces/foundry-csv-parse-options.interface';
@@ -6,12 +7,6 @@ import { readCsvRecords } from './read-csv-records.function';
 
 function readCells(text: string, options?: FoundryCsvParseOptions): Array<ReadonlyArray<string>> {
   return readCsvRecords(text, options).records.map((record) => record.cells);
-}
-
-function catchParseError(text: string, options?: FoundryCsvParseOptions): FoundryCsvParseError {
-  const thrown: unknown = catchThrown(() => readCsvRecords(text, options));
-  expect(thrown).toBeInstanceOf(FoundryCsvParseError);
-  return thrown as FoundryCsvParseError;
 }
 
 describe('readCsvRecords', () => {
@@ -73,7 +68,7 @@ describe('readCsvRecords', () => {
 
   describe('quote errors', () => {
     it('reports a quote that is not closed at the line and the cell where it opens', () => {
-      const error: FoundryCsvParseError = catchParseError('a,b\r\nx,"abc\r\nd', { delimiter: ',' });
+      const error: FoundryCsvParseError = catchError(() => readCsvRecords('a,b\r\nx,"abc\r\nd', { delimiter: ',' }), FoundryCsvParseError);
       expect([error.reason, error.line, error.column]).toEqual(['unclosedQuote', 2, 2]);
     });
 
@@ -82,19 +77,25 @@ describe('readCsvRecords', () => {
       ['x,"ab"c', 2],
       ['x, "ab"', 2],
     ])('reports an unexpected quote in %j at its cell', (text, column) => {
-      const error: FoundryCsvParseError = catchParseError(text, { delimiter: ',' });
+      const error: FoundryCsvParseError = catchError(() => readCsvRecords(text, { delimiter: ',' }), FoundryCsvParseError);
       expect([error.reason, error.line, error.column]).toEqual(['unexpectedQuote', 1, column]);
     });
 
     it('counts the physical lines, also the line breaks inside a quoted cell', () => {
-      const unclosed: FoundryCsvParseError = catchParseError('"a\r\nb",c\r\nd,"e', { delimiter: ',' });
+      const unclosed: FoundryCsvParseError = catchError(
+        () => readCsvRecords('"a\r\nb",c\r\nd,"e', { delimiter: ',' }),
+        FoundryCsvParseError,
+      );
       expect([unclosed.reason, unclosed.line, unclosed.column]).toEqual(['unclosedQuote', 3, 2]);
-      const unexpected: FoundryCsvParseError = catchParseError('h1,h2\r\n"x\r\ny",z\r\nq,w"e', { delimiter: ',' });
+      const unexpected: FoundryCsvParseError = catchError(
+        () => readCsvRecords('h1,h2\r\n"x\r\ny",z\r\nq,w"e', { delimiter: ',' }),
+        FoundryCsvParseError,
+      );
       expect([unexpected.reason, unexpected.line, unexpected.column]).toEqual(['unexpectedQuote', 4, 2]);
     });
 
     it('stops at the first error', () => {
-      const error: FoundryCsvParseError = catchParseError('a"b,"c', { delimiter: ',' });
+      const error: FoundryCsvParseError = catchError(() => readCsvRecords('a"b,"c', { delimiter: ',' }), FoundryCsvParseError);
       expect([error.reason, error.column]).toEqual(['unexpectedQuote', 1]);
     });
   });
@@ -150,7 +151,7 @@ describe('readCsvRecords', () => {
     });
 
     it('never throws while choosing: a quote that is not closed is reported by the reading, at its place', () => {
-      const error: FoundryCsvParseError = catchParseError('a,"b\r\nc,d');
+      const error: FoundryCsvParseError = catchError(() => readCsvRecords('a,"b\r\nc,d', undefined), FoundryCsvParseError);
       expect([error.reason, error.line, error.column]).toEqual(['unclosedQuote', 1, 2]);
     });
 
