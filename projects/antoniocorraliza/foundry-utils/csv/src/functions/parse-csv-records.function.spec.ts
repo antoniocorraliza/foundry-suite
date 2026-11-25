@@ -3,14 +3,12 @@ import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
 import { parseCsvRecords } from './parse-csv-records.function';
+import { readCsvRecords } from './read-csv-records.function';
 
 describe('parseCsvRecords', () => {
-  it('reads the records with the shared reader of this entry', () => {
-    expect(parseCsvRecords('﻿nombre;importe\r\nAna;"12,50"\r\n')).toEqual([
-      ['nombre', 'importe'],
-      ['Ana', '12,50'],
-    ]);
-    expect(catchError(() => parseCsvRecords('a,"b'), FoundryCsvParseError).reason).toBe('unclosedQuote');
+  it('returns the cells of the records that readCsvRecords reads', () => {
+    const texts: ReadonlyArray<string> = ['\ufeffnombre;importe\r\nAna;"12,50"\r\n', 'a,b\r\n1,2', 'a\tb\n1\t2\n', 'a', ''];
+    texts.forEach((text) => expect(parseCsvRecords(text)).toEqual(readCsvRecords(text, undefined).records.map((record) => record.cells)));
   });
 
   it('does not take the first line as headers: an empty or repeated one is a cell like any other', () => {

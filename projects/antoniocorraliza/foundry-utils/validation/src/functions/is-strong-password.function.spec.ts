@@ -35,7 +35,7 @@ describe('isStrongPassword', () => {
     expect(isStrongPassword('Aa1aaaa', { minimumLength } as never)).toBe(false);
   });
 
-  it('ignores a minimum length passed as the second argument, as the old version took it', () => {
+  it('ignores a number passed as the second argument instead of options', () => {
     expect(isStrongPassword('Password1', 12 as never)).toBe(true);
   });
 

@@ -6,7 +6,7 @@ import { createDebouncer, sleep } from './public-api';
 declare const numberObservable: Observable<number>;
 
 describe('types of the timing entry', () => {
-  it('declares sleep as the design fixes it, returning a promise', () => {
+  it('declares sleep, which returns a promise', () => {
     expectTypeOf(sleep).toEqualTypeOf<(milliseconds: number, options?: { readonly signal?: AbortSignal }) => Promise<void>>();
   });
 

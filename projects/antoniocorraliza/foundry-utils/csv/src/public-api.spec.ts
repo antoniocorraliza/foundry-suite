@@ -1,21 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
+import { listFunctionNames } from '@foundry-test/functions/list-function-names.function';
+import type { LooseFunction } from '@foundry-test/types/loose-function.type';
 import * as entry from './public-api';
 
-type LooseFunction = (...values: Array<unknown>) => unknown;
-
-const SAMPLE_CALLS: ReadonlyArray<[string, LooseFunction, ReadonlyArray<unknown>]> = [
-  ['toCsv', entry.toCsv as LooseFunction, [[{ a: 1 }]]],
-  ['createCsvBlob', entry.createCsvBlob as LooseFunction, [[{ a: 1 }]]],
-  ['parseCsv', entry.parseCsv as LooseFunction, ['a\r\n1']],
-  ['parseCsvRecords', entry.parseCsvRecords as LooseFunction, ['a\r\n1']],
+const SAMPLE_CALLS: ReadonlyArray<[keyof typeof entry, ReadonlyArray<unknown>]> = [
+  ['createCsvBlob', [[{ a: 1 }]]],
+  ['parseCsv', ['a\r\n1']],
+  ['parseCsvRecords', ['a\r\n1']],
+  ['toCsv', [[{ a: 1 }]]],
 ];
 
-const WRONG_FIRST_ARGUMENTS: ReadonlyArray<[string, LooseFunction, unknown]> = [
-  ['toCsv', entry.toCsv as LooseFunction, null],
-  ['createCsvBlob', entry.createCsvBlob as LooseFunction, 'a,b'],
-  ['parseCsv', entry.parseCsv as LooseFunction, 5],
-  ['parseCsvRecords', entry.parseCsvRecords as LooseFunction, null],
+const PROMISE_CALLS: ReadonlyArray<[keyof typeof entry, ReadonlyArray<unknown>]> = [['readCsvFile', [new Blob(['a\r\n1'])]]];
+
+const WRONG_FIRST_ARGUMENTS: ReadonlyArray<[keyof typeof entry, unknown]> = [
+  ['toCsv', null],
+  ['createCsvBlob', 'a,b'],
+  ['parseCsv', 5],
+  ['parseCsvRecords', null],
 ];
 
 describe('public API of the csv entry', () => {
@@ -31,22 +34,21 @@ describe('public API of the csv entry', () => {
     ]);
   });
 
-  it.each(SAMPLE_CALLS)('works through %s as a loose reference, without this, and returns no promise', (_name, looseFunction, values) => {
-    let result: unknown = null;
-    expect(() => {
-      result = looseFunction.call(undefined, ...values);
-    }).not.toThrow();
-    expect(result).not.toBeInstanceOf(Promise);
+  it('has a sample call for each export', () => {
+    expect([...SAMPLE_CALLS, ...PROMISE_CALLS].map(([name]) => name).sort()).toEqual(listFunctionNames(entry));
   });
 
-  it('works through readCsvFile as a loose reference, and returns a promise', async () => {
-    const looseFunction: LooseFunction = entry.readCsvFile as LooseFunction;
-    const result: unknown = looseFunction.call(undefined, new Blob(['a\r\n1']));
-    expect(result).toBeInstanceOf(Promise);
+  it.each(SAMPLE_CALLS)('returns no promise from %s', (name, values) => {
+    expect(isPromiseLike((entry[name] as LooseFunction)(...values))).toBe(false);
+  });
+
+  it.each(PROMISE_CALLS)('returns a promise from %s', async (name, values) => {
+    const result: unknown = (entry[name] as LooseFunction)(...values);
+    expect(isPromiseLike(result)).toBe(true);
     expect(await result).toEqual({ delimiter: ',', headers: ['a'], rows: [{ a: '1' }] });
   });
 
-  it.each(WRONG_FIRST_ARGUMENTS)('throws a TypeError through %s for a first argument of the wrong type', (_name, looseFunction, value) => {
-    expect(catchThrown(() => looseFunction(value))).toBeInstanceOf(TypeError);
+  it.each(WRONG_FIRST_ARGUMENTS)('throws a TypeError through %s for a first argument of the wrong type', (name, value) => {
+    expect(catchThrown(() => (entry[name] as LooseFunction)(value))).toBeInstanceOf(TypeError);
   });
 });

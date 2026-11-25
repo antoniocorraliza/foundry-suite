@@ -17,7 +17,7 @@ import {
 } from './public-api';
 
 describe('types of the validation entry', () => {
-  it('declares the public types as the design fixes them', () => {
+  it('declares the public types', () => {
     expectTypeOf<FoundryValidationErrors>().toEqualTypeOf<Readonly<Record<string, true>>>();
     expectTypeOf<FoundryValidatableControl>().toEqualTypeOf<{ readonly value: unknown }>();
     expectTypeOf<FoundryUrlOptions['protocols']>().toEqualTypeOf<ReadonlyArray<string> | undefined>();

@@ -5,16 +5,21 @@ import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.f
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { excelSpanishCsvOptions } from '../constants/excel-spanish-csv-options.constant';
 import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
+import type { CsvRecordsReading } from '../interfaces/csv-records-reading.interface';
 import type { FoundryCsvTable } from '../interfaces/foundry-csv-table.interface';
 import type { FoundryCsvTableOptions } from '../interfaces/foundry-csv-table-options.interface';
 import { parseCsv } from './parse-csv.function';
+import { readCsvRecords } from './read-csv-records.function';
 
 describe('parseCsv', () => {
-  it('reads the records with the shared reader of this entry', () => {
-    expect(parseCsv('﻿nombre;importe\r\nAna;12,50')).toEqual({
-      delimiter: ';',
-      headers: ['nombre', 'importe'],
-      rows: [{ nombre: 'Ana', importe: '12,50' }],
+  it('takes the first record that readCsvRecords reads as the headers, and its delimiter', () => {
+    const texts: ReadonlyArray<string> = ['\ufeffnombre;importe\r\nAna;"12,50"\r\n', 'a,b\r\n1,2', 'a\tb\n1\t2\n', 'a', ''];
+    texts.forEach((text) => {
+      const reading: CsvRecordsReading = readCsvRecords(text, undefined);
+      const table: FoundryCsvTable = parseCsv(text);
+      expect(table.delimiter).toBe(reading.delimiter);
+      expect(table.headers).toEqual(reading.records[0]?.cells ?? []);
+      expect(table.rows.map((row) => Object.values(row))).toEqual(reading.records.slice(1).map((record) => record.cells));
     });
   });
 

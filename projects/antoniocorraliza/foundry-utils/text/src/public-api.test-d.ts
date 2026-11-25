@@ -2,7 +2,7 @@ import { describe, expectTypeOf, it } from 'vitest';
 import { capitalizeFirstLetter, parseBoolean, toSlug, toTitleCase, truncateText } from './public-api';
 
 describe('types of the text entry', () => {
-  it('returns what the design fixes', () => {
+  it('returns what each function returns', () => {
     expectTypeOf(capitalizeFirstLetter).returns.toEqualTypeOf<string>();
     expectTypeOf(toTitleCase).returns.toEqualTypeOf<string>();
     expectTypeOf(truncateText).returns.toEqualTypeOf<string>();

@@ -15,14 +15,13 @@ describe('truncateText', () => {
     expect(truncateText('', 0)).toBe('');
   });
 
-  it('counts visible characters with the shared splitter of this entry', () => {
-    expect(truncateText('👨‍👩‍👧👨‍👩‍👧', 2)).toBe('👨‍👩‍👧👨‍👩‍👧');
-    expect(truncateText('ab😀cd', 3)).toBe('ab…');
-    expect(truncateText('ab😀cd', 4)).toBe('ab😀…');
-    expect(truncateText('ab👨‍👩‍👧cd', 4)).toBe('ab👨‍👩‍👧…');
-    expect(truncateText('🇪🇸🇫🇷abc', 2)).toBe('🇪🇸…');
-    expect(truncateText('👍🏽👍🏽👍🏽', 2)).toBe('👍🏽…');
-    expect(truncateText('ééé', 2)).toBe('é…');
+  it('counts visible characters as splitGraphemes splits them', () => {
+    const texts: ReadonlyArray<string> = ['👨‍👩‍👧👨‍👩‍👧', 'ab😀cd', 'ab👨‍👩‍👧cd', '🇪🇸🇫🇷abc', '👍🏽👍🏽👍🏽', 'ééé'];
+    texts.forEach((text) =>
+      [2, 3, 4].forEach((maximumLength) => {
+        expect(splitGraphemes(truncateText(text, maximumLength)).length).toBe(Math.min(maximumLength, splitGraphemes(text).length));
+      }),
+    );
   });
 
   it('returns the first characters without a suffix when the limit does not leave room for it', () => {

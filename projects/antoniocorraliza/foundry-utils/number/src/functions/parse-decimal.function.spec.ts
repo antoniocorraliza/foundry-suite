@@ -5,14 +5,18 @@ import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.f
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import type { FoundryParseDecimalOptions } from '../interfaces/foundry-parse-decimal-options.interface';
 import { parseDecimal } from './parse-decimal.function';
+import { readDecimal } from './read-decimal.function';
 
 describe('parseDecimal', () => {
-  it('reads decimals with the shared reader of this entry', () => {
-    expect(parseDecimal('12,5', { decimalSeparator: ',' })).toBe(12.5);
-    expect(parseDecimal('1 234 567,5', { decimalSeparator: ',', groupSeparator: ' ' })).toBe(1234567.5);
-    expect(parseDecimal('1’234.5', { decimalSeparator: '.', groupSeparator: "'" })).toBe(1234.5);
-    expect(parseDecimal('12,34,567.5', { decimalSeparator: '.', groupSeparator: ',', groupStyle: 'indian' })).toBe(1234567.5);
-    expect(parseDecimal('1.234,5', { decimalSeparator: ',' })).toBeNull();
+  it('reads decimals as readDecimal reads them with the same separators', () => {
+    const texts: ReadonlyArray<unknown> = ['12,5', '12.5', '1 234 567,5', '1’234.5', '12,34,567.5', '1.234,5', '-0,5', '', 'abc', null];
+    const formats: ReadonlyArray<Required<FoundryParseDecimalOptions>> = [
+      { decimalSeparator: ',', groupSeparator: null, groupStyle: 'thousands' },
+      { decimalSeparator: ',', groupSeparator: ' ', groupStyle: 'thousands' },
+      { decimalSeparator: '.', groupSeparator: "'", groupStyle: 'thousands' },
+      { decimalSeparator: '.', groupSeparator: ',', groupStyle: 'indian' },
+    ];
+    formats.forEach((format) => texts.forEach((text) => expect(parseDecimal(text, format)).toBe(readDecimal(text, format))));
   });
 
   it('accepts no group separator by default, and takes null as none', () => {

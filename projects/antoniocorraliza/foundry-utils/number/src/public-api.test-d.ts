@@ -25,7 +25,7 @@ describe('types of the number entry', () => {
     expectTypeOf<FoundryNumberFormatOptions['grouping']>().toEqualTypeOf<'locale' | 'always' | 'never' | undefined>();
   });
 
-  it('returns what the design fixes', () => {
+  it('returns what each function returns', () => {
     expectTypeOf(roundToDecimals).returns.toEqualTypeOf<number>();
     expectTypeOf(clampNumber).returns.toEqualTypeOf<number>();
     expectTypeOf(padNumber).returns.toEqualTypeOf<string>();

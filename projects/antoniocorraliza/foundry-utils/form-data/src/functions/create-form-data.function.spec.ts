@@ -298,7 +298,7 @@ describe('createFormData', () => {
     expect(thrown.cause).toBeInstanceOf(TypeError);
   });
 
-  it('sends the example of the design: texts, a number, files with their names and a json part', async () => {
+  it('sends texts, a number, files with their names and a json part', async () => {
     const files: Array<File> = [new File(['a'], 'captura.png', { type: 'image/png' }), new File(['b'], 'log.txt', { type: 'text/plain' })];
     const formData: FormData = createFormData({
       subject: 'No arranca',

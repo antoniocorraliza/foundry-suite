@@ -3,7 +3,7 @@ import type { FoundryBinaryInput } from '@antoniocorraliza/foundry-utils';
 import { sha256, sha512 } from './public-api';
 
 describe('types of the hash entry', () => {
-  it('declares the functions as the design fixes them, returning a promise', () => {
+  it('declares the functions, which return a promise', () => {
     expectTypeOf(sha256).toEqualTypeOf<(input: string | FoundryBinaryInput) => Promise<string>>();
     expectTypeOf(sha512).toEqualTypeOf<(input: string | FoundryBinaryInput) => Promise<string>>();
   });

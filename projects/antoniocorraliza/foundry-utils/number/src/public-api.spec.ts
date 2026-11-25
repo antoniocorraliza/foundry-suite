@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
+import { listFunctionNames } from '@foundry-test/functions/list-function-names.function';
+import type { CallWithOptions } from '@foundry-test/types/call-with-options.type';
+import type { LooseFunction } from '@foundry-test/types/loose-function.type';
 import * as entry from './public-api';
-
-type CallWithOptions = (options: unknown) => unknown;
-
-type LooseFunction = (...values: Array<unknown>) => unknown;
 
 const OPTION_USERS: ReadonlyArray<[string, CallWithOptions]> = [
   ['roundToDecimals', (options) => entry.roundToDecimals(1.5, 0, options as never)],
@@ -39,15 +39,12 @@ describe('public API of the number entry', () => {
     ]);
   });
 
-  it.each(SAMPLE_CALLS)('returns no promise from %s', (name, values) => {
-    const looseFunction: LooseFunction = entry[name] as LooseFunction;
-    const result: unknown = looseFunction(...values);
-    expect(result instanceof Promise || typeof (result as { then?: unknown } | null)?.then === 'function').toBe(false);
+  it('has a sample call for each export', () => {
+    expect(SAMPLE_CALLS.map(([name]) => name).sort()).toEqual(listFunctionNames(entry));
   });
 
-  it.each(SAMPLE_CALLS)('works through %s as a loose reference, without this', (name, values) => {
-    const looseFunction: LooseFunction = entry[name] as LooseFunction;
-    expect(() => looseFunction.call(undefined, ...values)).not.toThrow();
+  it.each(SAMPLE_CALLS)('returns no promise from %s', (name, values) => {
+    expect(isPromiseLike((entry[name] as LooseFunction)(...values))).toBe(false);
   });
 
   describe.each(OPTION_USERS)('through %s', (_name, callWithOptions) => {

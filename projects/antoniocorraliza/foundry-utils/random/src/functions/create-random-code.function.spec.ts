@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FoundryCryptoUnavailableError } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { createQueuedCrypto } from '@foundry-test/functions/create-queued-crypto.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { createRandomCode } from './create-random-code.function';
+import { readRandomBytes } from './read-random-bytes.function';
 
 const DEFAULT_ALPHABET: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
@@ -126,11 +128,11 @@ describe('createRandomCode', () => {
     expect(catchThrown(() => createRandomCode(6, { alphabet: 'a' }))).toBeInstanceOf(RangeError);
   });
 
-  it('reads its bytes with the shared reader of this entry: without getRandomValues, it names it', () => {
+  it('names the API that readRandomBytes names when crypto has no getRandomValues', () => {
     vi.stubGlobal('crypto', { randomUUID: (): string => '' });
-    const thrown: unknown = catchThrown(() => createRandomCode(6));
-    expect(thrown).toBeInstanceOf(FoundryCryptoUnavailableError);
-    expect((thrown as FoundryCryptoUnavailableError).missingApi).toBe('crypto.getRandomValues');
+    expect(catchError(() => createRandomCode(6), FoundryCryptoUnavailableError).missingApi).toBe(
+      catchError(() => readRandomBytes(1), FoundryCryptoUnavailableError).missingApi,
+    );
   });
 
   it('leaves its options unchanged', () => {

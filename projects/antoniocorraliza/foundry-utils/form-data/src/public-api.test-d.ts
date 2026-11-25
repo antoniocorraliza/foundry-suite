@@ -6,7 +6,7 @@ import { createFormData } from './public-api';
 declare const file: File;
 
 describe('types of the form-data entry', () => {
-  it('declares the public types as the design fixes them', () => {
+  it('declares the public types', () => {
     expectTypeOf<FoundryFormDataFile>().toEqualTypeOf<{
       readonly file: Blob;
       readonly fileName?: string;

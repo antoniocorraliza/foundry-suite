@@ -4,8 +4,11 @@ import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-w
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
+import type { FoundryCsvTable } from '../interfaces/foundry-csv-table.interface';
 import type { FoundryCsvTableOptions } from '../interfaces/foundry-csv-table-options.interface';
 import type { FoundryTextEncoding } from '../types/foundry-text-encoding.type';
+import { decodeCsvBytes } from './decode-csv-bytes.function';
+import { parseCsv } from './parse-csv.function';
 import { readCsvFile } from './read-csv-file.function';
 
 describe('readCsvFile', () => {
@@ -29,11 +32,14 @@ describe('readCsvFile', () => {
     expect((await readCsvFile(new Blob(['a,b\r\n1,2']))).rows).toEqual([{ a: '1', b: '2' }]);
   });
 
-  it('decodes the bytes with the shared decoder of this entry', async () => {
-    const windows1252: Blob = new Blob([new Uint8Array([0x4e, 0x6f, 0x6d, 0x62, 0x72, 0x65, 0x0d, 0x0a, 0x4e, 0x75, 0xf1, 0x65, 0x7a])]);
-    expect((await readCsvFile(windows1252)).rows).toEqual([{ Nombre: 'Nuñez' }]);
-    const utf16: Blob = new Blob([new Uint8Array([0xff, 0xfe, 0x61, 0x00, 0x0d, 0x00, 0x0a, 0x00, 0xf1, 0x00])]);
-    expect((await readCsvFile(utf16)).rows).toEqual([{ a: 'ñ' }]);
+  it('reads the table that parseCsv reads from the text that decodeCsvBytes decodes', async () => {
+    const files: ReadonlyArray<Uint8Array<ArrayBuffer>> = [
+      new Uint8Array([0x4e, 0x6f, 0x6d, 0x62, 0x72, 0x65, 0x0d, 0x0a, 0x4e, 0x75, 0xf1, 0x65, 0x7a]),
+      new Uint8Array([0xff, 0xfe, 0x61, 0x00, 0x0d, 0x00, 0x0a, 0x00, 0xf1, 0x00]),
+      new Uint8Array([0xef, 0xbb, 0xbf, 0x61, 0x3b, 0x62, 0x0a, 0x31, 0x3b, 0x32]),
+    ];
+    const tables: Array<FoundryCsvTable> = await Promise.all(files.map((bytes) => readCsvFile(new Blob([bytes]))));
+    expect(tables).toEqual(files.map((bytes) => parseCsv(decodeCsvBytes(bytes, 'auto'))));
   });
 
   it('rejects zero bytes without a byte order mark with invalidEncoding', async () => {
