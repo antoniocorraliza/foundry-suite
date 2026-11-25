@@ -12,8 +12,8 @@ export function createCsvBlob<Row extends object>(
   rows: ReadonlyArray<Row>,
   options?: FoundryCsvWriteOptions<Row> & { readonly byteOrderMark?: boolean },
 ): Blob {
-  const text: string = toCsv(rows, options);
   if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of createCsvBlob must be an object');
+  const text: string = toCsv(rows, options);
   const hasByteOrderMark: boolean = ɵparseBooleanOption({ options, name: 'byteOrderMark', fallback: true });
   return new Blob([hasByteOrderMark ? `${BYTE_ORDER_MARK}${text}` : text], { type: 'text/csv;charset=utf-8' });
 }

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
 import { listFunctionNames } from '@foundry-test/functions/list-function-names.function';
+import type { CallWithOptions } from '@foundry-test/types/call-with-options.type';
 import type { LooseFunction } from '@foundry-test/types/loose-function.type';
 import * as entry from './public-api';
 
@@ -19,6 +21,13 @@ const WRONG_FIRST_ARGUMENTS: ReadonlyArray<[keyof typeof entry, unknown]> = [
   ['createCsvBlob', 'a,b'],
   ['parseCsv', 5],
   ['parseCsvRecords', null],
+];
+
+const OPTION_USERS: ReadonlyArray<[keyof typeof entry, CallWithOptions]> = [
+  ['toCsv', (options) => entry.toCsv([{ a: 1 }], options as never)],
+  ['createCsvBlob', (options) => entry.createCsvBlob([{ a: 1 }], options as never)],
+  ['parseCsv', (options) => entry.parseCsv('a\r\n1', options as never)],
+  ['parseCsvRecords', (options) => entry.parseCsvRecords('a\r\n1', options as never)],
 ];
 
 describe('public API of the csv entry', () => {
@@ -47,6 +56,13 @@ describe('public API of the csv entry', () => {
     expect(isPromiseLike(result)).toBe(true);
     expect(await result).toEqual({ delimiter: ',', headers: ['a'], rows: [{ a: '1' }] });
   });
+
+  it.each(OPTION_USERS)(
+    'throws a TypeError through %s for options that are not an object, naming that function',
+    (name, callWithOptions) => {
+      expect(catchError(() => callWithOptions(5), TypeError).message).toBe(`[foundry-utils]: the options of ${name} must be an object`);
+    },
+  );
 
   it.each(WRONG_FIRST_ARGUMENTS)('throws a TypeError through %s for a first argument of the wrong type', (name, value) => {
     expect(catchThrown(() => (entry[name] as LooseFunction)(value))).toBeInstanceOf(TypeError);

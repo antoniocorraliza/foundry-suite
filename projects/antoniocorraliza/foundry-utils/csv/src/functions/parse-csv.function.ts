@@ -49,8 +49,8 @@ function writeRow(headers: ReadonlyArray<string>, cells: ReadonlyArray<string>):
  * @throws {FoundryCsvParseError} When a quote, a header or the number of cells of a row is wrong.
  */
 export function parseCsv(text: string, options?: FoundryCsvTableOptions): FoundryCsvTable {
-  const reading: CsvRecordsReading = readCsvRecords(text, options);
   if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of parseCsv must be an object');
+  const reading: CsvRecordsReading = readCsvRecords(text, options);
   const isRelaxed: boolean = ɵparseBooleanOption({ options, name: 'relaxColumnCount', fallback: false });
   const duplicateHeaders: DuplicateHeaderMode = ɵparseEnumOption({
     options,
