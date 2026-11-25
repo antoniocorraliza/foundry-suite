@@ -1,5 +1,6 @@
 import type { ɵValueKind } from '@antoniocorraliza/foundry-utils';
 import {
+  ɵcopyArrayItems,
   ɵgetOwnDataEntries,
   ɵgetValueKind,
   ɵgetValueTag,
@@ -64,7 +65,7 @@ function areSameKindValuesEqual(first: object, second: object, kind: ɵValueKind
     case 'view':
       return ɵgetValueTag(first) === ɵgetValueTag(second) && areBytesEqual(first as ArrayBufferView, second as ArrayBufferView);
     case 'array':
-      return areItemsEqual(first as ReadonlyArray<unknown>, second as ReadonlyArray<unknown>, compare);
+      return areItemsEqual(ɵcopyArrayItems(first as ReadonlyArray<unknown>), ɵcopyArrayItems(second as ReadonlyArray<unknown>), compare);
     case 'plainObject':
       return areEntriesEqual(first, second, compare);
     default:

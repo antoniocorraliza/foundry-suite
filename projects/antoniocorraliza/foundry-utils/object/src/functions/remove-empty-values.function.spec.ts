@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { FoundryCircularReferenceError, ɵcheckOptions, ɵparseBooleanOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { createArrayWithGetter } from '@foundry-test/functions/create-array-with-getter.function';
 import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
+import { createSparseArray } from '@foundry-test/functions/create-sparse-array.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { removeEmptyValues } from './remove-empty-values.function';
@@ -35,6 +37,21 @@ describe('removeEmptyValues', () => {
     expect(removeEmptyValues({ list: ['', {}, null] }, { removeEmptyStrings: true, removeEmptyCollections: true })).toEqual({
       list: ['', {}, null],
     });
+  });
+
+  it('keeps the holes of an array, also at the root, and removes them only with removeEmptyArrayItems', () => {
+    const scores: Array<unknown> = createSparseArray(3, { 0: 1, 2: 3 });
+    const kept: Array<unknown> = (removeEmptyValues({ scores }) as { scores: Array<unknown> }).scores;
+    const keptAtRoot: Array<unknown> = removeEmptyValues(scores) as Array<unknown>;
+    expect([kept.length, 1 in kept, kept[2], keptAtRoot.length, 1 in keptAtRoot]).toEqual([3, false, 3, 3, false]);
+    expect(removeEmptyValues({ scores }, { removeEmptyArrayItems: true })).toEqual({ scores: [1, 3] });
+  });
+
+  it('takes an index with a getter as a hole, without running the getter', () => {
+    const scores: Array<unknown> = createArrayWithGetter([1, 2, 3], 1);
+    const kept: Array<unknown> = removeEmptyValues(scores) as Array<unknown>;
+    expect([kept.length, 1 in kept, kept[2]]).toEqual([3, false, 3]);
+    expect(removeEmptyValues(scores, { removeEmptyArrayItems: true })).toEqual([1, 3]);
   });
 
   it('cleans the objects inside arrays', () => {

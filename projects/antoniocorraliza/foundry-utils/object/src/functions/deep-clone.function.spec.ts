@@ -9,6 +9,14 @@ class Ticket {
   constructor(readonly id: string) {}
 }
 
+class TicketList extends Array<unknown> {}
+
+class TicketLookup extends Map<string, unknown> {}
+
+class TicketTags extends Set<unknown> {}
+
+class DueDate extends Date {}
+
 function getCloneError(value: unknown): unknown {
   const error: unknown = catchThrown(() => deepClone(value));
   expect(error).toBeInstanceOf(FoundryCloneError);
@@ -45,6 +53,28 @@ describe('deepClone', () => {
     expect(clone.lookup).not.toBe(input.value.lookup);
     expect(clone.lines[0]).not.toBe(input.value.lines[0]);
     expect(input.listChanges()).toEqual([]);
+  });
+
+  it('copies a typed array into a new view of the same type', () => {
+    const original: { view: Uint16Array } = { view: new Uint16Array([1, 2]) };
+    const clone: typeof original = deepClone(original);
+    expect(clone.view).not.toBe(original.view);
+    expect(clone.view).toBeInstanceOf(Uint16Array);
+    expect([...clone.view]).toEqual([1, 2]);
+  });
+
+  it('copies views over one buffer onto one copy of it, keeping their offsets and lengths', () => {
+    const buffer: ArrayBuffer = new ArrayBuffer(8);
+    const original: { head: Uint8Array; tail: DataView; buffer: ArrayBuffer } = {
+      head: new Uint8Array(buffer, 0, 4),
+      tail: new DataView(buffer, 4, 4),
+      buffer,
+    };
+    const clone: typeof original = deepClone(original);
+    expect(clone.head.buffer).not.toBe(buffer);
+    expect(clone.tail.buffer).toBe(clone.head.buffer);
+    expect(clone.buffer).toBe(clone.head.buffer);
+    expect([clone.head.byteOffset, clone.head.length, clone.tail.byteOffset, clone.tail.byteLength]).toEqual([0, 4, 4, 4]);
   });
 
   it('keeps files and blobs by reference, with their name', () => {
@@ -89,6 +119,27 @@ describe('deepClone', () => {
     ['a weak set', new WeakSet(), 'WeakSet'],
     ['a symbol', Symbol('s'), 'symbol'],
   ])('throws on %s', (label, value, valueDescription) => {
+    expect(getCloneError({ value })).toMatchObject({ path: ['value'], valueDescription });
+  });
+
+  it('throws on a property of an array that is not an index, instead of dropping it', () => {
+    expect(getCloneError({ items: Object.assign([1], { extra: 'x' }) })).toMatchObject({
+      path: ['items', 'extra'],
+      valueDescription: 'array property',
+    });
+  });
+
+  it.each<[string, object, string]>([
+    ['an array', TicketList.from([1]), 'class TicketList'],
+    ['a map', new TicketLookup(), 'class TicketLookup'],
+    ['a set', new TicketTags(), 'class TicketTags'],
+    ['a date', new DueDate(2026, 0, 1), 'class DueDate'],
+    [
+      'an array whose class is also called Array',
+      new (Object.defineProperty(class extends Array<unknown> {}, 'name', { value: 'Array' }))(),
+      'class Array',
+    ],
+  ])('throws on a subclass of %s with the class name, instead of copying it as the base class', (_label, value, valueDescription) => {
     expect(getCloneError({ value })).toMatchObject({ path: ['value'], valueDescription });
   });
 

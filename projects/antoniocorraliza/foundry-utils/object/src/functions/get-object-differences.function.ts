@@ -1,5 +1,12 @@
 import type { FoundryObjectPath, ɵValueKind } from '@antoniocorraliza/foundry-utils';
-import { ɵcheckOptions, ɵgetOwnDataEntries, ɵgetOwnDataValue, ɵgetValueKind, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
+import {
+  ɵcheckOptions,
+  ɵcopyArrayItems,
+  ɵgetOwnDataEntries,
+  ɵgetOwnDataValue,
+  ɵgetValueKind,
+  ɵparseEnumOption,
+} from '@antoniocorraliza/foundry-utils';
 import { ARRAY_MODES } from '../constants/array-modes.constant';
 import type { DifferenceWalk } from '../interfaces/difference-walk.interface';
 import type { FoundryDeepEqualOptions } from '../interfaces/foundry-deep-equal-options.interface';
@@ -46,8 +53,8 @@ function compareEntries(walk: DifferenceWalk, previous: object, current: object,
 }
 
 function compareItems(walk: DifferenceWalk, previous: unknown, current: unknown, path: FoundryObjectPath): void {
-  const previousItems: ReadonlyArray<unknown> = previous as ReadonlyArray<unknown>;
-  const currentItems: ReadonlyArray<unknown> = current as ReadonlyArray<unknown>;
+  const previousItems: ReadonlyArray<unknown> = ɵcopyArrayItems(previous as ReadonlyArray<unknown>);
+  const currentItems: ReadonlyArray<unknown> = ɵcopyArrayItems(current as ReadonlyArray<unknown>);
   const length: number = Math.max(previousItems.length, currentItems.length);
   for (let index: number = 0; index < length; index++) {
     if (index >= currentItems.length) walk.differences.push(createRemovedDifference([...path, index], previousItems[index]));

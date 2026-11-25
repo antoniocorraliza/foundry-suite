@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { FoundryObjectPath } from '@antoniocorraliza/foundry-utils';
 import { ɵcheckOptions, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
+import { createArrayWithGetter } from '@foundry-test/functions/create-array-with-getter.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { ARRAY_MODES } from '../constants/array-modes.constant';
@@ -117,6 +118,17 @@ describe('getObjectDifferences', () => {
     expect(
       getObjectDifferences({ box: { locked: 1, a: 1 } }, { box: { locked: 1, a: 1 } }, options).map((difference) => difference.path),
     ).toEqual([['box']]);
+  });
+
+  it('takes an index with a getter as a hole, without running the getter', () => {
+    const withGetter: Array<unknown> = createArrayWithGetter([1, 2], 0);
+    expect(getObjectDifferences(withGetter, [2], { arrays: 'byIndex' })).toEqual([
+      { path: [0], kind: 'changed', previous: undefined, current: 2 },
+      { path: [1], kind: 'removed', previous: 2, current: undefined },
+    ]);
+    expect(getObjectDifferences({ list: withGetter }, { list: [1, 2] })).toEqual([
+      { path: ['list'], kind: 'changed', previous: withGetter, current: [1, 2] },
+    ]);
   });
 
   it('reads customEquality only as an own data property, without running a getter, and takes null as missing', () => {

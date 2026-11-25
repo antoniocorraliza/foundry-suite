@@ -1,6 +1,8 @@
 import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
+import { createArrayWithGetter } from '@foundry-test/functions/create-array-with-getter.function';
 import { createObjectWithFakeTag } from '@foundry-test/functions/create-object-with-fake-tag.function';
+import { createSparseArray } from '@foundry-test/functions/create-sparse-array.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
 import { deepClone } from './deep-clone.function';
@@ -111,6 +113,13 @@ describe('isDeepEqual', () => {
         },
       }),
     ).toThrow(failure);
+  });
+
+  it('takes an index with a getter as a hole, without running the getter, so it still never throws', () => {
+    const withGetter: Array<unknown> = createArrayWithGetter([1, 2], 0);
+    expect(isDeepEqual(withGetter, [1])).toBe(false);
+    expect(isDeepEqual(withGetter, [1, 2])).toBe(false);
+    expect(isDeepEqual(withGetter, createSparseArray(2, { 1: 2 }))).toBe(true);
   });
 
   it('does not run a getter of the customEquality option', () => {
