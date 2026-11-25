@@ -303,7 +303,7 @@ Checked by: ESLint `curly` (`multi-line`).
 throw new Error('[strip-tslib]: unknown package folder "foundry-x"');
 ```
 
-A `TypeError` says the type it got (`typeof`), except the reader of enum options, which says the value it got: it is always a short text of a closed list. A `RangeError` says the value. A text that cannot be empty is "a text that is not empty".
+A `TypeError` says the type it got (`typeof`). The reader of enum options is the exception: it says the value when it is a text, because a closed list holds short texts, and the type otherwise, without running its `toString`. A `RangeError` says the value. A text that cannot be empty is "a text that is not empty".
 
 ```ts
 throw new TypeError(`[foundry-utils]: the rows of toCsv must be an array, got ${typeof rows}`);
@@ -336,7 +336,21 @@ Checked by: ESLint `simple-import-sort` and `@typescript-eslint/consistent-type-
 
 ### 11. READMEs
 
-What it is (one line), status, install, usage, compatibility and license. No emoji, no list items that start in bold and no sales words ("seamless", "robust", "comprehensive", "powerful", "enterprise", "leverage"). What has not been tested is said ("Not tested with Spring"). Only the license badge until 2.0.0 is released.
+What it is (one line), status, install, usage, compatibility and license. No emoji, no list items that start in bold and no sales words ("seamless", "robust", "comprehensive", "powerful", "enterprise", "leverage"). Only the license badge until 2.0.0 is released.
+
+Facts that share columns go in a short table, and what takes a sentence goes in notes under it, not in the cells. What has not been tested is said once, where a reader looks for it: an environment in the notes of its table, anything else in one list ("Not tested with Spring"). Each row or note says what is true of its own case, in its own words; rows written from one template ("Supported: yes") say nothing.
+
+```markdown
+| Environment | Supported      | Tested                     |
+| :---------- | :------------- | :------------------------- |
+| Node        | 22.12 or later | Latest Node 22 and Node 24 |
+| Modules     | ES modules     | `import` only              |
+
+Notes:
+
+- Node: earlier releases of Node 22 are not tested.
+- Modules: `require()` from a CommonJS file is not tested.
+```
 
 Checked by: `tools/lint/check-text.ts` for the words, emoji and bold list items; the rest, review.
 
@@ -613,7 +627,7 @@ Checked by: ESLint in `projects/`: `@angular-eslint/prefer-inject`, `no-output-o
 
 ### 17. Options of the library functions
 
-The options of a library function are read with the readers of the root, which check the value and throw with one message format: `ɵparseEnumOption` (a value of a closed list), `ɵparseBooleanOption`, `ɵparseIntegerOption` and `ɵparseTextOption`. An `is...` or `has...` function, which never throws, reads them with `ɵreadEnumOption`, `ɵreadBooleanOption` and `ɵreadIntegerOption`: they never run a getter, and take a wrong value as a missing option. Never by hand, with `options?.['weeks']` and a cast. An option of another kind keeps its own reader (see Exceptions). All the readers take `null` as a missing option; with `fallback: null`, a missing option gives `null`.
+The options of a library function are read with the readers of the root, which check the value and throw with one message format: `ɵparseEnumOption` (a value of a closed list), `ɵparseBooleanOption`, `ɵparseIntegerOption` and `ɵparseTextOption`. An `is...` or `has...` function, which never throws, reads them with `ɵreadEnumOption`, `ɵreadBooleanOption` and `ɵreadIntegerOption`, which take a wrong value as a missing option. Never by hand, with `options?.['weeks']` and a cast. An option of another kind keeps its own reader (see Exceptions). All the readers take `null` as a missing option; with `fallback: null`, a missing option gives `null`. All of them read only own data properties and never run a getter: an inherited value or a getter counts as a missing option, so a polluted `Object.prototype` cannot change one.
 
 ```ts
 // Yes
@@ -736,10 +750,10 @@ Checked by: ESLint and `tools/lint/check-text.ts` skip the exported declarations
 
 ### Options with their own reader
 
-Six options are not an enum, a boolean, an integer or a text, and keep their own reader: `customEquality`, the only option that is a function, `signal` of `sleep`, an `AbortSignal`, and four lists: `fields` of `hasEmptyValue` (texts), `protocols` of `isUrl` and `normalizeUrl`, `accept` of `isDniOrNie`, and `columns` of `toCsv` and `createCsvBlob` (objects with functions). Why: their readers differ by contract. `isDeepEqual`, `hasEmptyValue`, `isUrl` and `isDniOrNie` never throw, so their readers ignore a wrong value; `getObjectDifferences` throws `TypeError` when `customEquality` is not a function, `normalizeUrl` when `protocols` is not a list of texts, `toCsv` when a column has no text header or its value is neither a key nor a function, and `sleep` rejects with `TypeError` when `signal` is not an `AbortSignal`.
+Six options are not an enum, a boolean, an integer or a text, and keep their own reader: `customEquality`, the only option that is a function, `signal` of `sleep`, an `AbortSignal`, and four lists: `fields` of `hasEmptyValue` (texts), `protocols` of `isUrl` and `normalizeUrl`, `accept` of `isDniOrNie`, and `columns` of `toCsv` and `createCsvBlob` (objects with functions). Why: their readers differ by contract. `isDeepEqual`, `hasEmptyValue`, `isUrl` and `isDniOrNie` never throw, so their readers ignore a wrong value; `getObjectDifferences` throws `TypeError` when `customEquality` is not a function, `normalizeUrl` when `protocols` is not a list of texts, `toCsv` when a column has no text header or its value is neither a key nor a function, and `sleep` rejects with `TypeError` when `signal` is not an `AbortSignal`. The six are read with `ɵgetOwnDataValue`: only own data properties, without running a getter, as the readers of the root.
 
 ```ts
-const customEquality: unknown = options?.['customEquality'];
+const customEquality: unknown = ɵgetOwnDataValue(options, 'customEquality');
 ```
 
 Checked by: ESLint skips these six property names when it looks for options read by hand, with `options?.[...]` or with `ɵgetOwnDataValue(options, ...)`; any other option read in the same files is still checked.

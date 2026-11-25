@@ -8,7 +8,7 @@ TypeScript utilities of Foundry Suite for dates, numbers, text, CSV files, valid
 
 **Version 2.0 is in development.** It has not been released and it is not ready for use. Its twelve entries are implemented and tested, and their API can still change before 2.0.0.
 
-Version 1.x is deprecated on npm: it has known defects and must not be used in new projects. Its code is kept in the branch `1.x` and the tag `v1.26.66` of the previous repository.
+Version 1.x is deprecated on npm: it has known defects and must not be used in new projects.
 
 ## Install
 
@@ -180,7 +180,7 @@ removeEmptyValues({ name: 'Ana', phone: null }); // { name: 'Ana' }
 const reordered = moveArrayItem(rows, 0, 2); // a new array; rows does not change
 ```
 
-`deepClone` throws `FoundryCloneError` instead of returning a copy that differs from the value, such as one without its functions or with a class instance turned into a plain object; files and blobs are kept by reference. `removeEmptyValues` keeps the `null` items of arrays unless `removeEmptyArrayItems` is `true`.
+`deepClone` throws `FoundryCloneError` instead of returning a copy that differs from the value, such as one without its functions or with a class instance turned into a plain object; files and blobs are kept by reference. `removeEmptyValues` keeps the `null` items and the holes of arrays unless `removeEmptyArrayItems` is `true`.
 
 `pickProperties` and `omitProperties` take plain objects only, and throw a `TypeError` with a class instance. In NestJS with `ValidationPipe({ transform: true })`, the body arrives as an instance of its DTO class: turn it into a plain object first, for example with `instanceToPlain` of `class-transformer`.
 
@@ -199,7 +199,7 @@ const blob = createCsvBlob(invoices, excelSpanishCsvOptions); // semicolons and 
 const table = await readCsvFile(file); // { delimiter, headers, rows }
 ```
 
-Every line ends with CRLF and a cell is quoted only when it needs it. A text that a spreadsheet would run as a formula gets an apostrophe in front; a number never does. A cell holding an object without a `format` function throws a `TypeError`. `readCsvFile` chooses the separator from the first lines and the encoding from the first bytes. A row with more or fewer cells than the headers throws `FoundryCsvParseError` with its line, unless `relaxColumnCount` is `true`. Headers are not trimmed unless `trimCells` is `true`.
+Every line ends with CRLF and a cell is quoted only when it needs it. A text that a spreadsheet would run as a formula gets an apostrophe in front; a number never does. A cell holding an object without a `format` function throws a `TypeError`. `readCsvFile` chooses the separator from the first lines and the encoding from the first bytes. A row with more or fewer cells than the headers throws `FoundryCsvParseError` with its line, unless `relaxColumnCount` is `true`, which fills missing cells and drops extra empty ones. Headers are not trimmed unless `trimCells` is `true`.
 
 ### `/browser`
 
@@ -315,6 +315,12 @@ Numbers and validation:
 - `isUrl` and `normalizeUrl` reject a host that the URL parser would percent-encode: Chromium accepts a space in a host, the other engines do not.
 - `normalizeUrl` returns the canonical form of the URL parser (lower-case scheme and host, punycode, a final `/`): fit to store and compare, not to show as the user wrote it.
 - `isDniOrNie` checks personal documents only (DNI and NIE), not the NIF K, L and M nor a company CIF.
+- `normalizeUrl` with `allowMissingProtocol` does not accept a host with a port, such as `localhost:4200`: it reads `localhost:` as a scheme and returns `null`. Write the protocol in front.
+
+Objects and keys:
+
+- The functions of `/case` and `/object` walk nested data recursively. From about 2,000 levels of nesting, or fewer in some functions and engines, they run out of call stack and throw the `RangeError` of the engine, also `isDeepEqual` and `hasEmptyValue`, which throw nothing else.
+- An exotic object, such as a revoked `Proxy`, makes `isPlainObject`, `isDeepEqual`, `hasEmptyValue` and `hasValue` throw the `TypeError` of the engine.
 
 CSV and spreadsheets:
 
