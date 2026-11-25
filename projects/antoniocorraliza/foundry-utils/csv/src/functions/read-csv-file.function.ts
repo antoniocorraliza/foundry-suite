@@ -1,5 +1,4 @@
-import { ɵgetValueTag, ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
-import { BLOB_TAGS } from '../constants/blob-tags.constant';
+import { ɵisBlobLike, ɵisOptionsValue, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { TEXT_ENCODINGS } from '../constants/text-encodings.constant';
 import type { FoundryCsvTable } from '../interfaces/foundry-csv-table.interface';
 import type { FoundryCsvTableOptions } from '../interfaces/foundry-csv-table-options.interface';
@@ -16,7 +15,7 @@ export async function readCsvFile(
   file: Blob,
   options?: FoundryCsvTableOptions & { readonly encoding?: FoundryTextEncoding },
 ): Promise<FoundryCsvTable> {
-  if (!BLOB_TAGS.includes(ɵgetValueTag(file))) {
+  if (!ɵisBlobLike(file)) {
     throw new TypeError(`[foundry-utils]: readCsvFile needs a Blob or a File, got ${String(file)}`);
   }
   if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of readCsvFile must be an object');

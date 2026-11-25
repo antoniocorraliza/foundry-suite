@@ -1,4 +1,10 @@
-import { ɵisOptionsValue, ɵparseEnumOption, ɵparseIntegerOption, ɵparseTextOption } from '@antoniocorraliza/foundry-utils';
+import {
+  ɵisOptionsValue,
+  ɵparseEnumOption,
+  ɵparseIntegerOption,
+  ɵparseLanguageTag,
+  ɵparseTextOption,
+} from '@antoniocorraliza/foundry-utils';
 import { GROUPINGS } from '../constants/groupings.constant';
 import { USE_GROUPING_VALUES } from '../constants/use-grouping-values.constant';
 import type { NumberFormatSettings } from '../interfaces/number-format-settings.interface';
@@ -41,15 +47,13 @@ export function createNumberFormat(options: unknown, style: NumberFormatStyle): 
     useGrouping: USE_GROUPING_VALUES[ɵparseEnumOption({ options, name: 'grouping', allowedValues: GROUPINGS, fallback: 'locale' })],
     signDisplay: 'negative',
   };
-  return { format: createIntlFormat(locale, settings), fallback: ɵparseTextOption({ options, name: 'fallback', fallback: '' }) };
+  return {
+    format: createIntlFormat(ɵparseLanguageTag(locale), settings),
+    fallback: ɵparseTextOption({ options, name: 'fallback', fallback: '' }),
+  };
 }
 
 function createIntlFormat(locale: string, settings: NumberFormatSettings): Intl.NumberFormat {
-  try {
-    Intl.getCanonicalLocales(locale);
-  } catch (error) {
-    throw new RangeError(`[foundry-utils]: ${locale} is not a valid language tag`, { cause: error });
-  }
   try {
     return new Intl.NumberFormat(locale, settings as unknown as Intl.NumberFormatOptions);
   } catch (error) {

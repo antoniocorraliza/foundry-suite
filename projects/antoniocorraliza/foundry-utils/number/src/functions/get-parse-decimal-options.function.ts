@@ -1,3 +1,4 @@
+import { ɵparseLanguageTag } from '@antoniocorraliza/foundry-utils';
 import { GROUP_SEPARATORS_BY_CHARACTER, SEPARATOR_SAMPLE } from '../constants/decimal-text.constant';
 import type { FoundryParseDecimalOptions } from '../interfaces/foundry-parse-decimal-options.interface';
 
@@ -7,8 +8,7 @@ import type { FoundryParseDecimalOptions } from '../interfaces/foundry-parse-dec
  * @throws {TypeError} When the language tag is not a string.
  */
 export function getParseDecimalOptions(locale: string): Required<FoundryParseDecimalOptions> {
-  if (typeof locale !== 'string') throw new TypeError(`[foundry-utils]: the locale must be a string, got ${typeof locale}`);
-  const format: Intl.NumberFormat = createLanguageFormat(locale);
+  const format: Intl.NumberFormat = new Intl.NumberFormat(ɵparseLanguageTag(locale));
   const numberingSystem: string = format.resolvedOptions().numberingSystem;
   if (numberingSystem !== 'latn') {
     const latinLocale: string = `${new Intl.Locale(locale).baseName}-u-nu-latn`;
@@ -28,12 +28,4 @@ export function getParseDecimalOptions(locale: string): Required<FoundryParseDec
     groupSeparator: group === null ? null : (GROUP_SEPARATORS_BY_CHARACTER[group] ?? null),
     groupStyle: integers.length > 2 && integers[1]?.value.length === 2 ? 'indian' : 'thousands',
   };
-}
-
-function createLanguageFormat(locale: string): Intl.NumberFormat {
-  try {
-    return new Intl.NumberFormat(locale);
-  } catch (error) {
-    throw new RangeError(`[foundry-utils]: ${locale} is not a valid language tag`, { cause: error });
-  }
 }

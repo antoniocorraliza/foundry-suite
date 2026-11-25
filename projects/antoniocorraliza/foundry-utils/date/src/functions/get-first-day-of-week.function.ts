@@ -1,15 +1,8 @@
+import { ɵparseLanguageTag } from '@antoniocorraliza/foundry-utils';
 import { FIRST_DAY_OF_WEEK_BY_REGION } from '../constants/first-day-of-week.cldr.constant';
 import { WEEKDAY_KEYWORDS } from '../constants/weekday-keywords.constant';
 import type { FoundryWeekday } from '../types/foundry-weekday.type';
 import { readUnicodeKeyword } from './read-unicode-keyword.function';
-
-function createLocale(locale: string): Intl.Locale {
-  try {
-    return new Intl.Locale(locale);
-  } catch (error: unknown) {
-    throw new RangeError(`[foundry-utils]: ${JSON.stringify(locale)} is not a valid language tag`, { cause: error });
-  }
-}
 
 function findRegion(locale: Intl.Locale): string | null {
   const preferenceRegion: string = readUnicodeKeyword(locale.toString(), 'rg')?.slice(0, 2).toUpperCase() ?? '';
@@ -28,8 +21,7 @@ function findWeekdayOfRegion(region: string | null): FoundryWeekday {
  * @throws {TypeError} When the language tag is not a string.
  */
 export function getFirstDayOfWeek(locale: string): FoundryWeekday {
-  if (typeof locale !== 'string') throw new TypeError(`[foundry-utils]: the language tag must be a string, got ${typeof locale}`);
-  const parsedLocale: Intl.Locale = createLocale(locale);
+  const parsedLocale: Intl.Locale = new Intl.Locale(ɵparseLanguageTag(locale));
   const keywordWeekday: number = WEEKDAY_KEYWORDS.indexOf(readUnicodeKeyword(parsedLocale.toString(), 'fw') ?? '');
   return keywordWeekday === -1 ? findWeekdayOfRegion(findRegion(parsedLocale)) : (keywordWeekday as FoundryWeekday);
 }

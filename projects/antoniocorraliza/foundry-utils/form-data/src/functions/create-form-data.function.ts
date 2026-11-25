@@ -2,12 +2,12 @@ import {
   ɵgetOwnDataEntries,
   ɵgetOwnDataValue,
   ɵgetValueTag,
+  ɵisBlobLike,
   ɵisOptionsValue,
   ɵisPlainObject,
   ɵparseEnumOption,
 } from '@antoniocorraliza/foundry-utils';
 import { ARRAY_KEY_STYLES } from '../constants/array-key-styles.constant';
-import { BLOB_TAGS } from '../constants/blob-tags.constant';
 import { FORM_DATA_FILE_KEYS } from '../constants/form-data-file-keys.constant';
 import type { FoundryFormDataEntries } from '../types/foundry-form-data-entries.type';
 
@@ -43,7 +43,7 @@ export function createFormData(entries: FoundryFormDataEntries, options?: { read
 
 function addValue(formData: FormData, partKey: string, value: unknown, key: string): void {
   if (value === null || value === undefined) return;
-  if (BLOB_TAGS.includes(ɵgetValueTag(value))) addFile(formData, partKey, { file: value }, key);
+  if (ɵisBlobLike(value)) addFile(formData, partKey, { file: value }, key);
   else if (ɵisPlainObject(value) && isFileObject(value)) addFile(formData, partKey, value, key);
   else formData.append(partKey, writeText(value, key));
 }
@@ -69,7 +69,7 @@ function addFile(formData: FormData, partKey: string, fileObject: object, key: s
   const file: unknown = ɵgetOwnDataValue(fileObject, 'file');
   const fileName: unknown = ɵgetOwnDataValue(fileObject, 'fileName') ?? null;
   const contentType: unknown = ɵgetOwnDataValue(fileObject, 'contentType') ?? null;
-  if (!BLOB_TAGS.includes(ɵgetValueTag(file))) throw new TypeError(`[foundry-utils]: the file of the key ${key} must be a Blob or a File`);
+  if (!ɵisBlobLike(file)) throw new TypeError(`[foundry-utils]: the file of the key ${key} must be a Blob or a File`);
   if (fileName !== null && (typeof fileName !== 'string' || fileName === '')) {
     throw new TypeError(`[foundry-utils]: the fileName of the key ${key} must be a text that is not empty`);
   }

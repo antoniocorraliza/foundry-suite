@@ -27,11 +27,14 @@ describe('ɵparseEnumOption', () => {
     expect(ɵparseEnumOption({ options: { mode: 'down' }, name: 'mode', allowedValues: MODES, fallback: null })).toBe('down');
   });
 
-  it.each<unknown>(['UP', 'sideways', '', 1, true, {}])('throws a TypeError for %j, naming the option and the value', (mode) => {
-    const error: unknown = catchThrown(() => ɵparseEnumOption({ options: { mode }, name: 'mode', allowedValues: MODES, fallback: null }));
-    expect(error).toBeInstanceOf(TypeError);
-    expect((error as TypeError).message).toBe(`[foundry-utils]: unknown mode option ${String(mode)}`);
-  });
+  it.each<unknown>(['UP', 'sideways', '', 1, true, {}])(
+    'throws a TypeError for %j, naming the option, its values and the value',
+    (mode) => {
+      const error: unknown = catchThrown(() => ɵparseEnumOption({ options: { mode }, name: 'mode', allowedValues: MODES, fallback: null }));
+      expect(error).toBeInstanceOf(TypeError);
+      expect((error as TypeError).message).toBe(`[foundry-utils]: the mode option must be one of up, down, got ${String(mode)}`);
+    },
+  );
 
   it.each<[string, Readonly<Record<string, unknown>> | undefined]>([
     ['missing options', undefined],
