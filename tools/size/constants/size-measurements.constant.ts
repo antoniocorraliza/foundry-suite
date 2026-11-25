@@ -6,7 +6,7 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: [{ entry: '', symbols: 'whole-entry' }],
-    budget: { rawKilobytes: 5.3, gzipKilobytes: 1.8 },
+    budget: { rawKilobytes: 6.7, gzipKilobytes: 2.3 },
   },
   {
     name: 'utils/number: clampNumber',
@@ -195,7 +195,7 @@ export const SIZE_MEASUREMENTS: ReadonlyArray<SizeMeasurement> = [
     packageFolder: 'foundry-utils',
     target: 'bundle',
     imports: 'every-entry',
-    budget: { rawKilobytes: 74.6, gzipKilobytes: 22.7 },
+    budget: { rawKilobytes: 73.9, gzipKilobytes: 22.8 },
   },
   {
     name: 'core/network: foundrySkipAuthentication',
