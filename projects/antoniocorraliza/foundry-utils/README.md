@@ -199,7 +199,7 @@ const blob = createCsvBlob(invoices, excelSpanishCsvOptions); // semicolons and 
 const table = await readCsvFile(file); // { delimiter, headers, rows }
 ```
 
-Every line ends with CRLF and a cell is quoted only when it needs it. A text that a spreadsheet would run as a formula gets an apostrophe in front; a number never does. A cell holding an object without a `format` function throws a `TypeError`. `readCsvFile` chooses the separator from the first lines and the encoding from the first bytes. A row with more or fewer cells than the headers throws `FoundryCsvParseError` with its line, unless `relaxColumnCount` is `true`, which fills missing cells and drops extra empty ones. Headers are not trimmed unless `trimCells` is `true`.
+Every line ends with CRLF and a cell is quoted only when it needs it. A text that a spreadsheet would run as a formula gets an apostrophe in front; a number never does. A cell holding an object without a `format` function throws a `TypeError`. `readCsvFile` chooses the separator from the first lines and the encoding from the first bytes. A row with more or fewer cells than the headers throws `FoundryCsvParseError` with its line, unless `relaxColumnCount` is `true`, which fills missing cells and drops extra empty ones; an extra cell with content still throws. Headers are not trimmed unless `trimCells` is `true`.
 
 ### `/browser`
 
@@ -319,7 +319,7 @@ Numbers and validation:
 
 Objects and keys:
 
-- The functions of `/case` and `/object` walk nested data recursively. From about 2,000 levels of nesting, or fewer in some functions and engines, they run out of call stack and throw the `RangeError` of the engine, also `isDeepEqual` and `hasEmptyValue`, which throw nothing else.
+- The functions of `/case` and `/object` walk nested data recursively. From about 1,000 levels of nesting in Node, and maybe fewer in other engines, they run out of call stack and throw the `RangeError` of the engine. That includes `isDeepEqual` and `hasEmptyValue`, which otherwise throw only with the exotic objects below.
 - An exotic object, such as a revoked `Proxy`, makes `isPlainObject`, `isDeepEqual`, `hasEmptyValue` and `hasValue` throw the `TypeError` of the engine.
 
 CSV and spreadsheets:
