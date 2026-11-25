@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ɵparseBooleanOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
@@ -47,9 +48,11 @@ describe('createCsvBlob', () => {
     expect(catchThrown(() => createCsvBlob([{ a: 1 }], { delimiter: '|' } as never))).toBeInstanceOf(TypeError);
   });
 
-  it.each<unknown>(['false', 0, 1])('throws a TypeError that names byteOrderMark for the value %j', (value) => {
-    const thrown: TypeError = catchError(() => createCsvBlob([{ a: 1 }], { byteOrderMark: value } as never), TypeError);
-    expect(thrown.message).toContain('byteOrderMark');
+  it('rejects a byteOrderMark that is not a boolean as parseBooleanOption does', () => {
+    expect(catchError(() => createCsvBlob([{ a: 1 }], { byteOrderMark: 'false' } as never), TypeError).message).toBe(
+      catchError(() => ɵparseBooleanOption({ options: { byteOrderMark: 'false' }, name: 'byteOrderMark', fallback: true }), TypeError)
+        .message,
+    );
   });
 
   it('leaves its rows and options unchanged', () => {

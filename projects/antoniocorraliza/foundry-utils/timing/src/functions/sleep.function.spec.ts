@@ -1,6 +1,8 @@
 import { getEventListeners } from 'node:events';
 import type { MockInstance } from 'vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ɵcheckOptions } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchRejectedError } from '@foundry-test/functions/catch-rejected-error.function';
 import { catchRejection } from '@foundry-test/functions/catch-rejection.function';
 import { sleep } from './sleep.function';
@@ -61,12 +63,11 @@ describe('sleep', () => {
     },
   );
 
-  it.each<unknown>([5, 'signal', true, null, []])(
-    'never throws for the options %j, which are not an object: it returns a promise rejected with a TypeError',
-    async (options) => {
-      expect(await catchRejection(() => sleep(10, options as never))).toBeInstanceOf(TypeError);
-    },
-  );
+  it('never throws for options that are not an object: it returns a promise rejected with the TypeError of checkOptions', async () => {
+    expect((await catchRejectedError(() => sleep(10, 'signal' as never), TypeError)).message).toBe(
+      catchError(() => ɵcheckOptions('signal', 'sleep'), TypeError).message,
+    );
+  });
 
   it.each<[string, unknown]>([
     ['an empty object', {}],

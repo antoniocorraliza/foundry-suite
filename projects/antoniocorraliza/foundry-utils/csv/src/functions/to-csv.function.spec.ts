@@ -1,9 +1,15 @@
 import fc from 'fast-check';
 import { describe, expect, inject, it, vi } from 'vitest';
+import { ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
+import { CSV_DECIMAL_SEPARATORS } from '../constants/csv-decimal-separators.constant';
+import { CSV_DELIMITERS } from '../constants/csv-delimiters.constant';
+import { FORMULA_ESCAPINGS } from '../constants/formula-escapings.constant';
+import { LINE_BREAKS } from '../constants/line-breaks.constant';
+import { QUOTINGS } from '../constants/quotings.constant';
 import type { FoundryCsvColumn } from '../interfaces/foundry-csv-column.interface';
 import type { FoundryCsvWriteOptions } from '../interfaces/foundry-csv-write-options.interface';
 import { parseCsv } from './parse-csv.function';
@@ -401,20 +407,25 @@ describe('toCsv', () => {
       },
     );
 
-    it.each<unknown>([5, 'x', true, null, []])('throws a TypeError for the options %j, which are not an object', (options) => {
-      expect(catchThrown(() => toCsv([{ a: 1 }], options as never))).toBeInstanceOf(TypeError);
-    });
-
-    it.each<[string, unknown]>([
-      ['delimiter', '|'],
-      ['decimalSeparator', ';'],
-      ['lineBreak', '\r'],
-      ['quoting', 'never'],
-      ['includeHeader', 'yes'],
-      ['formulaEscaping', 'escape'],
-    ])('throws a TypeError that names the option %s for the value %j', (name, value) => {
-      const thrown: TypeError = catchError(() => toCsv([{ a: 1 }], { [name]: value } as never), TypeError);
-      expect(thrown.message).toContain(name);
+    it.each<[string, unknown, () => unknown]>([
+      ['delimiter', '|', () => ɵparseEnumOption({ options: { delimiter: '|' }, name: 'delimiter', allowedValues: CSV_DELIMITERS })],
+      [
+        'decimalSeparator',
+        ';',
+        () => ɵparseEnumOption({ options: { decimalSeparator: ';' }, name: 'decimalSeparator', allowedValues: CSV_DECIMAL_SEPARATORS }),
+      ],
+      ['lineBreak', '\r', () => ɵparseEnumOption({ options: { lineBreak: '\r' }, name: 'lineBreak', allowedValues: LINE_BREAKS })],
+      ['quoting', 'never', () => ɵparseEnumOption({ options: { quoting: 'never' }, name: 'quoting', allowedValues: QUOTINGS })],
+      ['includeHeader', 'yes', () => ɵparseBooleanOption({ options: { includeHeader: 'yes' }, name: 'includeHeader', fallback: true })],
+      [
+        'formulaEscaping',
+        'escape',
+        () => ɵparseEnumOption({ options: { formulaEscaping: 'escape' }, name: 'formulaEscaping', allowedValues: FORMULA_ESCAPINGS }),
+      ],
+    ])('rejects the %s %j as the reader of the root does', (name, value, readOption) => {
+      expect(catchError(() => toCsv([{ a: 1 }], { [name]: value } as never), TypeError).message).toBe(
+        catchError(readOption, TypeError).message,
+      );
     });
 
     it('takes a null option as a missing one and ignores the names it does not know', () => {

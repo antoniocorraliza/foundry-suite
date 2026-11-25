@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ɵparseBooleanOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
@@ -43,8 +44,14 @@ describe('parseCsvRecords', () => {
     expect(parseCsvRecords('a,a', { duplicateHeaders: 'unknown' } as never)).toEqual([['a', 'a']]);
   });
 
-  it('throws a TypeError for an invalid relaxColumnCount, and for a text that is not a string', () => {
-    expect(catchThrown(() => parseCsvRecords('a', { relaxColumnCount: 'yes' } as never))).toBeInstanceOf(TypeError);
+  it('rejects a relaxColumnCount that is not a boolean as parseBooleanOption does', () => {
+    expect(catchError(() => parseCsvRecords('a', { relaxColumnCount: 'yes' } as never), TypeError).message).toBe(
+      catchError(() => ɵparseBooleanOption({ options: { relaxColumnCount: 'yes' }, name: 'relaxColumnCount', fallback: false }), TypeError)
+        .message,
+    );
+  });
+
+  it('throws a TypeError for a text that is not a string', () => {
     expect(catchThrown(() => parseCsvRecords(null as never))).toBeInstanceOf(TypeError);
   });
 });

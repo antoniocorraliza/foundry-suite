@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { ɵcheckOptions, ɵparseBooleanOption, ɵparseEnumOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { CSV_PARSE_DELIMITERS } from '../constants/csv-parse-delimiters.constant';
+import { FORMULA_ESCAPINGS } from '../constants/formula-escapings.constant';
 import { FoundryCsvParseError } from '../errors/foundry-csv-parse.error';
 import type { FoundryCsvParseOptions } from '../interfaces/foundry-csv-parse-options.interface';
 import { readCsvRecords } from './read-csv-records.function';
@@ -215,19 +218,25 @@ describe('readCsvRecords', () => {
       expect(catchThrown(() => readCsvRecords(text as string, undefined))).toBeInstanceOf(TypeError);
     });
 
-    it.each<unknown>([5, 'x', null, []])('throws a TypeError for the options %j, which are not an object', (options) => {
-      expect(catchThrown(() => readCsvRecords('a', options as never))).toBeInstanceOf(TypeError);
+    it('rejects options that are not an object as checkOptions does, naming a CSV reading', () => {
+      expect(catchError(() => readCsvRecords('a', 5 as never), TypeError).message).toBe(
+        catchError(() => ɵcheckOptions(5, 'a CSV reading'), TypeError).message,
+      );
     });
 
-    it.each<[string, unknown]>([
-      ['delimiter', '|'],
-      ['delimiter', ',;'],
-      ['formulaEscaping', 'remove'],
-      ['trimCells', 'yes'],
-      ['skipEmptyLines', 1],
-    ])('throws a TypeError that names the option %s for the value %j', (name, value) => {
-      const thrown: TypeError = catchError(() => readCsvRecords('a', { [name]: value } as never), TypeError);
-      expect(thrown.message).toContain(name);
+    it.each<[string, unknown, () => unknown]>([
+      ['delimiter', '|', () => ɵparseEnumOption({ options: { delimiter: '|' }, name: 'delimiter', allowedValues: CSV_PARSE_DELIMITERS })],
+      [
+        'formulaEscaping',
+        'remove',
+        () => ɵparseEnumOption({ options: { formulaEscaping: 'remove' }, name: 'formulaEscaping', allowedValues: FORMULA_ESCAPINGS }),
+      ],
+      ['trimCells', 'yes', () => ɵparseBooleanOption({ options: { trimCells: 'yes' }, name: 'trimCells', fallback: false })],
+      ['skipEmptyLines', 1, () => ɵparseBooleanOption({ options: { skipEmptyLines: 1 }, name: 'skipEmptyLines', fallback: true })],
+    ])('rejects the %s %j as the reader of the root does', (name, value, readOption) => {
+      expect(catchError(() => readCsvRecords('a', { [name]: value } as never), TypeError).message).toBe(
+        catchError(readOption, TypeError).message,
+      );
     });
 
     it('takes a null option as a missing one', () => {

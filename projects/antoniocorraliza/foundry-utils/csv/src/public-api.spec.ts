@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ɵcheckOptions } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
@@ -60,7 +61,7 @@ describe('public API of the csv entry', () => {
   it.each(OPTION_USERS)(
     'throws a TypeError through %s for options that are not an object, naming that function',
     (name, callWithOptions) => {
-      expect(catchError(() => callWithOptions(5), TypeError).message).toBe(`[foundry-utils]: the options of ${name} must be an object`);
+      expect(catchError(() => callWithOptions(5), TypeError).message).toBe(catchError(() => ɵcheckOptions(5, name), TypeError).message);
     },
   );
 
