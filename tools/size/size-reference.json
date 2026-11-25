@@ -37,18 +37,18 @@
   },
   "utils (root)": {
     "esbuild": {
-      "raw": 4364,
-      "gzip": 1484
+      "raw": 4475,
+      "gzip": 1559
     },
     "rollup": {
-      "raw": 4134,
-      "gzip": 1393
+      "raw": 4247,
+      "gzip": 1460
     }
   },
   "utils/browser": {
     "esbuild": {
       "raw": 1452,
-      "gzip": 707
+      "gzip": 706
     },
     "rollup": {
       "raw": 1369,
@@ -68,7 +68,7 @@
   "utils/case: toCamelCaseKeys": {
     "esbuild": {
       "raw": 2751,
-      "gzip": 1233
+      "gzip": 1232
     },
     "rollup": {
       "raw": 2742,
@@ -175,6 +175,26 @@
       "gzip": 2188
     }
   },
+  "utils/form-data": {
+    "esbuild": {
+      "raw": 3233,
+      "gzip": 1235
+    },
+    "rollup": {
+      "raw": 3156,
+      "gzip": 1188
+    }
+  },
+  "utils/hash": {
+    "esbuild": {
+      "raw": 1410,
+      "gzip": 670
+    },
+    "rollup": {
+      "raw": 1320,
+      "gzip": 624
+    }
+  },
   "utils/number": {
     "esbuild": {
       "raw": 6817,
@@ -218,7 +238,7 @@
   "utils/object": {
     "esbuild": {
       "raw": 10770,
-      "gzip": 3561
+      "gzip": 3560
     },
     "rollup": {
       "raw": 10606,
@@ -233,6 +253,16 @@
     "rollup": {
       "raw": 3249,
       "gzip": 1120
+    }
+  },
+  "utils/random": {
+    "esbuild": {
+      "raw": 2224,
+      "gzip": 1084
+    },
+    "rollup": {
+      "raw": 2135,
+      "gzip": 1009
     }
   },
   "utils/text": {
@@ -255,6 +285,16 @@
       "gzip": 193
     }
   },
+  "utils/timing": {
+    "esbuild": {
+      "raw": 1476,
+      "gzip": 677
+    },
+    "rollup": {
+      "raw": 1390,
+      "gzip": 627
+    }
+  },
   "utils/validation": {
     "esbuild": {
       "raw": 8397,
@@ -267,12 +307,12 @@
   },
   "utils: every entry": {
     "esbuild": {
-      "raw": 56167,
-      "gzip": 17166
+      "raw": 62138,
+      "gzip": 18907
     },
     "rollup": {
-      "raw": 55368,
-      "gzip": 16491
+      "raw": 61377,
+      "gzip": 18078
     }
   }
 }
