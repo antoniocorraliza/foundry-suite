@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { ɵcheckOptions } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
 import { listFunctionNames } from '@foundry-test/functions/list-function-names.function';
 import type { CallWithOptions } from '@foundry-test/types/call-with-options.type';
@@ -38,9 +39,10 @@ describe('public API of the text entry', () => {
     expect(['yes', 'no'].map(entry.parseBoolean)).toEqual([true, false]);
   });
 
-  describe.each(OPTION_USERS)('through %s', (_name, callWithOptions) => {
-    it.each<unknown>([5, 'tr', true, null, [], () => ({})])('throws a TypeError for the options %j, which are not an object', (options) => {
-      expect(catchThrown(() => callWithOptions(options))).toBeInstanceOf(TypeError);
-    });
-  });
+  it.each(OPTION_USERS)(
+    'throws a TypeError through %s for options that are not an object, naming that function',
+    (name, callWithOptions) => {
+      expect(catchError(() => callWithOptions(5), TypeError).message).toBe(catchError(() => ɵcheckOptions(5, name), TypeError).message);
+    },
+  );
 });

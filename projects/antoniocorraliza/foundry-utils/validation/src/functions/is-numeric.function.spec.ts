@@ -42,7 +42,7 @@ describe('isNumeric', () => {
     expect(isNumeric('12,5', { decimalSeparator } as never)).toBe(false);
   });
 
-  it('does not run a getter of its options', () => {
+  it('does not run a getter of the decimalSeparator option', () => {
     const getter: () => string = vi.fn(() => ',');
     expect(isNumeric('12,5', Object.defineProperty({}, 'decimalSeparator', { get: getter, enumerable: true }))).toBe(false);
     expect(getter).not.toHaveBeenCalled();

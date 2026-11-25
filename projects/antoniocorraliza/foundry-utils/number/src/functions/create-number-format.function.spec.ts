@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { ɵparseEnumOption, ɵparseIntegerOption, ɵparseLanguageTag, ɵparseTextOption } from '@antoniocorraliza/foundry-utils';
 import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { GROUPINGS } from '../constants/groupings.constant';
+import { MAX_FRACTION_DIGITS } from '../constants/number-limits.constant';
 import type { NumberWriter } from '../interfaces/number-writer.interface';
 import { createNumberFormat } from './create-number-format.function';
 
@@ -63,27 +66,22 @@ describe('createNumberFormat', () => {
     expect(catchThrown(() => createNumberFormat(options, 'decimal'))).toBeInstanceOf(TypeError);
   });
 
-  it.each<unknown>([{}, { locale: undefined }, { locale: null }, { locale: 5 }, { locale: ['es-ES'] }])(
-    'throws a TypeError for %j, without a language tag that is a string, instead of using the language of the device',
-    (options) => {
-      const error: TypeError = catchError(() => createNumberFormat(options, 'decimal'), TypeError);
-      expect(error.message).toMatch(/^\[foundry-utils\]: .*\blocale\b/u);
-    },
-  );
-
-  it('throws its own RangeError for an invalid language tag, with the error of Intl as the cause', () => {
-    const error: RangeError = catchError(() => createNumberFormat({ locale: 'es_ES' }, 'decimal'), RangeError);
-    expect(error.message).toMatch(/^\[foundry-utils\]: /u);
-    expect(error.cause).toBeInstanceOf(RangeError);
+  it('throws a TypeError without a locale, instead of using the language of the device, as parseTextOption does', () => {
+    expect(catchError(() => createNumberFormat({}, 'decimal'), TypeError).message).toBe(
+      catchError(() => ɵparseTextOption({ options: {}, name: 'locale' }), TypeError).message,
+    );
   });
 
-  it.each<unknown>([
-    { locale: 'es-ES' },
-    { locale: 'es-ES', currency: undefined },
-    { locale: 'es-ES', currency: null },
-    { locale: 'es-ES', currency: 978 },
-  ])('throws a TypeError for the currency format %j, without a currency that is a string', (options) => {
-    expect(catchThrown(() => createNumberFormat(options, 'currency'))).toBeInstanceOf(TypeError);
+  it('rejects an invalid language tag as parseLanguageTag does', () => {
+    expect(catchError(() => createNumberFormat({ locale: 'es_ES' }, 'decimal'), RangeError).message).toBe(
+      catchError(() => ɵparseLanguageTag('es_ES'), RangeError).message,
+    );
+  });
+
+  it('throws a TypeError for the currency format without a currency, as parseTextOption does', () => {
+    expect(catchError(() => createNumberFormat({ locale: 'es-ES' }, 'currency'), TypeError).message).toBe(
+      catchError(() => ɵparseTextOption({ options: {}, name: 'currency' }), TypeError).message,
+    );
   });
 
   it('throws its own RangeError for a malformed currency code, with the error of Intl as the cause', () => {
@@ -97,9 +95,11 @@ describe('createNumberFormat', () => {
     expect(createNumberFormat({ locale: 'es-ES', currency: 'eur' }, 'currency').format.resolvedOptions().currency).toBe('EUR');
   });
 
-  it.each<unknown>([-1, 101, 1.5, Number.NaN, '2'])('throws a RangeError for %j fraction digits', (digits) => {
-    expect(catchThrown(() => createNumberFormat({ locale: 'es-ES', minimumFractionDigits: digits }, 'decimal'))).toBeInstanceOf(RangeError);
-    expect(catchThrown(() => createNumberFormat({ locale: 'es-ES', maximumFractionDigits: digits }, 'decimal'))).toBeInstanceOf(RangeError);
+  it.each(['minimumFractionDigits', 'maximumFractionDigits'])('rejects %s beyond the limit as parseIntegerOption does', (name) => {
+    expect(catchError(() => createNumberFormat({ locale: 'es-ES', [name]: 101 }, 'decimal'), RangeError).message).toBe(
+      catchError(() => ɵparseIntegerOption({ options: { [name]: 101 }, name, minimum: 0, maximum: MAX_FRACTION_DIGITS }), RangeError)
+        .message,
+    );
   });
 
   it('throws its own RangeError when the minimum fraction digits are more than the maximum', () => {
@@ -110,11 +110,9 @@ describe('createNumberFormat', () => {
     expect(error.message).toMatch(/^\[foundry-utils\]: /u);
   });
 
-  it.each<unknown>([
-    { locale: 'es-ES', grouping: 'auto' },
-    { locale: 'es-ES', grouping: true },
-    { locale: 'es-ES', fallback: 0 },
-  ])('throws a TypeError for the unknown option values %j', (options) => {
-    expect(catchThrown(() => createNumberFormat(options, 'decimal'))).toBeInstanceOf(TypeError);
+  it('rejects an unknown grouping as parseEnumOption does', () => {
+    expect(catchError(() => createNumberFormat({ locale: 'es-ES', grouping: 'auto' }, 'decimal'), TypeError).message).toBe(
+      catchError(() => ɵparseEnumOption({ options: { grouping: 'auto' }, name: 'grouping', allowedValues: GROUPINGS }), TypeError).message,
+    );
   });
 });

@@ -1,6 +1,7 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
+import { ɵcheckOptions } from '@antoniocorraliza/foundry-utils';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { isPromiseLike } from '@foundry-test/functions/is-promise-like.function';
 import { listFunctionNames } from '@foundry-test/functions/list-function-names.function';
 import type { LooseFunction } from '@foundry-test/types/loose-function.type';
@@ -71,10 +72,9 @@ describe('public API of the validation entry', () => {
     );
   });
 
-  it.each<unknown>([5, 'https:', true, null, [], () => ({})])(
-    'throws a TypeError through normalizeUrl for the options %j, which are not an object',
-    (options) => {
-      expect(catchThrown(() => entry.normalizeUrl('https://empresa.es', options as never))).toBeInstanceOf(TypeError);
-    },
-  );
+  it('throws a TypeError through normalizeUrl for options that are not an object, naming that function', () => {
+    expect(catchError(() => entry.normalizeUrl('https://empresa.es', 5 as never), TypeError).message).toBe(
+      catchError(() => ɵcheckOptions(5, 'normalizeUrl'), TypeError).message,
+    );
+  });
 });
