@@ -40,13 +40,13 @@ function readGivenColumn(column: unknown, index: number): CsvWriteColumn {
   }
   return {
     header,
-    readValue: typeof value === 'string' ? readKeyValue(value) : (row) => (value as (row: object) => unknown)(row),
+    readValue: typeof value === 'string' ? readKeyValue(value) : (value as (row: object) => unknown),
     format: format as ((value: unknown, row: object) => unknown) | null,
   };
 }
 
 function readGivenColumns(columns: unknown): ReadonlyArray<CsvWriteColumn> {
-  if (!Array.isArray(columns)) throw new TypeError(`[foundry-utils]: the columns option of toCsv must be an array, got ${String(columns)}`);
+  if (!Array.isArray(columns)) throw new TypeError(`[foundry-utils]: the columns option of toCsv must be an array, got ${typeof columns}`);
   return columns.map((column, index) => readGivenColumn(column, index));
 }
 
@@ -137,7 +137,7 @@ function writeRow(row: unknown, index: number, columns: ReadonlyArray<CsvWriteCo
  * @throws {RangeError} When a date is outside the years 1 to 9999.
  */
 export function toCsv<Row extends object>(rows: ReadonlyArray<Row>, options?: FoundryCsvWriteOptions<Row>): string {
-  if (!Array.isArray(rows)) throw new TypeError(`[foundry-utils]: the rows of toCsv must be an array, got ${String(rows)}`);
+  if (!Array.isArray(rows)) throw new TypeError(`[foundry-utils]: the rows of toCsv must be an array, got ${typeof rows}`);
   if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of toCsv must be an object');
   const settings: CsvWriteSettings = {
     delimiter: ɵparseEnumOption({ options, name: 'delimiter', allowedValues: CSV_DELIMITERS, fallback: ',' }),
@@ -157,8 +157,5 @@ export function toCsv<Row extends object>(rows: ReadonlyArray<Row>, options?: Fo
         lineBreak,
       )
     : '';
-  return rows.reduce(
-    (text: string, row: unknown, index) => `${text}${writeLine(writeRow(row, index, columns, settings), settings, lineBreak)}`,
-    headerLine,
-  );
+  return `${headerLine}${rows.map((row, index) => writeLine(writeRow(row, index, columns, settings), settings, lineBreak)).join('')}`;
 }

@@ -16,7 +16,7 @@ export async function readCsvFile(
   options?: FoundryCsvTableOptions & { readonly encoding?: FoundryTextEncoding },
 ): Promise<FoundryCsvTable> {
   if (!ɵisBlobLike(file)) {
-    throw new TypeError(`[foundry-utils]: readCsvFile needs a Blob or a File, got ${String(file)}`);
+    throw new TypeError(`[foundry-utils]: readCsvFile needs a Blob or a File, got ${typeof file}`);
   }
   if (!ɵisOptionsValue(options)) throw new TypeError('[foundry-utils]: the options of readCsvFile must be an object');
   const encoding: FoundryTextEncoding = ɵparseEnumOption({ options, name: 'encoding', allowedValues: TEXT_ENCODINGS, fallback: 'auto' });

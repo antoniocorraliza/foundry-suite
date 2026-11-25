@@ -1,5 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, inject, it, vi } from 'vitest';
+import { catchError } from '@foundry-test/functions/catch-error.function';
 import { catchThrown } from '@foundry-test/functions/catch-thrown.function';
 import { freezeAndSnapshot } from '@foundry-test/functions/freeze-and-snapshot.function';
 import type { FrozenSnapshot } from '@foundry-test/interfaces/frozen-snapshot.interface';
@@ -85,10 +86,9 @@ describe('toCsv', () => {
       ['an array', [1, 2]],
       ['a number', 5],
     ])('throws a TypeError that names the row when a row is %s and there are no columns', (_description, row) => {
-      const thrown: unknown = catchThrown(() => toCsv([{ a: 1 }, row as object]));
-      expect(thrown).toBeInstanceOf(TypeError);
-      expect((thrown as TypeError).message).toMatch(/^\[foundry-utils\]: /);
-      expect((thrown as TypeError).message).toContain('rows[1]');
+      const thrown: TypeError = catchError(() => toCsv([{ a: 1 }, row as object]), TypeError);
+      expect(thrown.message).toMatch(/^\[foundry-utils\]: /);
+      expect(thrown.message).toContain('rows[1]');
     });
 
     it('ignores symbol keys, accessors and keys that are not enumerable, and never runs a getter', () => {
@@ -198,10 +198,9 @@ describe('toCsv', () => {
     });
 
     it('throws a RangeError that names the row and the column for a date outside the years 1 to 9999', () => {
-      const thrown: unknown = catchThrown(() => toCsv([{ a: 1 }, { a: 2, Vence: new Date(Date.UTC(10000, 0, 1, 12)) }]));
-      expect(thrown).toBeInstanceOf(RangeError);
-      expect((thrown as RangeError).message).toContain('rows[1]');
-      expect((thrown as RangeError).message).toContain('Vence');
+      const thrown: RangeError = catchError(() => toCsv([{ a: 1 }, { a: 2, Vence: new Date(Date.UTC(10000, 0, 1, 12)) }]), RangeError);
+      expect(thrown.message).toContain('rows[1]');
+      expect(thrown.message).toContain('Vence');
     });
 
     it.each<[string, unknown]>([
@@ -213,11 +212,10 @@ describe('toCsv', () => {
       ['a symbol', Symbol('x')],
       ['a function', () => 1],
     ])('throws a TypeError that names the row and the column for %s, instead of writing [object Object]', (_description, value) => {
-      const thrown: unknown = catchThrown(() => toCsv([{ Importe: 1 }, { Importe: 2 }, { Importe: 3 }, { Importe: value }]));
-      expect(thrown).toBeInstanceOf(TypeError);
-      expect((thrown as TypeError).message).toMatch(/^\[foundry-utils\]: /);
-      expect((thrown as TypeError).message).toContain('rows[3]');
-      expect((thrown as TypeError).message).toContain('Importe');
+      const thrown: TypeError = catchError(() => toCsv([{ Importe: 1 }, { Importe: 2 }, { Importe: 3 }, { Importe: value }]), TypeError);
+      expect(thrown.message).toMatch(/^\[foundry-utils\]: /);
+      expect(thrown.message).toContain('rows[3]');
+      expect(thrown.message).toContain('Importe');
     });
   });
 
@@ -356,9 +354,8 @@ describe('toCsv', () => {
       ],
     ])('throws a TypeError that names the column for %s, also without rows', (_description, columns, name) => {
       [[{ a: 1 }], []].forEach((rows) => {
-        const thrown: unknown = catchThrown(() => toCsv(rows, { columns } as never));
-        expect(thrown).toBeInstanceOf(TypeError);
-        expect((thrown as TypeError).message).toContain(name);
+        const thrown: TypeError = catchError(() => toCsv(rows, { columns } as never), TypeError);
+        expect(thrown.message).toContain(name);
       });
     });
 
@@ -370,12 +367,12 @@ describe('toCsv', () => {
     });
 
     it('throws a TypeError that names the row and the column when a format does not return a text', () => {
-      const thrown: unknown = catchThrown(() =>
-        toCsv([{ a: 1 }, { a: 2 }], { columns: [{ header: 'Importe', value: 'a', format: (value) => value as string }] }),
+      const thrown: TypeError = catchError(
+        () => toCsv([{ a: 1 }, { a: 2 }], { columns: [{ header: 'Importe', value: 'a', format: (value) => value as string }] }),
+        TypeError,
       );
-      expect(thrown).toBeInstanceOf(TypeError);
-      expect((thrown as TypeError).message).toContain('rows[0]');
-      expect((thrown as TypeError).message).toContain('Importe');
+      expect(thrown.message).toContain('rows[0]');
+      expect(thrown.message).toContain('Importe');
     });
 
     it('lets the error of a value or a format of the application through as it is', () => {
@@ -388,9 +385,11 @@ describe('toCsv', () => {
     });
 
     it.each([5, null, 'row'])('throws a TypeError that names the row when the row %j is not an object', (row) => {
-      const thrown: unknown = catchThrown(() => toCsv([{ a: 1 }, row as never], { columns: [{ header: 'a', value: () => 1 }] }));
-      expect(thrown).toBeInstanceOf(TypeError);
-      expect((thrown as TypeError).message).toContain('rows[1]');
+      const thrown: TypeError = catchError(
+        () => toCsv([{ a: 1 }, row as never], { columns: [{ header: 'a', value: () => 1 }] }),
+        TypeError,
+      );
+      expect(thrown.message).toContain('rows[1]');
     });
   });
 
@@ -414,9 +413,8 @@ describe('toCsv', () => {
       ['includeHeader', 'yes'],
       ['formulaEscaping', 'escape'],
     ])('throws a TypeError that names the option %s for the value %j', (name, value) => {
-      const thrown: unknown = catchThrown(() => toCsv([{ a: 1 }], { [name]: value } as never));
-      expect(thrown).toBeInstanceOf(TypeError);
-      expect((thrown as TypeError).message).toContain(name);
+      const thrown: TypeError = catchError(() => toCsv([{ a: 1 }], { [name]: value } as never), TypeError);
+      expect(thrown.message).toContain(name);
     });
 
     it('takes a null option as a missing one and ignores the names it does not know', () => {
